@@ -5,11 +5,9 @@ library(shiny)
 library(DT)
 
 #### for primer design ########
-primersDesign_wd <- getwd() #this used to be hardcoded: "C:\\Users\\Wiebk\\Documents\\epiprimer\\epiprimer_Wiebke" 
+primersDesign_wd <- getwd() #this used to be hardcoded: "C:\\Users\\Wiebk\\Desktop\\epiprimer" 
 #pipeline_jil <- file.path(primersDesign_wd, "primer.design.pipeline_jil_v10.3_standalone.r", fsep=.Platform$file.sep)
-#print(pipeline_jil)
-#source(pipeline_jil)
-source("C:\\Users\\Wiebk\\Documents\\epiprimer\\epiprimerWiebke\\primer.design.pipeline_jil_v10.3_standalone.R")
+source("C:\\Users\\Wiebk\\Desktop\\epiprimer\\primer.design.pipeline_jil_v10.3_standalone.R")
 
 #### for primer QC ########
 library(devtools)
@@ -22,7 +20,7 @@ library(Biostrings) #for primer QC and Reads Extraction
 source(file.path(primersDesign_wd, "ReferenceGenome.r", fsep=.Platform$file.sep))
 
 ############ for Flowcell QC ########
-mypath <- ("C:\\Users\\Wiebk\\Documents\\epiprimer\\epiprimer_Wiebke\\flowcell_package\\newStruct_trimmed")
+mypath <- ("C:\\Users\\Wiebk\\Desktop\\epiprimer\\flowcell_package\\newStruct_trimmed")
 choices_info <- data.frame(path=list.files(mypath,full.names=TRUE, pattern =".csv"))
 print(choices_info[["path"]])
 choices_info[["nameS"]]<-sapply(strsplit(as.character(choices_info[["path"]]),"/"),function(x) x[length(x)])
@@ -35,7 +33,6 @@ flowcell_folders <- data.frame(path=list.dirs(mypath,full.names=TRUE,recursive =
 packages_names <- sapply(flowcell_folders$path,function(x) basename(as.character(x)))
 
 ####### For Reads Alignment #########
-#source("C:\\Users\\Wiebk\\Documents\\epiprimer\\epiprimer_Wiebke\\wrapper.r")
 wrapper_file <- file.path(primersDesign_wd, "wrapper.r", fsep=.Platform$file.sep)
 source(wrapper_file)
 library(seqinr)
@@ -609,8 +606,8 @@ shinyServer(function(input, output) {
       vector <- c("assembly", rep(refgen@name, each=vector_assemblies))
       print (vector)
       
-      #aktuelle Baustelle: vector wieder weg wenn es so sein woll wie vorher. 
-      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]), vector)
+      #aktuelle Baustelle: vector wieder weg wenn es so sein soll wie vorher. 
+      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
       
       colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
       

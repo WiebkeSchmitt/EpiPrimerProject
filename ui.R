@@ -2,8 +2,8 @@ library(shiny)
 library(DT)
 
 #### for primer design ########
-primersDesign_wd <- getwd() #"C:\\Users\\Wiebk\\OneDrive\\Masterthesis\\R\\epiprimer"
-source("C:\\Users\\Wiebk\\Documents\\epiprimer\\epiprimerWiebke\\primer.design.pipeline_jil_v10.3_standalone.R")
+primersDesign_wd <- getwd() 
+source("C:\\Users\\Wiebk\\Desktop\\epiprimer\\primer.design.pipeline_jil_v10.3_standalone.R")
 
 #### for primer QC ########
 library(devtools)
