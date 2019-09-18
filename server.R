@@ -599,14 +599,6 @@ shinyServer(function(input, output) {
       #overlapping between genomic ranges 
       overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
       
-      #Wiebkes aktuelle Baustelle
-      length_hits <- nRnode(overlap_hits)
-      vector_assemblies <- c(length_hits, refgen@name)
-      print(vector_assemblies)
-      vector <- c("assembly", rep(refgen@name, each=vector_assemblies))
-      print (vector)
-      
-      #aktuelle Baustelle: vector wieder weg wenn es so sein soll wie vorher. 
       df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
       
       colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
@@ -617,7 +609,7 @@ shinyServer(function(input, output) {
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
                       abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap &
-                      as.character(assembly) == refgen@name)
+                      as.character(vector) == refgen@name)
       
       print(sub1)
       return(sub1)
@@ -625,8 +617,6 @@ shinyServer(function(input, output) {
   }) 
   
   output$installed <- eventReactive(input$InstallGenome, {
-    print("Hello from Installation!")
-    ##TODO: get name for installation and make this work
     if (!requireNamespace("BiocManager", quietly = TRUE))
       install.packages("BiocManager")
     BiocManager::install(tobeinstalled, version = "3.8")

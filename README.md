@@ -3,13 +3,20 @@
 Description of the project: 
 
 Table of Contents:
+1. Installation
+2. Usage
+3. Contributing
+4. Credits
+5. License
 
-Installation: 
+1. Installation
 
-Usage: 
 
-Contributing:
 
-Credits:
+2. Usage
 
-License:
+3. Contributing
+
+4. Credits
+
+5. License
