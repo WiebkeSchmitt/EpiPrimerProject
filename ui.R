@@ -1,0 +1,471 @@
+library(shiny)
+library(DT)
+
+#### for primer design ########
+primersDesign_wd <- getwd() #"C:\\Users\\Wiebk\\OneDrive\\Masterthesis\\R\\epiprimer"
+source("C:\\Users\\Wiebk\\Documents\\epiprimer\\epiprimerWiebke\\primer.design.pipeline_jil_v10.3_standalone.R")
+
+#### for primer QC ########
+library(devtools)
+library(rBLAST)
+library(rtracklayer)
+library(BSgenome)
+library(Biostrings) #for primer QC and Reads Extraction 
+
+############ for Flowcell QC ########
+choices_info <- data.frame(path=list.files(primersDesign_wd,full.names=TRUE, pattern =".csv"))
+print(choices_info[["path"]])
+choices_info[["nameS"]]<-sapply(strsplit(as.character(choices_info[["path"]]),"/"),function(x) x[length(x)])
+print(choices_info[["nameS"]])
+
+######### for Reads Extraction ###########
+# the script needs Trim galore package 
+# HTML needs Trim galore as well 
+flowcell_folders <- data.frame(path=list.dirs(primersDesign_wd,full.names=TRUE,recursive = FALSE))
+packages_names <- sapply(flowcell_folders$path,function(x) basename(as.character(x)))
+
+####### For Reads Alignment #########
+wrapper_file <- file.path(primersDesign_wd, "wrapper.r", fsep=.Platform$file.sep)
+source(wrapper_file)
+library(seqinr)
+
+library(shiny)
+
+####### For Tooltips #########
+library(shinyBS)
+library(tippy)
+
+####### For adding tooltips #######
+#to use this, the shinyBS package needs to be installed: packages.install("shinyBS")
+list("bsTooltip")
+list("bsPopover")
+
+# Define UI for application that draws a histogram
+shinyUI(navbarPage("EpiPrimer",
+                   
+                   ########## Overview of the Workflow ########
+                   
+                   ############  Procedure of Primers Design  #############
+                   
+                   tabPanel("Primers Design",
+                            sidebarLayout(
+                              sidebarPanel(
+                                # Variable selection:
+                                tippy("Please upload the region for which you want to calculate potential primers.","Your input must contain the fields 'chr', 'start', 'end', 'assembly' and 'sequenceID'"),
+                                hr(),
+                                # Upload data:
+                                fileInput("file", "Upload file:"),
+                                hr(),
+                                textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
+                                bsTooltip("name", "Choose a name for your primer design folder", "top", "hover"),
+                                hr(),
+                                
+                                #checkboxInput("i_low.complexity.primer.removal", label = h4("remove primers of low complexity"), TRUE),
+                                checkboxInput("i_remove.primers.with.n", label = h4("remove primers that contain N bases"), TRUE),
+                                checkboxInput("i_check4snps", label = h4("Check for SNPs"), TRUE),
+                                checkboxInput("i_check4repeats", label = h4("Check for repeats"), FALSE),
+                                conditionalPanel(
+                                  "input.i_check4repeats == 1",
+                                  checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
+                                  checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
+                                ),
+                                checkboxInput("i_annotate.genes", label = h4("annotate primers/amplicons for underlying genes"), FALSE),
+                                checkboxInput("i_annotate.cpg.islands", label = h4("annotate primers/amplicons for underlying CpG islands"), FALSE),
+                                checkboxInput("adapterF", label = h4("add adapter 5' to the forward primer:"), FALSE),
+                                conditionalPanel(
+                                  "input.adapterF == 1",
+                                  textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
+                                ),
+                                checkboxInput("adapterR", label = h4("add adapter 5' to the reverse primer:"), FALSE),
+                                conditionalPanel(
+                                  "input.adapterR==1",
+                                  textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
+                                ),
+                                
+                                #compute primers
+                                helpText("Computing Primers takes approx. 4 minutes... Please wait until you get a notification."),
+                                
+                                actionButton("action", label = "Compute Primers"),
+                                hr(),
+                                #download primers
+                                downloadButton('downloadPrimer', 'Download Primers'),
+                                #checkboxInput("i_storage", label = "Keep Data on Server", value = FALSE),
+                                br(),
+                                textOutput("state"),
+                                br()
+                              ),
+                              # Main:
+                              mainPanel(
+                                DT::dataTableOutput("table"),
+                                fluidRow(
+                                  column(4,
+                                         radioButtons("i_primer_type", label = h4("Primer Type"),
+                                                      choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
+                                                                     "HP_Genomic"="hp_genomic", "HP_Bisulfite" = "hp_bisulfite", "HP_NOME" = "hp_NOME", "HP_CLEVER"="hp_CLEVER"),
+                                                      selected = "genomic"), 
+                                         bsTooltip("i_primer_type", "What kind of primer do you want to create?", "bottom", "hover")
+                                  ),
+                                  
+                                  column(4,
+                                         radioButtons("i_strand", label = h4("Strand"),
+                                                      choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
+                                                      selected = "top"),
+                                         bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
+                                  ),
+                                
+                                column(4,
+                                       radioButtons("inputtype", label = h4("Input Type"),
+                                                    choices = list("Sequence" = "sequences", "Region" = "regions"),
+                                                    selected = "sequences"),
+                                       bsTooltip("inputtype", "Would you like to design your primers for a specific genomic region or another nucleotide sequence?", "bottom", "hover")
+                                )
+                              ),
+                                
+                                fluidRow(
+                                  column(6,
+                                         sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                                     min = 0, max = 10, value = 7)
+                                  ),
+                                  
+                                  
+                                  column(6,
+                                         sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
+                                                     min = 0, max = 50, value = 12)
+                                  ),
+                                  
+                                  column(6,
+                                         sliderInput("i_primerlength", label = h4("Primer Length"),
+                                                     min = 10, max = 80, value = c(23, 34))
+                                  ),
+                                  column(6,
+                                         sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                                     min = 40, max = 60, value = c(48, 60))
+                                  )
+                                ),
+                                fluidRow(
+                                  column(6,
+                                         sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
+                                                     min = 0, max = 10, value = 3)
+                                  ),
+                                  column(6,
+                                         sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
+                                              min = 0, max = 10, value = 3)
+                                  ),
+                                  column(6,
+                                         sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                     min = 0, max = 10, value = 2)
+                                  ),
+                                  column(6,
+                                         sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
+                                                     min = 100, max = 800, value = c(150,500))
+                                  ),
+                                  column(6,
+                                         sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                                                     min = 0, max = 10, value = 0)
+                                  ),
+                                  column(6,
+                                         sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                                                     min = 0, max = 10, value = 5)
+                                  )
+                                ),
+                                
+                                fluidRow(
+                                  column(6,
+                                         sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the amplicon"),
+                                                     min = 0, max = 80, value = c(0, 20))
+                                  ),
+                                  column(6,
+                                         sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the forward primer"),
+                                                     min = 0, max = 80, value = c(0, 0))
+                                  ),
+                                  column(6,
+                                        sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the reverse primer"),
+                                                    min = 0, max = 80, value = c(0, 0)),
+                                        
+                                        conditionalPanel(
+                                          condition = "input.i_primer_type == 'hp_bisulfite'", 
+                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                                      min = 0, max = 1000, value = c(50, 300))
+                                        ),
+                                        conditionalPanel(
+                                          condition = "input.i_primer_type == 'hp_NOME'",
+                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                                      min = 0, max = 1000, value = c(50, 300))
+                                        ),
+                                        conditionalPanel(
+                                          condition = "input.i_primer_type == 'hp_CLEVER'",
+                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                                      min = 0, max = 1000, value = c(50, 300))
+                                        ),
+                                        conditionalPanel(
+                                          condition = "input.i_primer_type == 'hp_genomic'",
+                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                                      min = 0, max = 1000, value = c(50, 300))
+                                        )),
+                                  column(6,
+                                         conditionalPanel(
+                                          condition = "input.i_primer_type == 'genomic'",
+                                          sliderInput("i_chop.size", label = h4("input sequence slicing"),
+                                                      min = 0, max = 50, value = 30)
+                                        ))
+                                  )
+                              )
+                            )
+                   ),
+                   
+                   ############  UI For Results of Primers Design  #############
+                   
+                   tabPanel("Results of Primers Design",
+                            sidebarLayout(
+                              sidebarPanel(
+                                actionButton("primerdesigns.by.sequence", label = "results overview"),
+                                hr(),
+                                actionButton("toplist", label = "show toplist"),
+                                hr(),
+                                actionButton("selectlist", label = "generate selected list"), downloadButton('downloadSelectedPrimers', 'Selected Primers'),
+                                hr(),
+                                actionButton("wholelist", label = "show The whole list"),
+                                hr(),
+                                actionButton("blacklist", label = "show blacklist"),
+                                hr(),
+                                actionButton("whitelist", label = "show whitelist"),
+                                hr(),
+                                actionButton("logfile", label = "show logfile"),
+                                hr(),
+                                actionButton("settings", label = "show settings"),
+                                hr(),
+                                actionButton("Summary", label = "show Summary"),
+                                hr()
+                              ),
+                              
+                              # Main:
+                              mainPanel(
+                                h4("Primer Designs For Each Sequence"),DT::dataTableOutput("viewprimerdesigns"),br(),
+                                h4("Top List"),DT::dataTableOutput("viewtoplist"),
+                                br(),
+                                h4("The List of selected primers"),
+                                DT::dataTableOutput("viewSelectlist"),
+                                br(),
+                                h4("The Whole List"),DT::dataTableOutput("viewwholelist"),
+                                br(),
+                                h4("Black List"),DT::dataTableOutput("viewblacklist"),
+                                br(),
+                                h4("White List"),DT::dataTableOutput("viewwhitelist"),
+                                br(),
+                                h4("Log File"),
+                                DT::dataTableOutput("viewlogfile"),br(),
+                                h4("Settings"),DT::dataTableOutput("viewsettings"),br(),
+                                h4("Summary of the Primer Design"),DT::dataTableOutput("viewSummary")
+                              )
+                            )
+                   ),
+                   
+                   ########### UI For Graphs of primers design procedure #############
+                   
+                   tabPanel("Graphs of Primers Design",
+                            sidebarLayout(
+                              sidebarPanel(
+                                helpText(h4("Graphs of the prime design procedure will be shown")),
+                                actionButton("graphics", label = "show figures")
+                              ),
+                              # Main:
+                              mainPanel(
+                                h4("Graphs"),
+                                uiOutput("plot3")
+                              )
+                            )
+                   ),
+                   
+                   tabPanel("Primer QC",
+                            sidebarLayout(
+                              sidebarPanel(
+                                # upload files
+                                fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), hr(),
+                                fileInput("Rprimers", "Upload Reverse Primers", multiple = TRUE, accept = ".fasta"), hr(),
+                                bsTooltip("Rprimers", "tooltip", "top", "hover"), 
+                                helpText("Import primers created by Primer Design step:"),
+                                actionButton("loadprimers", "Import Primers"),
+                                bsTooltip("loadprimers", "Import primers you created from the Primer Design step", "top", "hover"), hr(),
+                                #selectInput("genome", "Choose the genome",choices=c(data.frame(spec=unlist(lapply(strsplit(installed.genomes(), "[.]"), "[", 4))))),
+                                selectInput("genome", "Choose the genome",choices=c(installed.genomes())),
+                                bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
+                                sliderInput("gap", "Maximum Fragment Size:", min = 0, max = 50000, value = 2000),
+                                #tippy_this("gap", "Tooltip", "top"),
+                                #bsTooltip("gap", "lalala test", "right", "hover"), hr(),
+                                sliderInput("Evalue", "E Value:", min = 0, max = 100, value = 10),
+                                #bsTooltip("Evalue", "Hello from Evalue tooltip", "left", "hover"),
+                                actionButton("computePQC", "Start Primers QC"),
+                                bsTooltip("computePQC", "A virtual PCR of your primers is being computed. The results show potential PCR products resulting form your choice of primers", "top", "hover"),
+                                h3("Parameters to filter Results"),
+                                #bsTooltip("Text", "Setting these features will adjust the results accordingly", "top", "hover"), 
+                                sliderInput("FMismatches", "Forward Primers Mismatches", min = 0, max = 5, value = 3),
+                                #bsTooltip("FMismatches", "Test", "bottom", "hover"),
+                                sliderInput("RMismatches", "Reverse Primers Mismatches", min = 0, max = 5, value = 3),
+                                #bsTooltip("RMismatches", "tooltip R mismathces", "top", "hover"),
+                                sliderInput("FbitScore", "Forward Primers Bit Score", min = 0, max = 100, value = 25),
+                                #bsTooltip("FbitScore", "Score fbit tooltip", "top", "hover"),
+                                sliderInput("RbitScore", "Reverse Primers Bit Score", min = 0, max = 100, value = 25) 
+                                #bsTooltip("RbitScore", "Tooltip", "top", "hover")
+                              ),
+                              
+                              # Show the results
+                              #TODO: Display results properly, not just as a table?!
+                              mainPanel(
+                                h4("Forward Primers"),
+                                DT::dataTableOutput("forward.primers"),
+                                h4("Reverse Primers"),
+                                DT::dataTableOutput("reverse.primers"),
+                                h4("QC Overview"),
+                                DT::dataTableOutput("pQC.results"),
+                                textOutput("PrimerqcState"),
+                                DT::dataTableOutput("viewSelectedpQC"),
+                                actionButton("extractRegions", "Export Results to Reads Analysis"),
+                                bsTooltip("extractRegions", "nothing is happening here yet.", "top", "hover")
+                              )
+                            )
+                   ),
+                   
+                   ############## displaying the overview of the flowcell #########
+                   
+                   # App title ----
+                   tabPanel("Flowcell QC",
+                            
+                            # Sidebar layout with input and output definitions ----
+                            sidebarLayout(
+                              
+                              # Sidebar panel for inputs ----
+                              sidebarPanel(
+                                
+                                # Input: Select a dataset ----
+                                selectInput("flowcellPackage", "Choose a flow cell dataset:",
+                                            choices = choices_info[["nameS"]]),
+                                sliderInput("freq", "Occurance",
+                                            min = 0, max = 150000, value = 6,step = 1),
+                                
+                                # Button
+                                downloadButton("downloadData", "Download Overview"),
+                                actionButton("update", "Update View")
+                              ),
+                              
+                              
+                              mainPanel(
+                                
+                                h4("Flow Cell Summary"),
+                                DT::dataTableOutput("view")
+                                
+                              )
+                              
+                            )
+                   ),
+                   
+                   ############# UI For Reads Extraction ###############
+                   
+                   tabPanel("Reads Extraction",
+                            
+                            # Sidebar layout with input and output definitions ----
+                            sidebarLayout(
+                              
+                              # Sidebar panel for inputs ----
+                              sidebarPanel(
+                                
+                                # Input: Select a dataset ----
+                                # Upload primer list:
+                                fileInput("primers.file", "Upload Primers File"),
+                                # actionButton("import.primers", "Import Primers"),hr(),
+                                fileInput("linker.file", "Upload Linker File"),
+                                selectInput("results.format", "Format of Output Files", choices = c("FASTA","FASTQ"),selected="FASTQ"),
+                                textInput("results.folderName","Name of the Output file:",paste0("Extracted.Reads")),
+                                
+                                sliderInput("min.seq", "Minimum sequences to report",
+                                            min = 0, max = 2000, value = 20,step = 10),
+                                sliderInput("mismatches", "Mismatch Value for Files Filtration",
+                                            min = 0, max = 5, value = 1,step = 1),
+                                sliderInput("error.rate", "Error Rate for Primer Matching",
+                                            min = 0, max = 1, value = 0.1,step = 0.1),
+                                #sliderInput("Quality.Cutoff", "Quality Cutoff Applied in The Trimming Step",
+                                #min = 0, max = 40, value = 20,step = 2),
+
+                                checkboxInput("merged.files", label = "Merge Output Files", TRUE),
+                                checkboxInput("separated.files", label = "Separate Output Files", FALSE)
+                              ),
+                              
+                              # Main panel for displaying outputs ----
+                              mainPanel(
+                                
+                                fluidRow(
+                                  column(4,selectInput("selectPackage", "choose flowcell package", choices = packages_names)),
+                                  
+                                  column(6,selectInput("selection.mode", "How to Select Reads", choices = list("Use Only First Primer" = "first", "Use Only Second Primer" = "second",
+                                                                                                               "Fragments Matching Either Primer" = "union", "Fragments Matching Both Primers" = "intersection"),selected="first"))
+                                ),
+                                uiOutput("checkbox"),#checkboxInput('selectall', 'Select All/Deselect All'),
+                                fluidRow(
+                                  column(4,actionLink("selectall","Select All/Deselect All"))),
+                                br(),
+                                
+                                textOutput("state1"),
+                                actionButton("excute", "Run Reads Extraction"),
+                                downloadButton("downloadData2", "Download Extracted Reads"),br(),br()
+                                # helpText(h4(HTML("Tool Parameters: <br/> <br/> <br/>
+                                # > Primer matching error rate: <br/>
+                                # > Minimum sequences to report: Controls the minimum number of reads reported in the results <br/>
+                                # > Mismatch Value: controls the number of reads files that will be used for reads extraction <br/>
+                                # > Merge Output Files: Decides whether the reads in output files will be merged <br/>
+                                # > Separate Output Files: Decides whether the reads in output files will be separated <br/>
+                                # ")))
+                              )
+                            )
+                   ),
+                   
+                   ###############Reads Alignemnt #############
+
+                   # App title ----
+                   tabPanel("Reads Alignment",
+                            # Sidebar layout with input and output definitions ----
+                            sidebarLayout(
+                              # Sidebar panel for inputs ----
+                              sidebarPanel(
+                                # Input: Select a dataset ----
+                                # Upload primer list:
+                                fileInput("reads.file", "Upload Reads File(s)",multiple=TRUE),
+                                fileInput("reference.file", "Upload Reference File(s)",multiple=TRUE),
+                                selectInput("alignment.mode", "Alignment Mode", choices = c("bisulfite","Non-bisulfite"),selected="bisulfite"),
+                                selectInput("i_alignment.type", "Alignment Type", choices = c("global-local","global","local","local-global"),selected="global-local"),
+                                textInput("i_reference.sequence.id","Reference Sequence ID:",paste0("Extracted Ref")),
+                                textInput("i_sample.id","Reads Sample ID:",paste0("Extracted Reads"))
+                                # sliderInput("i_minimum.alignment.score", "Minimum Alignment Score",
+                                # min = 0, max = 6000, value = 20,step = 10),
+                                # sliderInput("i_minimum.percentage.identity", "Minimum Percentage Identity",
+                                # min = 0, max = 100, value = 5,step = 1)
+                              ),
+                              # Main panel for displaying outputs ----
+                              mainPanel(
+                                DT::dataTableOutput("AlignmentResults"),
+                                textOutput("Alignmentstate"),br(),
+                                actionButton("excuteAlignment", "Excute Alignment"),
+                                downloadButton("downloadAlignmentResults", "Download Extracted Reads"),br(),br()
+                                # helpText(h4(HTML("Tool Parameters: <br/> <br/> <br/>
+                                # > Primer matching error rate: <br/>
+                                # > Minimum sequences to report: Controls the minimum number of reads reported in the results <br/>
+                                # > Mismatch Value: controls the number of reads files that will be used for reads extraction <br/>
+                                # > Merge Output Files: Decides whether the reads in output files will be merged <br/>
+                                # > Separate Output Files: Decides whether the reads in output files will be separated <br/>
+                                # ")))
+                              )
+                            )
+                   ),
+                   ################ Reads Analysis ######################
+                   tabPanel("Reads Analysis",
+                            
+                            sidebarLayout(
+                              sidebarPanel(
+                                helpText(h4("Extracted Reads will be aligned against the extracted region of the reference Genome 
+                                            that was exported from The Primers QC process. Results will be displayed with helpful plots and heats Maps."))
+                                ),
+                              # Main:
+                              mainPanel(
+                                helpText(h4("To be implemented Soon!"))
+                              )
+                              )
+                   )
+))
