@@ -6,22 +6,13 @@ Table of Contents:
 
 # 1. 	Installation
 
-## 1.1	Using the Webapplication
-## 1.2	Running the project locally
-
-# 2. 	Usage
-# 3. 	Contributing
-# 4. 	Credits
-# 5. 	License
-
-# 1. 	Installation
-==============================
-
 Requirements for local development of the project: 
-- RStudio and R installed
+- RStudio and R version 3.6.0 installed
 - Git installed
 
 ## 1.1 	Using the Webapplication
+
+//TODO
 
 ## 1.2	Running the project locally
 
