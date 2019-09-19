@@ -63,6 +63,15 @@ shinyUI(navbarPage("EpiPrimer",
                                 #checkboxInput("i_low.complexity.primer.removal", label = h4("remove primers of low complexity"), TRUE),
                                 checkboxInput("i_remove.primers.with.n", label = h4("remove primers that contain N bases"), TRUE),
                                 checkboxInput("i_check4snps", label = h4("Check for SNPs"), TRUE),
+                                conditionalPanel(
+                                  "input.i_check4snps ==1",
+                                  sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the amplicon"),
+                                              min = 0, max = 80, value = c(0, 20)),
+                                  sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the forward primer"),
+                                              min = 0, max = 80, value = c(0, 0)),
+                                  sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the reverse primer"),
+                                              min = 0, max = 80, value = c(0, 0))
+                                ),
                                 checkboxInput("i_check4repeats", label = h4("Check for repeats"), FALSE),
                                 conditionalPanel(
                                   "input.i_check4repeats == 1",
@@ -103,6 +112,7 @@ shinyUI(navbarPage("EpiPrimer",
                                                       choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
                                                                      "HP_Genomic"="hp_genomic", "HP_Bisulfite" = "hp_bisulfite", "HP_NOME" = "hp_NOME", "HP_CLEVER"="hp_CLEVER"),
                                                       selected = "genomic"), 
+                                         
                                          bsTooltip("i_primer_type", "What kind of primer do you want to create?", "bottom", "hover")
                                   ),
                                   
@@ -170,38 +180,26 @@ shinyUI(navbarPage("EpiPrimer",
                                 ),
                                 
                                 fluidRow(
-                                  column(6,
-                                         sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the amplicon"),
-                                                     min = 0, max = 80, value = c(0, 20))
+                                  conditionalPanel(
+                                      condition = "input.i_primer_type == 'hp_bisulfite'", 
+                                      sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                          min = 0, max = 1000, value = c(50, 300))
                                   ),
-                                  column(6,
-                                         sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the forward primer"),
-                                                     min = 0, max = 80, value = c(0, 0))
+                                  conditionalPanel(
+                                      condition = "input.i_primer_type == 'hp_NOME'",
+                                      sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                          min = 0, max = 1000, value = c(50, 300))
                                   ),
-                                  column(6,
-                                        sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the reverse primer"),
-                                                    min = 0, max = 80, value = c(0, 0)),
-                                        
-                                        conditionalPanel(
-                                          condition = "input.i_primer_type == 'hp_bisulfite'", 
-                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                      min = 0, max = 1000, value = c(50, 300))
-                                        ),
-                                        conditionalPanel(
-                                          condition = "input.i_primer_type == 'hp_NOME'",
-                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                      min = 0, max = 1000, value = c(50, 300))
-                                        ),
-                                        conditionalPanel(
-                                          condition = "input.i_primer_type == 'hp_CLEVER'",
-                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                      min = 0, max = 1000, value = c(50, 300))
-                                        ),
-                                        conditionalPanel(
-                                          condition = "input.i_primer_type == 'hp_genomic'",
-                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                      min = 0, max = 1000, value = c(50, 300))
-                                        )),
+                                  conditionalPanel(
+                                      condition = "input.i_primer_type == 'hp_CLEVER'",
+                                      sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                          min = 0, max = 1000, value = c(50, 300))
+                                  ),
+                                  conditionalPanel(
+                                      condition = "input.i_primer_type == 'hp_genomic'",
+                                      sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                          min = 0, max = 1000, value = c(50, 300))
+                                  ),
                                   column(6,
                                          conditionalPanel(
                                           condition = "input.i_primer_type == 'genomic'",
