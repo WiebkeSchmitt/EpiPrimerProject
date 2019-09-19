@@ -4361,9 +4361,9 @@ bisulfite.primer.design<-function(sequence,
   }
   
   #calculate some additional properties.
-  selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-                                              start = selection$amplicon.start.relative,
-                                              stop = selection$amplicon.end.relative)
+  # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+  #                                             start = selection$amplicon.start.relative,
+  #                                             stop = selection$amplicon.end.relative)
   selection$primer1.start.relative<-selection$amplicon.start.relative
   selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
   selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -4393,7 +4393,7 @@ bisulfite.primer.design<-function(sequence,
   selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
   selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
   selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-  selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+  #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
   print("Done.")
   
   #c2t conversion and g2a conversion of primer1&2
@@ -4935,9 +4935,9 @@ nome.primer.design<-function(sequence,
   
   #####################################################################################
   #calculate some additional properties.
-  selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-                                              start = selection$amplicon.start.relative,
-                                              stop = selection$amplicon.end.relative)
+  # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+  #                                             start = selection$amplicon.start.relative,
+  #                                             stop = selection$amplicon.end.relative)
   selection$primer1.start.relative<-selection$amplicon.start.relative
   selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
   selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -4967,7 +4967,7 @@ nome.primer.design<-function(sequence,
   selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
   selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
   selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-  selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+  #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
   print("Done.")
   
   #c2t conversion and g2a conversion of primer1&2
@@ -5509,11 +5509,6 @@ genomic.primer.design<-function(sequence,
   #####################################################################################
   
   #calculate some additional properties.
-  if (selection$amplicon.start.relative != 0 && selection$amplicon.end.relative != 0){
-    selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-                                                start = selection$amplicon.start.relative,
-                                                stop = selection$amplicon.end.relative)
-  }
   # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
   #                                             start = selection$amplicon.start.relative,
   #                                             stop = selection$amplicon.end.relative)
@@ -5546,7 +5541,7 @@ genomic.primer.design<-function(sequence,
   selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
   selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
   selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-  selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+  #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
   print("Done.")
   
   #c2t conversion and g2a conversion of primer1&2
@@ -6081,12 +6076,9 @@ CLEVER.primer.design<-function(sequence,
   #####################################################################################
   
   #calculate some additional properties.
-  #calculate these only, if vectors for start and end are not empty.
-  
-  #if (length(selection$amplicon.start.relative) != 0 && length(selection$amplicon.end.relative) != 0){
-    selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-                                                start = selection$amplicon.start.relative,
-                                                stop = selection$amplicon.end.relative)
+    # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+    #                                             start = selection$amplicon.start.relative,
+    #                                             stop = selection$amplicon.end.relative)
     selection$primer1.start.relative<-selection$amplicon.start.relative
     selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
     selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -6116,7 +6108,7 @@ CLEVER.primer.design<-function(sequence,
     selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
     selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
     selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-    selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+    #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
     print("Done.")
     
     #c2t conversion and g2a conversion of primer1&2
@@ -6130,11 +6122,6 @@ CLEVER.primer.design<-function(sequence,
     selection<-selection[selection$primer1.c2t.conversion>=min.C2T.primer1,]
     selection<-selection[selection$primer2.g2a.conversion>=min.G2A.primer2,]
     print("Done.")
-  #}
-  # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-  #                                               start = selection$amplicon.start.relative,
-  #                                               stop = selection$amplicon.end.relative)
-  
   
   #####################################################################################
   

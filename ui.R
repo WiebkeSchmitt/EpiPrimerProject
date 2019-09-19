@@ -60,7 +60,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 hr(),
                                 #checkboxInput for primer options: 
                                 #checkboxInput("i_low.complexity.primer.removal", label = h4("remove primers of low complexity"), TRUE),
-                                checkboxInput("i_remove.primers.with.n", label = h4("remove primers that contain N bases"), TRUE),
+                                checkboxInput("i_remove.primers.with.n", label = h4("Remove primers that contain N bases"), TRUE),
                                 checkboxInput("i_check4snps", label = h4("Check for SNPs"), TRUE),
                                 conditionalPanel(
                                   "input.i_check4snps ==1",
@@ -77,14 +77,14 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                   checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
                                   checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
                                 ),
-                                checkboxInput("i_annotate.genes", label = h4("annotate primers/amplicons for underlying genes"), FALSE),
-                                checkboxInput("i_annotate.cpg.islands", label = h4("annotate primers/amplicons for underlying CpG islands"), FALSE),
-                                checkboxInput("adapterF", label = h4("add adapter 5' to the forward primer"), FALSE),
+                                checkboxInput("i_annotate.genes", label = h4("Annotate primers/amplicons for underlying genes"), FALSE),
+                                checkboxInput("i_annotate.cpg.islands", label = h4("Annotate primers/amplicons for underlying CpG islands"), FALSE),
+                                checkboxInput("adapterF", label = h4("Add adapter 5' to the forward primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterF == 1",
                                   textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
                                 ),
-                                checkboxInput("adapterR", label = h4("add adapter 5' to the reverse primer"), FALSE),
+                                checkboxInput("adapterR", label = h4("Add adapter 5' to the reverse primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterR==1",
                                   textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
