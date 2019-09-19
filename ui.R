@@ -41,7 +41,7 @@ list("bsTooltip")
 list("bsPopover")
 
 # Define UI for application that draws a histogram
-shinyUI(navbarPage("EpiPrimer",
+shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="10", align="left"), #"EpiPrimer",
                    
                    ########## Overview of the Workflow ########
                    
@@ -50,8 +50,7 @@ shinyUI(navbarPage("EpiPrimer",
                    tabPanel("Primers Design",
                             sidebarLayout(
                               sidebarPanel(
-                                # Variable selection:
-                                tippy("Please upload the region for which you want to calculate potential primers.","Your input must contain the fields 'chr', 'start', 'end', 'assembly' and 'sequenceID'"),
+                                tippy("Upload the region for which you want to calculate potential primers:","Your input must contain the fields 'chr', 'start', 'end', 'assembly' and 'sequenceID'"),
                                 hr(),
                                 # Upload data:
                                 fileInput("file", "Upload file:"),
@@ -59,7 +58,7 @@ shinyUI(navbarPage("EpiPrimer",
                                 textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
                                 bsTooltip("name", "Choose a name for your primer design folder", "top", "hover"),
                                 hr(),
-                                
+                                #checkboxInput for primer options: 
                                 #checkboxInput("i_low.complexity.primer.removal", label = h4("remove primers of low complexity"), TRUE),
                                 checkboxInput("i_remove.primers.with.n", label = h4("remove primers that contain N bases"), TRUE),
                                 checkboxInput("i_check4snps", label = h4("Check for SNPs"), TRUE),
@@ -80,25 +79,26 @@ shinyUI(navbarPage("EpiPrimer",
                                 ),
                                 checkboxInput("i_annotate.genes", label = h4("annotate primers/amplicons for underlying genes"), FALSE),
                                 checkboxInput("i_annotate.cpg.islands", label = h4("annotate primers/amplicons for underlying CpG islands"), FALSE),
-                                checkboxInput("adapterF", label = h4("add adapter 5' to the forward primer:"), FALSE),
+                                checkboxInput("adapterF", label = h4("add adapter 5' to the forward primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterF == 1",
                                   textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
                                 ),
-                                checkboxInput("adapterR", label = h4("add adapter 5' to the reverse primer:"), FALSE),
+                                checkboxInput("adapterR", label = h4("add adapter 5' to the reverse primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterR==1",
                                   textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
                                 ),
                                 
                                 #compute primers
-                                helpText("Computing Primers takes approx. 4 minutes... Please wait until you get a notification."),
-                                
-                                actionButton("action", label = "Compute Primers"),
+                                actionButton("action", label="    Compute Primers  ", icon("fas fa-calculator"), 
+                                             style="color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:25px; font-size:200%; width:400px"),
+                                bsTooltip("action", "Computation takes approx. 4 minutes, please wait until you receive a notifiication"),
                                 hr(),
                                 #download primers
-                                downloadButton('downloadPrimer', 'Download Primers'),
-                                #checkboxInput("i_storage", label = "Keep Data on Server", value = FALSE),
+                                downloadButton('downloadPrimer', 'Download Primers',
+                                              style="padding:25px; font-size:200%; width:400px"),
+                                bsTooltip("downloadPrimer", "Download your primers to a local folder"),
                                 br(),
                                 textOutput("state"),
                                 br()
@@ -106,9 +106,10 @@ shinyUI(navbarPage("EpiPrimer",
                               # Main:
                               mainPanel(
                                 DT::dataTableOutput("table"),
+                                h2(strong("Basic primer settings: ")),
                                 fluidRow(
                                   column(4,
-                                         radioButtons("i_primer_type", label = h4("Primer Type"),
+                                         radioButtons("i_primer_type", label = h3("Primer Type"),
                                                       choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
                                                                      "HP_Genomic"="hp_genomic", "HP_Bisulfite" = "hp_bisulfite", "HP_NOME" = "hp_NOME", "HP_CLEVER"="hp_CLEVER"),
                                                       selected = "genomic"), 
@@ -117,20 +118,21 @@ shinyUI(navbarPage("EpiPrimer",
                                   ),
                                   
                                   column(4,
-                                         radioButtons("i_strand", label = h4("Strand"),
+                                         radioButtons("i_strand", label = h3("Strand"),
                                                       choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
                                                       selected = "top"),
                                          bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
                                   ),
                                 
                                 column(4,
-                                       radioButtons("inputtype", label = h4("Input Type"),
+                                       radioButtons("inputtype", label = h3("Input Type"),
                                                     choices = list("Sequence" = "sequences", "Region" = "regions"),
                                                     selected = "sequences"),
                                        bsTooltip("inputtype", "Would you like to design your primers for a specific genomic region or another nucleotide sequence?", "bottom", "hover")
                                 )
                               ),
-                                
+                              
+                              h2(strong("Advanced primer settings: ")),
                                 fluidRow(
                                   column(6,
                                          sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
