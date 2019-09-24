@@ -13,7 +13,7 @@ library(BSgenome)
 library(Biostrings) #for primer QC and Reads Extraction 
 
 ############ for Flowcell QC ########
-choices_info <- data.frame(path=list.files(primersDesign_wd,full.names=TRUE, pattern =".csv"))
+choices_info <- data.frame(path=list.files(paste(primersDesign_wd, "\\flowcell_package\\newStruct_trimmed", sep=""),full.names=TRUE, pattern =".csv"))
 print(choices_info[["path"]])
 choices_info[["nameS"]]<-sapply(strsplit(as.character(choices_info[["path"]]),"/"),function(x) x[length(x)])
 print(choices_info[["nameS"]])
