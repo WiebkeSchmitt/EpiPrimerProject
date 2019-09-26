@@ -25,7 +25,12 @@ fetch.dna.sequence= function(assembly = NULL, #'hg19' or 'hg38'
   server <- "http://rest.ensembl.org"
   ext <- paste0("/sequence/region/",ispecies,"/",gsub("chr","",chr),":",start,"..",end,":1?;coord_system_version=",iassembly)
   
-  r <- GET(paste(server, ext, sep = ""), content_type("text/plain"))
+  for (i in 1:length(ext)){
+    print (ext[i])
+    r <- GET(paste(server, ext[i], sep = ""), content_type("text/plain"))
+  }
+  
+  #r <- GET(paste(server, ext, sep = ""), content_type("text/plain"))
   
   stop_for_status(r)
   return(content(r))
