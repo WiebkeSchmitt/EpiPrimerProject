@@ -32,7 +32,6 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=variation")
   
   for (i in 1:length(ext)){
-    print (ext[i])
     r <- GET(paste(server, ext[i], sep=""))
     
   }
