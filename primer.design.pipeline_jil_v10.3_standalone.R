@@ -857,14 +857,10 @@ if (input.type=="regions"){
           #                        track = snptrack,
           #                        table = snptable)
           
-          log("fetch snp info")
-          my_snps <- fetch.snp.info(assembly = assem,
-                                     chr = chrom,
-                                     start = allstarts,
-                                     end = allends)
-          
-        
-          log("snp info fetched")
+          my_snps <- fetch.snp.info.rest(assembly = assem,
+                                         chr = chrom,
+                                         start = allstarts,
+                                         end = allends)
           
           #my_snps$assembly<-assem
           
@@ -928,12 +924,10 @@ if (check4repeats){
         allstarts<-as.numeric(as.character(bedia[,"start"]))
         allends<-as.numeric(as.character(bedia[,"end"]))
         
-        print("repeat info fetched now")
-        my_repeats<-fetch.repeat.info(assembly = assem,
+        my_repeats<-fetch.repeat.info.rest(assembly = assem,
                            chr = chrom,
                            start = allstarts,
                            end = allends)
-        print("succesful repeat fetch")
         
         if(nrow(my_repeats)>0){
         
@@ -958,7 +952,6 @@ if (check4repeats){
         
       }#if assem
     }#for assem
-    print("repeats analyzed")
     write.table(all_my_repeats,file=paste(path.tracks,"#repeat.info.input.regions.txt",sep=""),
                 sep="\t",dec=".",col.names=T,row.names=F,quote=F)
   }#if regions
@@ -3909,9 +3902,7 @@ bisulfite.primer.design<-function(sequence,
   
   #initiate sequence
   seq<-as.character(sequence)
-  print(seq)
   seq.id<-as.character(sequence.id)
-  print(seq.id)
   print(paste("Start Primer Design for Sequence: ",seq.id," on ",strand," strand...[",date(),"]",sep=""))
   print(paste("Length of Sequence: ",nchar(seq),sep=""))
   
@@ -4361,9 +4352,9 @@ bisulfite.primer.design<-function(sequence,
   }
   
   #calculate some additional properties.
-  # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-  #                                             start = selection$amplicon.start.relative,
-  #                                             stop = selection$amplicon.end.relative)
+   selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+                                               start = selection$amplicon.start.relative,
+                                               stop = selection$amplicon.end.relative)
   selection$primer1.start.relative<-selection$amplicon.start.relative
   selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
   selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -4393,7 +4384,7 @@ bisulfite.primer.design<-function(sequence,
   selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
   selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
   selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-  #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+  selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
   print("Done.")
   
   #c2t conversion and g2a conversion of primer1&2
@@ -4935,9 +4926,9 @@ nome.primer.design<-function(sequence,
   
   #####################################################################################
   #calculate some additional properties.
-  # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-  #                                             start = selection$amplicon.start.relative,
-  #                                             stop = selection$amplicon.end.relative)
+  selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+                                               start = selection$amplicon.start.relative,
+                                               stop = selection$amplicon.end.relative)
   selection$primer1.start.relative<-selection$amplicon.start.relative
   selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
   selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -4967,7 +4958,7 @@ nome.primer.design<-function(sequence,
   selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
   selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
   selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-  #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+  selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
   print("Done.")
   
   #c2t conversion and g2a conversion of primer1&2
@@ -5509,9 +5500,9 @@ genomic.primer.design<-function(sequence,
   #####################################################################################
   
   #calculate some additional properties.
-  # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-  #                                             start = selection$amplicon.start.relative,
-  #                                             stop = selection$amplicon.end.relative)
+  selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+                                               start = selection$amplicon.start.relative,
+                                               stop = selection$amplicon.end.relative)
   selection$primer1.start.relative<-selection$amplicon.start.relative
   selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
   selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -5541,7 +5532,7 @@ genomic.primer.design<-function(sequence,
   selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
   selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
   selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-  #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+  selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
   print("Done.")
   
   #c2t conversion and g2a conversion of primer1&2
@@ -5559,28 +5550,30 @@ genomic.primer.design<-function(sequence,
   #####################################################################################
   
   #finalize out object
-  out<-as.data.frame(selection[,c("sequence.id","amplicon.id",
-                                  "amplicon.length","amplicon.start.relative","amplicon.end.relative",
-                                  "dna.strand","nGCs","nCGs",
-                                  "primer1.sequence","primer2.sequence", 
-                                  "primer1.length","primer2.length",
-                                  "primer1.tm", "primer2.tm","tm.difference",
-                                  "primer1.start.relative","primer1.end.relative",
-                                  "primer2.start.relative","primer2.end.relative",
-                                  "primer.pair.id",
-                                  "primer1.id","primer2.id",
-                                  "fragment1.id","fragment2.id","fragment12.id",
-                                  "fragment12.primer.ids",
-                                  "primer1.gc.content","primer2.gc.content",
-                                  "amplicon.gc.content","amplicon.genomic.gc.content",
-                                  "primer1.c2t.conversion","primer2.g2a.conversion",
-                                  "primer1.self.alignment",
-                                  "primer2.self.alignment",
-                                  "primer1.primer2.alignment",
-                                  "amplicon.sequence",
-                                  "primer1.sequence.genomic","primer2.sequence.genomic",
+
+  out<-as.data.frame(selection[,c("sequence.id","amplicon.id",#vorhanden
+                                  "amplicon.length","amplicon.start.relative","amplicon.end.relative",#vorhanden
+                                  "dna.strand","nGCs","nCGs",#vorhanden
+                                  "primer1.sequence","primer2.sequence",#vorhanden 
+                                  "primer1.length","primer2.length",#vorhanden
+                                  "primer1.tm", "primer2.tm","tm.difference",#vorhanden
+                                  "primer1.start.relative","primer1.end.relative",#vorhanden
+                                  "primer2.start.relative","primer2.end.relative",#vorhanden
+                                  "primer.pair.id",#vorhanden
+                                  "primer1.id","primer2.id",#vorhanden
+                                  "fragment1.id","fragment2.id","fragment12.id",#vorhanden
+                                  "fragment12.primer.ids",#vorhanden
+                                  "primer1.gc.content","primer2.gc.content",#vorhanden
+                                  "amplicon.gc.content",#vorhanden
+                                  #"amplicon.genomic.gc.content",
+                                  "primer1.c2t.conversion","primer2.g2a.conversion",#vorhanden
+                                  "primer1.self.alignment",#vorhanden
+                                  "primer2.self.alignment",#vorhanden
+                                  "primer1.primer2.alignment",#vorhanden
+                                  "amplicon.sequence",#vorhanden
+                                  "primer1.sequence.genomic","primer2.sequence.genomic",#vorhanden
                                   "amplicon.sequence.genomic",
-                                  "index")])
+                                  "index")])#vorhanden
   
   ##############################################################################################      
   print(paste("Completed genomic primer analysis for ",seq.id," on ",strand," strand: found ",nrow(out)," primer pairs.",sep=""))     
@@ -6076,9 +6069,9 @@ CLEVER.primer.design<-function(sequence,
   #####################################################################################
   
   #calculate some additional properties.
-    # selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-    #                                             start = selection$amplicon.start.relative,
-    #                                             stop = selection$amplicon.end.relative)
+    selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+                                                 start = selection$amplicon.start.relative,
+                                                 stop = selection$amplicon.end.relative)
     selection$primer1.start.relative<-selection$amplicon.start.relative
     selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
     selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
@@ -6108,7 +6101,7 @@ CLEVER.primer.design<-function(sequence,
     selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
     selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
     selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-    #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+    selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
     print("Done.")
     
     #c2t conversion and g2a conversion of primer1&2
@@ -6163,64 +6156,18 @@ CLEVER.primer.design<-function(sequence,
 
 
 
-#more info here: https://www.bioconductor.org/packages/devel/bioc/vignettes/biomaRt/inst/doc/biomaRt.html
-#returns a data.frame with requested snp info
-
-fetch.snp.info = function(assembly = NULL,
-                          chr = NULL,
-                          start = NULL,
-                          end = NULL,
-                          attributes = c('refsnp_id','chrom_start','chrom_strand','allele','minor_allele','minor_allele_freq'),
-                          ...){
-  
-  supported.assemblies = c("hg19","hg38","mm10")
-  
-  if(! assembly %in% supported.assemblies){
-    
-    stop(paste0("Assembly not supported. Currently supported assemblies are: ",supported.assemblies))
-    
-  }
-  
-  
-  require(biomaRt)
-  
-  mart.dataset = switch(assembly, "hg19" = "hsapiens_snp", 
-                        "hg38" = "hsapiens_snp",
-                        "mm10" = "mmusculus_snp")
-  
-  mart.host = switch(assembly,
-                     "hg19" = "grch37.ensembl.org", 
-                     "hg38" = "www.ensembl.org",
-                     "mm10" = "www.ensembl.org")
-  
-  #configure mart
-  #snpmart = useEnsembl(biomart = "snp", dataset = database)
-  
-  
-  snp.mart = useMart(biomart = "ENSEMBL_MART_SNP", 
-                     host = mart.host, 
-                     path = "/biomart/martservice", 
-                     dataset = mart.dataset) #mouse:mmusculus_snp
-  
-  
-  #call snp info from mart
-  snp.results = getBM(attributes = attributes, 
-                      filters = c('chr_name','start','end'), 
-                      values = list(as.numeric(gsub("chr","",chr)),
-                                    as.numeric(gsub("chr","",start)),
-                                    as.numeric(gsub("chr","",end))), 
-                      mart = snp.mart)
-  
-  return(snp.results)
-  
-}
 
 
-fetch.snp.info.2= function(assembly = NULL, #'hg19' or 'hg38'
-                           chr = NULL, #'chr1' or '1'
-                           start = NULL, #'12345678'
-                           end = NULL,   #'12345679'
-                           ...){
+
+#get SNP info for a genomic intervall 
+# will call ensembl rest API (http://mar2017.rest.ensembl.org/)
+#
+
+fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
+                               chr = NULL, #'chr1' or '1'
+                               start = NULL, #'12345678'
+                               end = NULL,   #'12345679'
+                               ...){
   require(httr)
   require(jsonlite)
   require(xml2)
@@ -6229,55 +6176,101 @@ fetch.snp.info.2= function(assembly = NULL, #'hg19' or 'hg38'
                      "hg19" = "GRCh37",
                      "hg38" = "GRCh38",
                      "mm10" = "GRCm38")
+  
   ispecies = switch(EXPR = assembly, 
                     "hg19" = "human",
                     "hg38" = "human",
                     "mm10" = "mus_musculus")
   
-  server <- "http://rest.ensembl.org"
-
-  ext <- paste0("/sequence/region/",ispecies,"/",gsub("chr","",chr),":",start,"..",end,":1?;coord_system_version=",iassembly, ";feature=variation")
-  print("url ext")
+  server <- switch(EXPR = assembly, 
+                   "hg19" = "http://grch37.rest.ensembl.org",
+                   "hg38" = "http://rest.ensembl.org",
+                   "mm10" = "http://rest.ensembl.org")
   
-  print(ext)
-  r <- GET(paste(server, ext, sep = ""), content_type("text/plain"))
+  ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=variation")
+  
+  for (i in 1:length(ext)){
+    r <- GET(paste(server, ext[i], sep=""))
+  }
   
   stop_for_status(r)
-  return(content(r))
+
+  s = content(r)
+  s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
+  s3 = sapply(1:length(s2), function(x) { s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end","strand","assembly_name","id","feature_type","consequence_type","source"),"c2"])})
+  s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 9, byrow = TRUE))
+  colnames(s4) = c("chr","start","end","strand","assembly","rs_id","feature_type","consequence_type","source")
+  return(s4)
   
 }
 
+##########
 
+##example
+#snp = fetch.snp.info.rest(assembly = "hg38",
+#                          chr = "chr7",
+#                          start = "140424943",
+#                          end = "140426943")
 
-#returns a annotation for repeats
+##########
 
-#http://bioconductor.org/packages/release/bioc/vignettes/rtracklayer/inst/doc/rtracklayer.R
+#get repeat info for a genomic intervall 
+# will call ensembl rest API (http://mar2017.rest.ensembl.org/)
+#
 
-#returns a data.frame with repeat info with 17 columns: 
-#"bin"       "swScore"   "milliDiv"  "milliDel"  "milliIns"  "genoName"  "genoStart" "genoEnd"   "genoLeft"  "strand"    "repName"   "repClass" 
-#"repFamily" "repStart"  "repEnd"    "repLeft"   "id"
-
-fetch.repeat.info= function(assembly = NULL, #'hg19','hg38', 'mm9','mm10'
-                            chr = NULL, #'chr1' or '1'
-                            start = NULL, #'12345678'
-                            end = NULL,   #'12345679'
-                            ...){
-  require (rtracklayer)
-  mySession = browserSession("UCSC")
-  genome(mySession) <- assembly
-  myrange <- GRanges(paste0("chr",gsub("chr","",chr)), IRanges(as.numeric(start),as.numeric(end)))
-  tbl.rmsk <- getTable(
-    ucscTableQuery(mySession, track="rmsk", 
-                   range=myrange, table="rmsk"))
+fetch.repeat.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
+                                  chr = NULL, #'chr1' or '1'
+                                  start = NULL, #'12345678'
+                                  end = NULL,   #'12345679'
+                                  ...){
+  require(httr)
+  require(jsonlite)
+  require(xml2)
   
-  return(tbl.rmsk)
+  iassembly = switch(EXPR = assembly, 
+                     "hg19" = "GRCh37",
+                     "hg38" = "GRCh38",
+                     "mm10" = "GRCm38")
+  
+  ispecies = switch(EXPR = assembly, 
+                    "hg19" = "human",
+                    "hg38" = "human",
+                    "mm10" = "mus_musculus")
+  
+  server <- switch(EXPR = assembly, 
+                   "hg19" = "http://grch37.rest.ensembl.org",
+                   "hg38" = "http://rest.ensembl.org",
+                   "mm10" = "http://rest.ensembl.org")
+  
+  ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=repeat")
+  
+  for (i in 1:length(ext)){
+    r <- GET(paste(server, ext[i], sep = ""))
+  }
+  
+  #r <- GET(paste(server, ext, sep = ""))
+  stop_for_status(r)
+  
+  s = content(r)
+  s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
+  s3 = sapply(1:length(s2), function(x) { s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end","strand","assembly_name","feature_type","description"),"c2"])})
+  s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 7, byrow = TRUE))
+  colnames(s4) = c("chr","start","end","strand","assembly","feature_type","description")
+  
+  return(s4)
+  
 }
 
+##########
 
-#example
-#fetch.repeat.info(assembly = "mm10", chr = "chr1", start = 100000000, end = 100010000)
+##example
+#reps = fetch.repeat.info.rest(assembly = "hg38",
+#                             chr = "chr7",
+#                             start = "140424943",
+#                             end = "140426943")#
 
-
+#reps
+##########
 
 #more info here: http://rest.ensembl.org/documentation/info/sequence_region
 
@@ -6304,7 +6297,11 @@ fetch.dna.sequence= function(assembly = NULL, #'hg19' or 'hg38'
   server <- "http://rest.ensembl.org"
   ext <- paste0("/sequence/region/",ispecies,"/",gsub("chr","",chr),":",start,"..",end,":1?;coord_system_version=",iassembly)
   
-  r <- GET(paste(server, ext, sep = ""), content_type("text/plain"))
+  for (i in 1:length(ext)){
+    r <- GET(paste(server, ext[i], sep = ""), content_type("text/plain"))
+  }
+  
+  #r <- GET(paste(server, ext, sep = ""), content_type("text/plain"))
   
   stop_for_status(r)
   return(content(r))
@@ -6317,5 +6314,3 @@ fetch.dna.sequence= function(assembly = NULL, #'hg19' or 'hg38'
 #                    chr="chr1",
 #                    start="100000000",
 #                    end="100001000")
-
-
