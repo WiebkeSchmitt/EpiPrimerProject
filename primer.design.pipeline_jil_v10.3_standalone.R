@@ -932,7 +932,6 @@ if (check4repeats){
         if(nrow(my_repeats)>0){
         
         my_repeats$assembly<-assem
-        my_repeats$repeat.db<-rpttable
         
         }
         
@@ -1004,7 +1003,6 @@ if (annotate.genes){
                               end = allends)
         
         my_genes$assembly<-assem
-        my_genes$gene.db<-genetable
         
         if(iasem==1){
           all_my_genes<-my_genes
@@ -1833,9 +1831,9 @@ if (check4repeats){
     results2$amplicon.n.repeats<-NA
     results2$primer1.n.repeats<-NA
     results2$primer2.n.repeats<-NA
-    results2$amplicon.repeat.ids<-NA
-    results2$primer1.repeat.ids<-NA
-    results2$primer2.repeat.ids<-NA
+    #results2$amplicon.repeat.ids<-NA
+    #results2$primer1.repeat.ids<-NA
+    #results2$primer2.repeat.ids<-NA
     
     for (iamplicons in 1:nrow(results2)){
       
@@ -1865,11 +1863,11 @@ if (check4repeats){
                                 (all_my_repeats$genoStart>=iseq.amp.start & all_my_repeats$genoStart<=iseq.amp.end),]
       
       results2[iamplicons,"amplicon.n.repeats"] <- nrow(amp.reps)
-      results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
+      #results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
       results2[iamplicons,"primer1.n.repeats"] <- nrow(p1.reps)
-      results2[iamplicons,"primer1.repeat.ids"] <- paste(p1.reps[,"repClass"],collapse=",")
+      #results2[iamplicons,"primer1.repeat.ids"] <- paste(p1.reps[,"repClass"],collapse=",")
       results2[iamplicons,"primer2.n.repeats"] <- nrow(p2.reps)
-      results2[iamplicons,"primer2.repeat.ids"] <- paste(p2.reps[,"repClass"],collapse=",")
+      #results2[iamplicons,"primer2.repeat.ids"] <- paste(p2.reps[,"repClass"],collapse=",")
       
     }# iamplicons
     
@@ -1920,9 +1918,9 @@ if (check4repeats){
     results2$amplicon.n.repeats<-NA
     results2$primer1.n.repeats<-NA
     results2$primer2.n.repeats<-NA
-    results2$amplicon.repeat.ids<-NA
-    results2$primer1.repeat.ids<-NA
-    results2$primer2.repeat.ids<-NA
+    #results2$amplicon.repeat.ids<-NA
+    #results2$primer1.repeat.ids<-NA
+    #results2$primer2.repeat.ids<-NA
     
   }#if!exists
   
@@ -4415,7 +4413,8 @@ bisulfite.primer.design<-function(sequence,
                                   "fragment1.id","fragment2.id","fragment12.id",
                                   "fragment12.primer.ids",
                                   "primer1.gc.content","primer2.gc.content",
-                                  "amplicon.gc.content","amplicon.genomic.gc.content",
+                                  "amplicon.gc.content",
+                                  #"amplicon.genomic.gc.content",
                                   "primer1.c2t.conversion","primer2.g2a.conversion",
                                   "primer1.self.alignment",
                                   "primer2.self.alignment",
@@ -4989,7 +4988,8 @@ nome.primer.design<-function(sequence,
                                   "fragment1.id","fragment2.id","fragment12.id",
                                   "fragment12.primer.ids",
                                   "primer1.gc.content","primer2.gc.content",
-                                  "amplicon.gc.content","amplicon.genomic.gc.content",
+                                  "amplicon.gc.content",
+                                  #"amplicon.genomic.gc.content",
                                   "primer1.c2t.conversion","primer2.g2a.conversion",
                                   "primer1.self.alignment",
                                   "primer2.self.alignment",
@@ -6062,85 +6062,97 @@ CLEVER.primer.design<-function(sequence,
   print("Remove amplicons that have primer with high risk for primer-dimers...")
   selection<-amp.sel4[amp.sel4$primer1.self.alignment== -1 &
                         amp.sel4$primer2.self.alignment== -1 &
-                        amp.sel4$primer1.primer2.alignment== -1 &
-                        (length(amp.sel4$amplicon.start.relative) != 0 | length(amp.sel4$amplicon.end.relative != 0)),]
+                        amp.sel4$primer1.primer2.alignment== -1,]
   print("Done.")
   
   #####################################################################################
   
   #calculate some additional properties.
-    selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
-                                                 start = selection$amplicon.start.relative,
-                                                 stop = selection$amplicon.end.relative)
-    selection$primer1.start.relative<-selection$amplicon.start.relative
-    selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
-    selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
-    selection$primer2.end.relative<-selection$amplicon.end.relative 
-    selection$primer1.sequence.genomic<-mapply(FUN = substr,seq,
-                                               selection$primer1.start.relative,
-                                               selection$primer1.end.relative)
-    selection$primer2.sequence.genomic<-mapply(FUN=substr,seq,
-                                               selection$primer2.start.relative,
-                                               selection$primer2.end.relative) 
-    selection$primer2.sequence<-reverse.complement(selection$primer2.sequence)
-    selection$primer2.sequence.genomic<-reverse.complement(selection$primer2.sequence.genomic)
-    selection$sequence.id<-seq.id
-    selection$amplicon.id<-paste(selection$sequence.id,"_",selection$amplicon.start.relative,"_",selection$amplicon.end.relative,sep="")
-    selection$dna.strand<-strand
-    selection$index<-1:nrow(selection)
-    selection$primer.pair.id<-paste(selection$amplicon.id,".",selection$dna.strand,".",selection$index,sep="")
-    selection$primer1.id<-paste(selection$amplicon.id,".",selection$dna.strand,".",selection$index,".1",sep="")
-    selection$primer2.id<-paste(selection$amplicon.id,".",selection$dna.strand,".",selection$index,".2",sep="")
-    selection<-selection[order(selection$nCGs,decreasing=TRUE),]
-    selection$primer1.sequence<-tolower(selection$primer1.sequence)
-    selection$primer2.sequence<-tolower(selection$primer2.sequence)
-    selection$amplicon.sequence<-tolower(selection$amplicon.sequence)
+  #calculations are only possible, if the selection list contains more than just the names of the variables
+   
+  if(length(selection) > 22){
+      selection$amplicon.sequence.genomic<-mapply(FUN=substr,seq,
+                                                  start = selection$amplicon.start.relative,
+                                                  stop = selection$amplicon.end.relative)
+  }
+  
+      selection$primer1.start.relative<-selection$amplicon.start.relative
+      selection$primer1.end.relative<-selection$amplicon.start.relative + selection$primer1.length -1
+      selection$primer2.start.relative<-selection$amplicon.end.relative - selection$primer1.length +1
+      selection$primer2.end.relative<-selection$amplicon.end.relative 
+    if (length(selection$primer1.start.relative) != 0 && length(selection$primer1.start.relative) != 0){
+      
+      selection$primer1.sequence.genomic<-mapply(FUN = substr,seq,
+                                                 selection$primer1.start.relative,
+                                                 selection$primer1.end.relative)
+      selection$primer2.sequence.genomic<-mapply(FUN=substr,seq,
+                                                 selection$primer2.start.relative,
+                                                 selection$primer2.end.relative) 
+    }
+      selection$primer2.sequence<-reverse.complement(selection$primer2.sequence)
+      selection$primer2.sequence.genomic<-reverse.complement(selection$primer2.sequence.genomic)
+      selection$sequence.id<-seq.id 
+      selection$amplicon.id<-paste(selection$sequence.id,"_",selection$amplicon.start.relative,"_",selection$amplicon.end.relative,sep="")
+      selection$dna.strand<-strand
+      selection$index<-1:nrow(selection)
+      selection$primer.pair.id<-paste(selection$amplicon.id,".",selection$dna.strand,".",selection$index,sep="")
+      selection$primer1.id<-paste(selection$amplicon.id,".",selection$dna.strand,".",selection$index,".1",sep="")
+      selection$primer2.id<-paste(selection$amplicon.id,".",selection$dna.strand,".",selection$index,".2",sep="")
+      selection<-selection[order(selection$nCGs,decreasing=TRUE),]
+      selection$primer1.sequence<-tolower(selection$primer1.sequence)
+      selection$primer2.sequence<-tolower(selection$primer2.sequence)
+      selection$amplicon.sequence<-tolower(selection$amplicon.sequence)
+      
+      #gc contents for primers and amplicons
+      print("Calculate gc contents of primer and amplicons...")
+      selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
+      selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
+      selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
+      #selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
+      print("Done.")
+      
+      #c2t conversion and g2a conversion of primer1&2
+      print("Calculate c2t and g2a conversion numbers of primers...")
+      selection$primer1.c2t.conversion<-nchar(gsub("[a|g|t]","",selection$primer1.sequence.genomic))
+      selection$primer2.g2a.conversion<-nchar(gsub("[a|c|t]","",selection$primer2.sequence.genomic))
+      print("Done.")
+      
+      #Remove primers with low numbers of c2t/g2a conversion sites.
+      print("Remove primers with few conversion sites...")
+      selection<-selection[selection$primer1.c2t.conversion>=min.C2T.primer1,]
+      selection<-selection[selection$primer2.g2a.conversion>=min.G2A.primer2,]
+      print("Done.")
+
     
-    #gc contents for primers and amplicons
-    print("Calculate gc contents of primer and amplicons...")
-    selection$primer1.gc.content<-nchar(gsub("[a|t]","",selection$primer1.sequence))/nchar(selection$primer1.sequence)
-    selection$primer2.gc.content<-nchar(gsub("[a|t]","",selection$primer2.sequence))/nchar(selection$primer2.sequence)
-    selection$amplicon.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence))/nchar(selection$amplicon.sequence)
-    selection$amplicon.genomic.gc.content<-nchar(gsub("[a|t]","",selection$amplicon.sequence.genomic))/nchar(selection$amplicon.sequence.genomic)
-    print("Done.")
-    
-    #c2t conversion and g2a conversion of primer1&2
-    print("Calculate c2t and g2a conversion numbers of primers...")
-    selection$primer1.c2t.conversion<-nchar(gsub("[a|g|t]","",selection$primer1.sequence.genomic))
-    selection$primer2.g2a.conversion<-nchar(gsub("[a|c|t]","",selection$primer2.sequence.genomic))
-    print("Done.")
-    
-    #Remove primers with low numbers of c2t/g2a conversion sites.
-    print("Remove primers with few conversion sites...")
-    selection<-selection[selection$primer1.c2t.conversion>=min.C2T.primer1,]
-    selection<-selection[selection$primer2.g2a.conversion>=min.G2A.primer2,]
-    print("Done.")
   
   #####################################################################################
   
   #finalize out object
-  out<-as.data.frame(selection[,c("sequence.id","amplicon.id",
-                                  "amplicon.length","amplicon.start.relative","amplicon.end.relative",
-                                  "dna.strand","nGCs","nCGs",
-                                  "primer1.sequence","primer2.sequence", 
-                                  "primer1.length","primer2.length",
-                                  "primer1.tm", "primer2.tm","tm.difference",
-                                  "primer1.start.relative","primer1.end.relative",
-                                  "primer2.start.relative","primer2.end.relative",
-                                  "primer.pair.id",
-                                  "primer1.id","primer2.id",
-                                  "fragment1.id","fragment2.id","fragment12.id",
-                                  "fragment12.primer.ids",
-                                  "primer1.gc.content","primer2.gc.content",
-                                  "amplicon.gc.content","amplicon.genomic.gc.content",
-                                  "primer1.c2t.conversion","primer2.g2a.conversion",
-                                  "primer1.self.alignment",
-                                  "primer2.self.alignment",
-                                  "primer1.primer2.alignment",
-                                  "amplicon.sequence",
-                                  "primer1.sequence.genomic","primer2.sequence.genomic",
-                                  "amplicon.sequence.genomic",
-                                  "index")])
+  print(selection)
+  out<-as.data.frame(selection[,c("sequence.id","amplicon.id",#vorhanden
+                                  "amplicon.length","amplicon.start.relative","amplicon.end.relative",#vorhanden
+                                  "dna.strand",#vorhanden
+                                  "nGCs","nCGs",#vorhanden
+                                  "primer1.sequence","primer2.sequence", #vorhanden
+                                  "primer1.length","primer2.length",#vorhanden
+                                  "primer1.tm", "primer2.tm","tm.difference",#vorhanden
+                                  "primer1.start.relative","primer1.end.relative",#vorhanden
+                                  "primer2.start.relative","primer2.end.relative",#vorhanden
+                                  "primer.pair.id",#vorhanden
+                                  "primer1.id","primer2.id",#vorhanden
+                                  "fragment1.id","fragment2.id","fragment12.id",#vorhanden
+                                  "fragment12.primer.ids",#vorhanden
+                                  "primer1.gc.content","primer2.gc.content",#vorhanden
+                                  "amplicon.gc.content",#vorhanden
+                                  #"amplicon.genomic.gc.content",
+                                  "primer1.c2t.conversion","primer2.g2a.conversion",#vorhanden
+                                  "primer1.self.alignment",#vorhanden
+                                  "primer2.self.alignment",#vorhanden
+                                  "primer1.primer2.alignment",#vorhanden
+                                  "amplicon.sequence",#vorhanden
+                                  "primer1.sequence.genomic","primer2.sequence.genomic",#vorhanden
+                                  #"amplicon.sequence.genomic",
+                                  "index")])#vorhanden
   
   ##############################################################################################      
   print(paste("Completed CLEVER primer analysis for ",seq.id," on ",strand," strand: found ",nrow(out)," primer pairs.",sep=""))     
