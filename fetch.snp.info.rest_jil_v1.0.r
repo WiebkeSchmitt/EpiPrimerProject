@@ -30,7 +30,12 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
                    "mm10" = "http://rest.ensembl.org")
   
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=variation")
-  r <- GET(paste(server, ext, sep = ""))
+  
+  for (i in 1:length(ext)){
+    print (ext[i])
+    r <- GET(paste(server, ext[i], sep=""))
+    
+  }
   
   stop_for_status(r)
   
