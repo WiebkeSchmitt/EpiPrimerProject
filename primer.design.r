@@ -591,7 +591,7 @@ bisulfite.primer.design<-function(sequence,
                                   primer.align.binsize=8,
                                   strand="top",
                                   mode="exact"){
-  source("Primerpair.r")
+  #source("Primerpair.r")
   
   version.id<-3.0
   
