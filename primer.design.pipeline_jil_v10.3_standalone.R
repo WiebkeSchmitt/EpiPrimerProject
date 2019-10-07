@@ -1425,6 +1425,7 @@ for (istrand in strand){ #top and bottom strand
 
     log(paste(index,": Start primer design for amplicon ",sequence.id," [",istrand," Strand]...",sep=""))
     
+    #####################################Calling the various primer designs according to primer type########################################### 
     if(primer.type=="NOME"){
     np<-nome.primer.design(sequence=sequence,
                            sequence.id=sequence.id,
@@ -5295,7 +5296,7 @@ genomic.primer.design<-function(sequence,
   #select best tm primer combination for individual amplicons....
   print("Select optimal primer pair combination for Tm...")
   
-  #VERY POWERFULL FUNCTION:
+  #VERY POWERFUL FUNCTION:
   lvl.frgs<-levels(factor(amp.sel2$fragment12.id))
   mins<-sapply(X = lvl.frgs,FUN = function(x) {y=which.min(amp.sel2[amp.sel2$fragment12.id==x,
                                                                     "tm.difference"])
@@ -6091,7 +6092,9 @@ CLEVER.primer.design<-function(sequence,
     }
       selection$primer2.sequence<-reverse.complement(selection$primer2.sequence)
       selection$primer2.sequence.genomic<-reverse.complement(selection$primer2.sequence.genomic)
-      selection$sequence.id<-seq.id 
+      #TODO: seq.id non-existent --> where to get the id?
+      selection["sequence.id"] <- seq.id
+      #selection$sequence.id<-seq.id 
       selection$amplicon.id<-paste(selection$sequence.id,"_",selection$amplicon.start.relative,"_",selection$amplicon.end.relative,sep="")
       selection$dna.strand<-strand
       selection$index<-1:nrow(selection)

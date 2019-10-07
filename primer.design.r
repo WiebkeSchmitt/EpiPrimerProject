@@ -1,4 +1,4 @@
-source("C:\Users\Wiebk\Documents\epiprimer\R\Primerpair.r")
+source("Primerpair.r")
 
 generalDesign<-function(seq,
                         seq.id,
