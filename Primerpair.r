@@ -8,14 +8,6 @@ setClass("referenceSequence",
   contains = "BSgenome"
 )
 
-#S3 version of referenceSequence
-#referenceSequence <- function (g="BSgenome") {
-#  genome <- g
-#  attr(genome, "BSgenome") <- "referenceSequence"
-  #class(abs) <- c("BSgenome", "referenceSequence")
-  #genome
-#}
-
 #TODO: clean out redundant variables
 #TODO: replace with bioConductor equivalents like Bstrings and GRanges.
  setClass("PrimerPair",
@@ -185,201 +177,24 @@ setClass("referenceSequence",
   )
 )
 
-# #s3version for PrimerPair --> this is the base primer type for all other primers
-# PrimerPair <- function(
-#   ## Name of the sequence
-#   sequence.id_ = "character",
-#   
-#   ## Name of this particular primer pair
-#   amplicon.id_ = "character",
-#   
-#   ## Amplicon length
-#   amplicon.length_ = "integer",
-#   
-#   ## Relative amplicon start
-#   amplicon.start.relative_ = "integer",
-#   
-#   ## Relative amplicon end
-#   amplicon.end.relative_ = "integer",
-#   
-#   ## Strand top/bottom
-#   dna.strand_ = "character",
-#   
-#   ## Number of GCs
-#   nGCs_ = "integer",
-#   
-#   ## Number of CGs
-#   nCGs_ = "integer",
-#   
-#   ## Sequence of the first primer
-#   primer1.sequence_ = "character",
-#   
-#   ## Sequence of the second primer
-#   primer2.sequence_ = "character",
-#   
-#   ## Length of first primer
-#   primer1.length_ = "integer",
-#   
-#   ## Length of second primer
-#   primer2.length_ = "integer",
-#   
-#   ## Melting temperature of first primer
-#   primer1.tm_ = "numeric",
-#   
-#   ## Melting temperature of second primer
-#   primer2.tm_ = "numeric",
-#   
-#   ## Difference in melting temperature
-#   tm.difference_ = "numeric",
-#   
-#   ## Relative start of first primer
-#   primer1.start.relative_ = "integer",
-#   
-#   ## Relative end of first primer
-#   primer1.end.relative_ = "integer",
-#   
-#   ## Relative start of second primer
-#   primer2.start.relative_ = "integer",
-#   
-#   ## Relative end of second primer
-#   primer2.end.relative_ = "integer",
-#   
-#   ## primer pair id
-#   primer.pair.id_ = "character",
-#   
-#   ## ID of first primer
-#   primer1.id_ = "character",
-#   
-#   ## ID of second primer
-#   primer2.id_ = "character",
-#   
-#   ## ID of first fragment
-#   fragment1.id_ = "character",
-#   
-#   ## ID of second fragment
-#   fragment2.id_ = "character",
-#   
-#   ## ID for both fragments
-#   fragment12.id_ = "character",
-#   
-#   ## ID for both fragments and primers
-#   fragment12.primer.ids_ = "character",
-#   
-#   ## GC content of first primer
-#   primer1.gc.content_ = "numeric",
-#   
-#   ## GC content of second primer
-#   primer2.gc.content_ = "numeric",
-#   
-#   ## GC content in amplicon
-#   amplicon.gc.content_ = "numeric",
-#   
-#   ## genomic GC content in amplicon
-#   amplicon.genomic.gc.content_ = "numeric",
-#   
-#   ## Number of C-to-T conversions in first primer??
-#   primer1.c2t.conversion_ = "integer",
-#   
-#   ## Number of G-to-A conversions in second primer??
-#   primer2.g2a.conversion_ = "integer",
-#   
-#   ## Self-alignment of first primer
-#   primer1.self.alignment_ = "integer",
-#   
-#   ## Self-alignment of second primer
-#   primer2.self.alignment_ = "integer",
-#   
-#   ## alignments between primers
-#   primer1.primer2.alignment_ = "integer",
-#   
-#   ## Amplicon sequence
-#   amplicon.sequence_ = "character",
-#   
-#   ## Genomic sequence of first primer
-#   primer1.sequence.genomic_ = "character",
-#   
-#   ## Genomic sequence fo second primer
-#   primer2.sequence.genomic_ = "character",
-#   
-#   ## Genomic amplicon sequence
-#   amplicon.sequence.genomic_ = "character",
-#   
-#   ## index
-#   index_ = "integer")
-# {
-#   #TODO: adjust this, preferably by getting info out of GRanges Object
-#   return(list(
-#   sequence.id=sequence.id_,
-#   amplicon.id=amplicon.id_,
-#   amplicon.length=amplicon.length_,
-#   amplicon.start.relative=amplicon.start.relative_,
-#   amplicon.end.relative=amplicon.end.relative_,
-#   dna.strand=dna.strand_,
-#   nGCs=nGCs_,
-#   nCGs=nCGs_,
-#   primer1.sequence=primer1.sequence_,
-#   primer2.sequence=primer2.sequence_,
-#   primer1.length=primer1.length_,
-#   primer2.length=primer2.length_,
-#   primer1.tm=primer1.tm_,
-#   primer2.tm=primer2.tm_,
-#   tm.difference=tm.difference_,
-#   primer1.start.relative=primer1.start.relative_,
-#   primer1.end.relative=primer1.end.relative_,
-#   primer2.start.relative=primer2.start.relative_,
-#   primer2.end.relative=primer2.end.relative_,
-#   primer.pair.id=primer.pair.id_,
-#   primer1.id=primer1.id_,
-#   primer2.id=primer2.id_,
-#   fragment1.id=fragment1.id_,
-#   fragment2.id=fragment2.id_,
-#   fragment12.id=fragment12.id_,
-#   fragment12.primer.ids=fragment12.primer.ids_,
-#   primer1.gc.content=primer1.gc.content_,
-#   primer2.gc.content=primer2.gc.content_,
-#   amplicon.gc.content=amplicon.gc.content_,
-#   amplicon.genomic.gc.content=amplicon.genomic.gc.content_,
-#   primer1.c2t.conversion=primer1.c2t.conversion_,
-#   primer2.g2a.conversion=primer2.g2a.conversion_,
-#   primer1.self.alignment=primer1.self.alignment_,
-#   primer2.self.alignment=primer2.self.alignment_,
-#   primer1.primer2.alignment=primer1.primer2.alignment_,
-#   amplicon.sequence=amplicon.sequence_,
-#   primer1.sequence.genomic=primer1.sequence.genomic_,
-#   primer2.sequence.genomic=primer2.sequence.genomic_,
-#   amplicon.sequence.genomic=amplicon.sequence.genomic_,
-#   index=index_))
-# }
+setClass("bisulifitePrimer",
+ contains = "PrimerPair",
+ representation(
+ )
+)
 
-#class(PrimerPair) <- c("BisulfitePrimer", "NOMePrimer", "genomicPrimer", "CLEVERPrimer")
-
-#TODO: Adjust this as S3 Object
-#setClass("bisulifitePrimer",
-#  contains = "PrimerPair",
-#  representation(
-#  )
-#)
-#class(bisulfitePrimer) <- append(class(), "PrimerPair")
-
-# getAmpliconId.PrimerPair <- function(object){
-#   return (object$amplicon.id)
-# }
-# 
-#TODO: Adjust this as S3 Object
 setClass("NOMePrimer",
   contains = "PrimerPair",
   representation(
   )
 )
 
-#TODO: Adjust this as S3 Object
 setClass("genomicPrimer",
   contains = "PrimerPair",
   representation(
   )
 )
 
-#TODO: Adjust this as S3 Object
 setClass("CLEVERPrimer",
   contains = "PrimerPair",
   representation(
