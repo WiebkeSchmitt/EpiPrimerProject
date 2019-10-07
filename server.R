@@ -7,7 +7,8 @@ library(DT)
 #### for primer design ########
 primersDesign_wd <- getwd() #this used to be hardcoded: "C:\\Users\\Wiebk\\Desktop\\epiprimer" 
 #pipeline_jil <- file.path(primersDesign_wd, "primer.design.pipeline_jil_v10.3_standalone.r", fsep=.Platform$file.sep)
-source("C:\\Users\\Wiebk\\Desktop\\epiprimer\\primer.design.pipeline_jil_v10.3_standalone.R")
+#source("C:\\Users\\Wiebk\\Desktop\\epiprimer\\primer.design.pipeline_jil_v10.3_standalone.R")
+source("generalDesign.R")
 
 #### for primer QC ########
 library(devtools)
@@ -20,7 +21,7 @@ library(Biostrings) #for primer QC and Reads Extraction
 source(file.path(primersDesign_wd, "ReferenceGenome.r", fsep=.Platform$file.sep))
 
 ############ for Flowcell QC ########
-mypath <- ("C:\\Users\\Wiebk\\Desktop\\epiprimer\\flowcell_package\\newStruct_trimmed")
+mypath <- ("./flowcell_package/newStruct_trimmed")
 choices_info <- data.frame(path=list.files(mypath,full.names=TRUE, pattern =".csv"))
 print(choices_info[["path"]])
 choices_info[["nameS"]]<-sapply(strsplit(as.character(choices_info[["path"]]),"/"),function(x) x[length(x)])
