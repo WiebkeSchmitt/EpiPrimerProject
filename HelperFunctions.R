@@ -552,6 +552,7 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
   for (i in 1:length(ext)){
     r <- GET(paste(server, ext[i], sep=""))
+    print(r)
   }
   
   stop_for_status(r)
