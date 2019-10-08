@@ -1812,7 +1812,7 @@ if (check4snps){
     
     for (iamplicons in 1:nrow(results2)){
     
-      iseqid<-paste(results2[iamplicons,"sequence.id"])
+      iseq.id<-paste(results2[iamplicons,"sequence.id"])
       iseq.chr<-paste(results2[iamplicons,"amplicon.chr"])
       iseq.amp.start<-results2[iamplicons,"amplicon.start"]
       iseq.amp.end<-results2[iamplicons,"amplicon.end"]
@@ -1821,13 +1821,13 @@ if (check4snps){
       iseq.p2.start<-results2[iamplicons,"primer2.start"]
       iseq.p2.end<-results2[iamplicons,"primer2.end"]
       
-      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"source"])[1]
-      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,]) 
-      results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"],collapse=",")
-      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,])
-      results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,"rs_id"],collapse=",")
-      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,]) 
-      results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,"rs_id"],collapse=",")
+      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[as.character(all_my_snps$chr)==gsub("chr","",iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"source"])[1]
+      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,]) 
+      results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"],collapse=",")
+      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,])
+      results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,"rs_id"],collapse=",")
+      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,]) 
+      results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,"rs_id"],collapse=",")
       
       }# iamplicons
       
