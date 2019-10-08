@@ -849,15 +849,45 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     
     if(is.na(hp.filename)){
       log("Required hairpin infofile is missing...use default hairpin settings...")
-      hp.info<-data.frame(RE.id=c("MspI","AluI","TaqI","Nla3","PstI","BamHI", "DdeI"),
-                          RE.seq=c("CCGG","AGCT","TCGA","CATG","CTGCAG","GGATCC","CTNAG"),
+      hp.info<-data.frame(RE.id=c("MspI",
+                                  "AluI",
+                                  "TaqI",
+                                  "Nla3",
+                                  "PstI",
+                                  "BamHI", 
+                                  "DdeI",
+                                  "BsaWI",
+                                  "Eco47I",
+                                  "PpuMI",
+                                  "BlpI",
+                                  "Bpu10I",
+                                  "Bsu361"),
+                          RE.seq=c("CCGG",
+                                   "AGCT",
+                                   "TCGA",
+                                   "CATG",
+                                   "CTGCAG",
+                                   "GGATCC",
+                                   "CTNAG",
+                                   "WCCGGW",
+                                   "GGWCC",
+                                   "RGGWCCY",
+                                   "GCTNAGC",
+                                   "CCTNAGC",
+                                   "CCTNAGG"),
                           linker.sequence=c(toupper("CGGGGCCCATddddddddATGGGCCC"),
                                             toupper("GGGCCCATddddddddATGGGCCC"),
                                             toupper("CGGGGCCCATddddddddATGGGCCC"),
                                             toupper("GGGCCTAATATAGTATAGGCCCCATG"),
                                             toupper("GGGCCTAATATAGTATAGGCCCTGCA"),
                                             toupper("GATCGGGCCCATddddddddATGGGCCC"),
-                                            toupper("tnagggSccatddddddddatgggScc")))
+                                            toupper("tnagggSccatddddddddatgggScc"),
+                                            toupper("CCGGCGG5G6GATDDDDDDDDATCG7G8CG"),
+                                            toupper("GWCGGG5G6GATDDDDDDDDATCG7G8CC"),
+                                            toupper("GWCGGG5G6GATDDDDDDDDATCG7G8CC"),
+                                            toupper("TNAGCG5G6GATDDDDDDDDATCG7G8GC"),
+                                            toupper("TNAGCG5G6GATDDDDDDDDATCG7G8GC"),
+                                            toupper("TNAGCG5G6GATDDDDDDDDATCG7G8GC")))
       write.table(hp.info,file=paste(path.sequences,"RestrictionEnzymesAndLinkerInfo_",analysis.id,".txt",sep=""),sep="\t",dec=".",col.names=TRUE,row.names=FALSE)
     }
     
@@ -1445,13 +1475,18 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             iseq.p2.start<-results2[iamplicons,"primer2.start"]
             iseq.p2.end<-results2[iamplicons,"primer2.end"]
             
-            results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[as.character(all_my_snps$chr)==gsub("chr","",iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.amp.start) & as.character(all_my_snps$start)<=as.character(iseq.amp.end) ,"source"])[1]
-            results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.amp.start) & as.character(all_my_snps$start)<=as.character(iseq.amp.end) ,]) 
-            results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.amp.start) & as.character(all_my_snps$start)<=as.character(iseq.amp.end) ,"rs_id"],collapse=",")
-            results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p1.start) & as.character(all_my_snps$start)<=as.character(iseq.p1.end) ,])
-            results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p1.start) & as.character(all_my_snps$start)<=as.character(iseq.p1.end) ,"rs_id"],collapse=",")
-            results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p2.start) & as.character(all_my_snps$start)<=as.character(iseq.p2.end) ,]) 
-            results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p2.start) & as.character(all_my_snps$start)<=as.character(iseq.p2.end) ,"rs_id"],collapse=",")
+            #print("Debugging SNPS")
+            #print(paste(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"]),collapse=","))
+            #print(typeof(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"])))
+            #print(length(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"]),collapse=",")[1])
+            
+            #results2[iamplicons,"SNP.db"] <- levels(all_my_snps[all_my_snps$chr==gsub("chr","",iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"source"])[1]
+            #results2[iamplicons,"amplicon.nSNPs"] <- nrow(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,]))
+            #results2[iamplicons,"amplicon.SNP.ids"]<-paste(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"]),collapse=",")
+            #results2[iamplicons,"primer1.nSNPs"] <- nrow(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,]))
+            #results2[iamplicons,"primer1.SNP.ids"]<-paste(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,"rs_id"]),collapse=",")
+            #results2[iamplicons,"primer2.nSNPs"] <- nrow(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end,]))
+            #results2[iamplicons,"primer2.SNP.ids"]<-paste(levels(all_my_snps[all_my_snps$chr==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,"rs_id"]),collapse=",")
             
           }# iamplicons
           
@@ -1524,20 +1559,22 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             iseq.p2.end<-results2[iamplicons,"primer2.end"]
             
             
-            p1.reps<-all_my_repeats[all_my_repeats$genoName==iseq.chr &
-                                      (all_my_repeats$genoStart>=iseq.p1.start & all_my_repeats$genoStart<=iseq.p1.end) |
-                                      (all_my_repeats$genoStart<=iseq.p1.start & all_my_repeats$genoEnd>=iseq.p1.start) |
-                                      (all_my_repeats$genoStart>=iseq.p1.start & all_my_repeats$genoStart<=iseq.p1.end),]
+            p1.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & 
+                                         as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end) |
+                                      (as.numeric(as.character(all_my_repeats$start))<=iseq.p1.start & 
+                                         as.numeric(as.character(all_my_repeats$end))>=iseq.p1.start) |
+                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end),]
             
-            p2.reps<-all_my_repeats[all_my_repeats$genoName==iseq.chr &
-                                      (all_my_repeats$genoStart>=iseq.p2.start & all_my_repeats$genoStart<=iseq.p2.end) |
-                                      (all_my_repeats$genoStart<=iseq.p2.start & all_my_repeats$genoEnd>=iseq.p2.start) |
-                                      (all_my_repeats$genoStart>=iseq.p2.start & all_my_repeats$genoStart<=iseq.p2.end),]
+            p2.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end) |
+                                      (as.numeric(as.character(all_my_repeats$start))<=iseq.p2.start & as.numeric(as.character(all_my_repeats$end))>=iseq.p2.start) |
+                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end),]
             
-            amp.reps<-all_my_repeats[all_my_repeats$genoName==iseq.chr &
-                                       (all_my_repeats$genoStart>=iseq.amp.start & all_my_repeats$genoStart<=iseq.amp.end) |
-                                       (all_my_repeats$genoStart<=iseq.amp.start & all_my_repeats$genoEnd>=iseq.amp.start) |
-                                       (all_my_repeats$genoStart>=iseq.amp.start & all_my_repeats$genoStart<=iseq.amp.end),]
+            amp.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                       (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end) |
+                                       (as.numeric(as.character(all_my_repeats$start))<=iseq.amp.start & as.numeric(as.character(all_my_repeats$end))>=iseq.amp.start) |
+                                       (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end),]
             
             results2[iamplicons,"amplicon.n.repeats"] <- nrow(amp.reps)
             #results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
@@ -2342,9 +2379,9 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             }#if hp
             
             
-            tolo<-all_my_snps[all_my_snps$chrom==selchr & 
-                                all_my_snps$chromStart >= bedstart & 
-                                all_my_snps$chromEnd <= bedend,]
+            tolo<-all_my_snps[all_my_snps$chr==selchr & 
+                                all_my_snps$start >= bedstart & 
+                                all_my_snps$end <= bedend,]
             
             tolo$start.relative=tolo$chromStart-bedstart+1
             tolo$end.relative=tolo$chromEnd-bedstart+1
@@ -2419,12 +2456,12 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
               
             }#if hp
             
-            tolo<-all_my_repeats[all_my_repeats$genoName==selchr,] #& 
+            tolo<-all_my_repeats[as.character(all_my_repeats$chr)==gsub("chr","",selchr),] #& 
             #all_my_repeats$genoStart >= bedstart & 
             #all_my_repeats$genoEnd <= bedend
             
-            tolo$start.relative=tolo$genoStart-bedstart+1
-            tolo$end.relative=tolo$genoEnd-bedstart+1
+            tolo$start.relative=tolo$start-bedstart+1
+            tolo$end.relative=tolo$end-bedstart+1
             
             #tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
             #             ((tolo$start.relative<0 & tolo$end.relative<=bed.length) & tolo$end.relative>=0) |
