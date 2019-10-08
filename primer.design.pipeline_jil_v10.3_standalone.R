@@ -1903,20 +1903,22 @@ if (check4repeats){
       iseq.p2.end<-results2[iamplicons,"primer2.end"]
       
       
-      p1.reps<-all_my_repeats[all_my_repeats$genoName==iseq.chr &
-                          (all_my_repeats$genoStart>=iseq.p1.start & all_my_repeats$genoStart<=iseq.p1.end) |
-                          (all_my_repeats$genoStart<=iseq.p1.start & all_my_repeats$genoEnd>=iseq.p1.start) |
-                          (all_my_repeats$genoStart>=iseq.p1.start & all_my_repeats$genoStart<=iseq.p1.end),]
+      p1.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                          (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & 
+                             as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end) |
+                          (as.numeric(as.character(all_my_repeats$start))<=iseq.p1.start & 
+                             as.numeric(as.character(all_my_repeats$end))>=iseq.p1.start) |
+                          (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end),]
       
-      p2.reps<-all_my_repeats[all_my_repeats$genoName==iseq.chr &
-                                (all_my_repeats$genoStart>=iseq.p2.start & all_my_repeats$genoStart<=iseq.p2.end) |
-                                (all_my_repeats$genoStart<=iseq.p2.start & all_my_repeats$genoEnd>=iseq.p2.start) |
-                                (all_my_repeats$genoStart>=iseq.p2.start & all_my_repeats$genoStart<=iseq.p2.end),]
+      p2.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end) |
+                                (as.numeric(as.character(all_my_repeats$start))<=iseq.p2.start & as.numeric(as.character(all_my_repeats$end))>=iseq.p2.start) |
+                                (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end),]
       
-      amp.reps<-all_my_repeats[all_my_repeats$genoName==iseq.chr &
-                                (all_my_repeats$genoStart>=iseq.amp.start & all_my_repeats$genoStart<=iseq.amp.end) |
-                                (all_my_repeats$genoStart<=iseq.amp.start & all_my_repeats$genoEnd>=iseq.amp.start) |
-                                (all_my_repeats$genoStart>=iseq.amp.start & all_my_repeats$genoStart<=iseq.amp.end),]
+      amp.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end) |
+                                (as.numeric(as.character(all_my_repeats$start))<=iseq.amp.start & as.numeric(as.character(all_my_repeats$end))>=iseq.amp.start) |
+                                (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end),]
       
       results2[iamplicons,"amplicon.n.repeats"] <- nrow(amp.reps)
       #results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
@@ -2817,12 +2819,12 @@ if(create.graphics){
         
       }#if hp
       
-      tolo<-all_my_repeats[all_my_repeats$genoName==selchr,] #& 
+      tolo<-all_my_repeats[as.character(all_my_repeats$chr)==gsub("chr","",selchr),] #& 
                           #all_my_repeats$genoStart >= bedstart & 
                           #all_my_repeats$genoEnd <= bedend
       
-      tolo$start.relative=tolo$genoStart-bedstart+1
-      tolo$end.relative=tolo$genoEnd-bedstart+1
+      tolo$start.relative=tolo$start-bedstart+1
+      tolo$end.relative=tolo$end-bedstart+1
       
       #tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
       #             ((tolo$start.relative<0 & tolo$end.relative<=bed.length) & tolo$end.relative>=0) |
