@@ -1821,13 +1821,13 @@ if (check4snps){
       iseq.p2.start<-results2[iamplicons,"primer2.start"]
       iseq.p2.end<-results2[iamplicons,"primer2.end"]
       
-      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.amp.start & all_my_snps$chromStart<=iseq.amp.end ,"SNP.db"])[1]
-      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.amp.start & all_my_snps$chromStart<=iseq.amp.end ,]) 
-      results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.amp.start & all_my_snps$chromStart<=iseq.amp.end ,"name"],collapse=",")
-      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p1.start & all_my_snps$chromStart<=iseq.p1.end ,])
-      results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p1.start & all_my_snps$chromStart<=iseq.p1.end ,"name"],collapse=",")
-      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p2.start & all_my_snps$chromStart<=iseq.p2.end ,]) 
-      results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p2.start & all_my_snps$chromStart<=iseq.p2.end ,"name"],collapse=",")
+      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"source"])[1]
+      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,]) 
+      results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"],collapse=",")
+      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,])
+      results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,"rs_id"],collapse=",")
+      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,]) 
+      results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[all_my_snps$chr==iseq.chr & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,"rs_id"],collapse=",")
       
       }# iamplicons
       
@@ -2740,9 +2740,9 @@ if(create.graphics){
       }#if hp
       
       
-      tolo<-all_my_snps[all_my_snps$chrom==selchr & 
-                          all_my_snps$chromStart >= bedstart & 
-                          all_my_snps$chromEnd <= bedend,]
+      tolo<-all_my_snps[all_my_snps$chr==selchr & 
+                          all_my_snps$start >= bedstart & 
+                          all_my_snps$end <= bedend,]
       
       tolo$start.relative=tolo$chromStart-bedstart+1
       tolo$end.relative=tolo$chromEnd-bedstart+1
