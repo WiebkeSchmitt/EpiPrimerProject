@@ -809,7 +809,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     
     #################################changes according to primer type######################################################
     
-    if(primer.type == "bisulfite" | primer.type == "hp_bisulfite"){
+    if(primer.type == "bisulfite" | primer.type == "hp_bisulfite" | primer.type == "CrispRCas9PCR"){
       bed$sequence.converted<-sapply(bed$sequence,bisulfite.conversion,strand=strand)
     }
     
@@ -1043,7 +1043,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
       sequence<-as.character(bed[iseq,"sequence"])   
       sequence.id<-as.character(bed[iseq,"sequenceID"])
       
-      if(primer.type=="bisulfite" | primer.type=="NOME" | primer.type=="genomic" | primer.type=="CLEVER"){
+      if(primer.type=="bisulfite" | primer.type=="NOME" | primer.type=="genomic" | primer.type=="CLEVER" | primer.type == "CrispRCas9PCR"){
         
         if(input.type=="regions"){
           i.amp.chr<-as.numeric(paste(gsub("chr","",bed[iseq,"chr"])))
@@ -1175,6 +1175,31 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
         colnames(np)<-gsub("NOME","CLEVER",colnames(np))
       }
       #
+      
+      if(primer.type=="CrispRCas9PCR"){
+        np<-crispR.Cas9.amp.primer.design(sequence=sequence,
+                                          sequence.id=sequence.id,
+                                          min.Tm.primer=min.Tm.primer,
+                                          max.Tm.primer=max.Tm.primer,
+                                          min.number.gc.amplicon=min.number.gc.amplicon,
+                                          min.number.cg.amplicon=min.number.cg.amplicon,
+                                          max.Tm.difference.primer=max.Tm.difference.primer,
+                                          primer.align.binsize=primer.align.binsize,
+                                          min.length.primer=min.length.primer,
+                                          max.length.primer=max.length.primer, 
+                                          low.complexity.primer.removal=low.complexity.primer.removal,
+                                          max.bins.low.complexity=max.bins.low.complexity,
+                                          remove.primers.with.n=remove.primers.with.n,
+                                          min.C2T.primer1=0,
+                                          min.G2A.primer2=0,
+                                          min.length.amplicon=min.length.amplicon,
+                                          max.length.amplicon=max.length.amplicon,
+                                          strand=istrand,
+                                          mode=mode)
+        colnames(np)<-gsub("NOME","CrispRCas9PCR",colnames(np))
+      }
+      #
+      
       if(primer.type=="hp_bisulfite"){
         np<-bisulfite.primer.design(sequence=sequence,
                                     sequence.id=sequence.id,
@@ -1411,7 +1436,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           
           for (iamplicons in 1:nrow(results2)){
             
-            iseqid<-paste(results2[iamplicons,"sequence.id"])
+            iseq.id<-paste(results2[iamplicons,"sequence.id"])
             iseq.chr<-paste(results2[iamplicons,"amplicon.chr"])
             iseq.amp.start<-results2[iamplicons,"amplicon.start"]
             iseq.amp.end<-results2[iamplicons,"amplicon.end"]
@@ -1420,13 +1445,13 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             iseq.p2.start<-results2[iamplicons,"primer2.start"]
             iseq.p2.end<-results2[iamplicons,"primer2.end"]
             
-            results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.amp.start & all_my_snps$chromStart<=iseq.amp.end ,"SNP.db"])[1]
-            results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.amp.start & all_my_snps$chromStart<=iseq.amp.end ,]) 
-            results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.amp.start & all_my_snps$chromStart<=iseq.amp.end ,"name"],collapse=",")
-            results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p1.start & all_my_snps$chromStart<=iseq.p1.end ,])
-            results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p1.start & all_my_snps$chromStart<=iseq.p1.end ,"name"],collapse=",")
-            results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p2.start & all_my_snps$chromStart<=iseq.p2.end ,]) 
-            results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[all_my_snps$chrom==iseq.chr & all_my_snps$chromStart>=iseq.p2.start & all_my_snps$chromStart<=iseq.p2.end ,"name"],collapse=",")
+            results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[as.character(all_my_snps$chr)==gsub("chr","",iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.amp.start) & as.character(all_my_snps$start)<=as.character(iseq.amp.end) ,"source"])[1]
+            results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.amp.start) & as.character(all_my_snps$start)<=as.character(iseq.amp.end) ,]) 
+            results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.amp.start) & as.character(all_my_snps$start)<=as.character(iseq.amp.end) ,"rs_id"],collapse=",")
+            results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p1.start) & as.character(all_my_snps$start)<=as.character(iseq.p1.end) ,])
+            results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p1.start) & as.character(all_my_snps$start)<=as.character(iseq.p1.end) ,"rs_id"],collapse=",")
+            results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p2.start) & as.character(all_my_snps$start)<=as.character(iseq.p2.end) ,]) 
+            results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.character(all_my_snps$start)>=as.character(iseq.p2.start) & as.character(all_my_snps$start)<=as.character(iseq.p2.end) ,"rs_id"],collapse=",")
             
           }# iamplicons
           
@@ -1844,7 +1869,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
               }
             }
             
-            if(primer.type=="bisulfite" | primer.type=="hp_bisulfite" | primer.type=="CLEVER" | primer.type=="hp_CLEVER"){
+            if(primer.type=="bisulfite" | primer.type=="hp_bisulfite" | primer.type=="CLEVER" | primer.type=="hp_CLEVER" | primer.type=="CrispRCas9PCR"){
               if(is.infinite(max(pool3$nCGs))){
                 pool4<-pool3
               }
@@ -2095,7 +2120,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           
           ####################################################per sequence id primer design overview plot###########################################################
           
-          if(primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER"){
+          if(primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR"){
             
             #per sequence id primer design overview plot
             
@@ -2295,7 +2320,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           
           if(check4snps & exists("all_my_snps")){
             
-            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
                input.type == "regions"){
               
               selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2583,7 +2608,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           
           if(annotate.cpg.islands & exists("all_my_cpgis")){
             
-            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
                input.type == "regions"){
               
               selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
