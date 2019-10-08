@@ -108,7 +108,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                  input.type="regions",#"regions" (for a file with regions in .bed format) or "sequences" (for a ".txt" file with sequences) (fixed vocabulary) (character)
                                  path.out = NULL, # directory where results will be stored (directory) (character)
                                  analysis.id="PrimerAnalysis",# Do not use'SonderZeichen'
-                                 primer.type="bisulfite",#"NOME" or "bisulfite" or "hp_bisulfite" or "hp_NOME" or "genomic" or "hp_genomic" or "CLEVER" or "hp_CLEVER" (fixed vocabulary) (character)
+                                 primer.type="bisulfite",#"NOME" or "bisulfite" or "hp_bisulfite" or "hp_NOME" or "genomic" or "hp_genomic" or "CLEVER" or "hp_CLEVER" (fixed vocabulary) (character) or "CrispRCas9PCR"
                                  mode="fast", #"exact" or "fast" (fixed vocabulary) (character)
                                  strand="top",#"both","top","bottom" (fixed vocabulary) (character)
                                  min.length.primer=23, #minimum length of primers (numeric)
@@ -580,7 +580,7 @@ ucsc.info<-function(assembly="hg19",
 
   # labs<-c("Settings","InputFile","Restriction Enzymes & Linkers","Hairpinizer Results","Summary","Primer","Primer_Toplist")
 # }
-# if(primer.type=="bisulfite" | primer.type=="NOME" | primer.type=="genomic" | primer.type=="CLEVER"){
+# if(primer.type=="bisulfite" | primer.type=="NOME" | primer.type=="genomic" | primer.type=="CLEVER" |primer.type=="CrispRCas9PCR"){
   # links<-c(paste("html_",analysis.id,"/settings_",analysis.id,".html",sep=""),
            # paste("html_",analysis.id,"/bedfile_",analysis.id,".html",sep=""),
            # paste("html_",analysis.id,"/summary_",analysis.id,".html",sep=""),
@@ -1109,7 +1109,7 @@ if (annotate.genes){
 #######################################################################################
 #######################################################################################
     
-  if(primer.type == "bisulfite" | primer.type == "hp_bisulfite"){
+  if(primer.type == "bisulfite" | primer.type == "hp_bisulfite" | primer.type == "CrispRCas9PCR"){
    bed$sequence.converted<-sapply(bed$sequence,bisulfite.conversion,strand=strand)
    }
   
@@ -1117,7 +1117,7 @@ if (annotate.genes){
     bed$sequence.converted<-sapply(bed$sequence,gcCon,strand=strand)   
   }
   
-  if(primer.type == "genomic" | primer.type == "hp_genomic" | primer.type == "CLEVER" | primer.type == "hp_CLEVER"){
+  if(primer.type == "genomic" | primer.type == "hp_genomic" | primer.type == "CLEVER" | primer.type == "hp_CLEVER" ){
     bed$sequence.converted<-bed$sequence
   }
   
@@ -1152,15 +1152,45 @@ if(primer.type=="hp_bisulfite" | primer.type=="hp_NOME" | primer.type=="hp_genom
   
   if(is.na(hp.filename)){
     log("Required hairpin infofile is missing...use default hairpin settings...")
-    hp.info<-data.frame(RE.id=c("MspI","AluI","TaqI","Nla3","PstI","BamHI", "DdeI"),
-                        RE.seq=c("CCGG","AGCT","TCGA","CATG","CTGCAG","GGATCC","CTNAG"),
+    hp.info<-data.frame(RE.id=c("MspI",
+                                "AluI",
+                                "TaqI",
+                                "Nla3",
+                                "PstI",
+                                "BamHI",
+                                "DdeI",
+                                "BsaWI",
+                                "Eco47I",
+                                "PpuMI",
+                                "BlpI",
+                                "Bpu10I",
+                                "Bsu36I"),
+                        RE.seq=c("CCGG",
+                                 "AGCT",
+                                 "TCGA",
+                                 "CATG",
+                                 "CTGCAG",
+                                 "GGATCC",
+                                 "CTNAG",
+                                 "WCCGGW",
+                                 "GGWCC",
+                                 "RGGWCCY",
+                                 "GCTNAGC",
+                                 "CCTNAGC",
+                                 "CCTNAGG"),
                         linker.sequence=c(toupper("CGGGGCCCATddddddddATGGGCCC"),
                                           toupper("GGGCCCATddddddddATGGGCCC"),
                                           toupper("CGGGGCCCATddddddddATGGGCCC"),
                                           toupper("GGGCCTAATATAGTATAGGCCCCATG"),
                                           toupper("GGGCCTAATATAGTATAGGCCCTGCA"),
                                           toupper("GATCGGGCCCATddddddddATGGGCCC"),
-                                          toupper("tnagggSccatddddddddatgggScc")))
+                                          toupper("tnagggSccatddddddddatgggScc"),
+                                          toupper("CCGGCGG5G6GATDDDDDDDDATCG7G8CG"),
+                                          toupper("GWCGGG5G6GATDDDDDDDDATCG7G8CC"),
+                                          toupper("GWCGGG5G6GATDDDDDDDDATCG7G8CC"),
+                                          toupper("TNAGCG5G6GATDDDDDDDDATCG7G8GC"),
+                                          toupper("TNAGCG5G6GATDDDDDDDDATCG7G8GC"),
+                                          toupper("TNAGCG5G6GATDDDDDDDDATCG7G8GC")))
     write.table(hp.info,file=paste(path.sequences,"RestrictionEnzymesAndLinkerInfo_",analysis.id,".txt",sep=""),sep="\t",dec=".",col.names=TRUE,row.names=FALSE)
   }
 
@@ -1386,7 +1416,7 @@ for (istrand in strand){ #top and bottom strand
     sequence<-as.character(bed[iseq,"sequence"])   
     sequence.id<-as.character(bed[iseq,"sequenceID"])
     
-    if(primer.type=="bisulfite" | primer.type=="NOME" | primer.type=="genomic" | primer.type=="CLEVER"){
+    if(primer.type=="bisulfite" | primer.type=="NOME" | primer.type=="genomic" | primer.type=="CLEVER" | primer.type == "CrispRCas9PCR"){
       
     if(input.type=="regions"){
       i.amp.chr<-as.numeric(paste(gsub("chr","",bed[iseq,"chr"])))
@@ -1516,6 +1546,31 @@ for (istrand in strand){ #top and bottom strand
                                 strand=istrand,
                                 mode=mode)
       colnames(np)<-gsub("NOME","CLEVER",colnames(np))
+    }
+    
+    #
+    
+    if(primer.type=="CrispRCas9PCR"){
+      np<-crispR.Cas9.amp.primer.design(sequence=sequence,
+                                        sequence.id=sequence.id,
+                                        min.Tm.primer=min.Tm.primer,
+                                        max.Tm.primer=max.Tm.primer,
+                                        min.number.gc.amplicon=min.number.gc.amplicon,
+                                        min.number.cg.amplicon=min.number.cg.amplicon,
+                                        max.Tm.difference.primer=max.Tm.difference.primer,
+                                        primer.align.binsize=primer.align.binsize,
+                                        min.length.primer=min.length.primer,
+                                        max.length.primer=max.length.primer, 
+                                        low.complexity.primer.removal=low.complexity.primer.removal,
+                                        max.bins.low.complexity=max.bins.low.complexity,
+                                        remove.primers.with.n=remove.primers.with.n,
+                                        min.C2T.primer1=0,
+                                        min.G2A.primer2=0,
+                                        min.length.amplicon=min.length.amplicon,
+                                        max.length.amplicon=max.length.amplicon,
+                                        strand=istrand,
+                                        mode=mode)
+      colnames(np)<-gsub("NOME","CrispRCas9PCR",colnames(np))
     }
 #
       if(primer.type=="hp_bisulfite"){
@@ -2209,7 +2264,7 @@ if (create.toplist){
       }
       }
       
-      if(primer.type=="bisulfite" | primer.type=="hp_bisulfite" | primer.type=="CLEVER" | primer.type=="hp_CLEVER"){
+      if(primer.type=="bisulfite" | primer.type=="hp_bisulfite" | primer.type=="CLEVER" | primer.type=="hp_CLEVER" | primer.type=="CrispRCas9PCR"){
         if(is.infinite(max(pool3$nCGs))){
           pool4<-pool3
         }
@@ -2463,7 +2518,7 @@ if(create.graphics){
     
  ###############################################################################################################
     
-    if(primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER"){
+    if(primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR"){
     
     #per sequence id primer design overview plot
     
@@ -2663,7 +2718,7 @@ if(create.graphics){
     
     if(check4snps & exists("all_my_snps")){
       
-      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
          input.type == "regions"){
         
       selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2740,7 +2795,7 @@ if(create.graphics){
     
     if(check4repeats & exists("all_my_repeats")){
       
-      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
          input.type == "regions"){
         
         selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2837,7 +2892,7 @@ if(create.graphics){
 
     if(annotate.genes & exists("all_my_genes")){
       
-      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
          input.type == "regions"){
         
         selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2951,7 +3006,7 @@ if(create.graphics){
     
     if(annotate.cpg.islands & exists("all_my_cpgis")){
       
-      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
          input.type == "regions"){
         
         selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
