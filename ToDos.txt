@@ -22,7 +22,7 @@ EpiPrimer GUI
   
 	#when done remove input type option from GUI
 	
-- add examples for input files  (but where should we show them?)
+- add examples for input files  (but where should we show them?) --> we could offer "example input files" as download? 
 #example for region file
 chr	start	end	assembly	sequenceID
 chr10	8095800	8098000	hg19	GATA3_prom
