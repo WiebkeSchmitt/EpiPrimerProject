@@ -134,239 +134,83 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                               
                               h2(strong("Advanced primer settings: ")),
                                 fluidRow(
-                                    #conditional panel for genomic primer
-                                    conditionalPanel(
-                                      condition= "input.i_primer_type == 'genomic'",
-                                        column(6,
-                                              sliderInput("i_chop.size", label = h4("input sequence slicing"),
-                                                          min = 0, max = 50, value = 30),
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 7), 
-                                              sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                          min = 0, max = 50, value = 12)
-                                              ),
-                                      column(6,
-                                             sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(23, 34)),
-                                             sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 60, value = c(48, 60)),
-                                             sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                          min = 0, max = 10, value = 3),
-                                             sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                          min = 0, max = 10, value = 3),
-                                             sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 2),
-                                             sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                          min = 100, max = 800, value = c(150,500)),
-                                             sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0),
-                                             sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 5)
-                                             )
-                                    ),
-                                    conditionalPanel(
-                                      condtition="input.i_primer_type =='bisulfite'",
-                                      column(6,
-                                             sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                         min = 0, max = 10, value = 7), 
-                                             sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                         min = 0, max = 50, value = 12),
-                                             sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                         min = 10, max = 80, value = c(23, 34)),
-                                             sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                         min = 40, max = 60, value = c(48, 60)),
-                                             sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                         min = 0, max = 10, value = 3)
-                                      ),
-                                      column(6,
-                                             sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                         min = 0, max = 10, value = 3),
-                                             sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                         min = 0, max = 10, value = 2),
-                                             sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                         min = 100, max = 800, value = c(150,500)),
-                                             sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                         min = 0, max = 10, value = 0),
-                                             sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                         min = 0, max = 10, value = 5)
-                                      )
-                                    ),
-                                    conditionalPanel(
-                                      condtition="input.i_primer_type =='NOME'",
-                                      column(6,
-                                             sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                         min = 0, max = 10, value = 7), 
-                                             sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                         min = 0, max = 50, value = 12),
-                                             sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                         min = 10, max = 80, value = c(23, 34)),
-                                             sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                         min = 40, max = 60, value = c(48, 60)),
-                                             sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                         min = 0, max = 10, value = 3)
-                                             ),
-                                      column(6,
-                                             
-                                             sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                         min = 0, max = 10, value = 3),
-                                             sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                         min = 0, max = 10, value = 2),
-                                             sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                         min = 100, max = 800, value = c(150,500)),
-                                             sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                         min = 0, max = 10, value = 0),
-                                             sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                         min = 0, max = 10, value = 5)
-                                      )
-                                    ),
-                                    
-                                    conditionalPanel(
-                                      condtition="input.i_primer_type =='CLEVER'",
-                                        column(6,
-                                             sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                         min = 0, max = 10, value = 7), 
-                                             sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                         min = 0, max = 50, value = 12),
-                                             sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                         min = 10, max = 80, value = c(23, 34)),
-                                             sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                         min = 40, max = 60, value = c(48, 60)),
-                                             sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                         min = 0, max = 10, value = 3)
-                                      ),
-                                      column(6,
-                                             sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                         min = 0, max = 10, value = 3),
-                                             sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                         min = 0, max = 10, value = 2),
-                                             sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                         min = 100, max = 800, value = c(150,500)),
-                                             sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                         min = 0, max = 10, value = 0),
-                                             sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                         min = 0, max = 10, value = 5)
-                                      )
-                                    ),
-                                    conditionalPanel(
-                                      condtition="input.i_primer_type =='hp_bisulfite'",
-                                      column(6,
-                                             sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                         min = 0, max = 10, value = 7), 
-                                             sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                         min = 0, max = 50, value = 12),
-                                             sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                         min = 0, max = 1000, value = c(50, 300)),
-                                             sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                         min = 10, max = 80, value = c(23, 34)),
-                                             sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                         min = 40, max = 60, value = c(48, 60))
-                                      ),
-                                      column(6,
-                                             sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                         min = 0, max = 10, value = 3),
-                                             sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                         min = 0, max = 10, value = 3),
-                                             sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                         min = 0, max = 10, value = 2),
-                                             sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                         min = 100, max = 800, value = c(150,500)),
-                                             sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                         min = 0, max = 10, value = 0),
-                                             sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                         min = 0, max = 10, value = 5)
-                                      )
-                                  ),
-                                  conditionalPanel(
-                                    condtition="input.i_primer_type =='hp_NOME'",
                                     column(6,
-                                           sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                       min = 0, max = 10, value = 7), 
+                                            sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                                        min = 0, max = 10, value = 7)
+                                          ),
+                                    column(6,
                                            sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                       min = 0, max = 50, value = 12),
-                                           sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                       min = 0, max = 1000, value = c(50, 300)),
-                                           sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                       min = 10, max = 80, value = c(23, 34)),
-                                           sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                       min = 40, max = 60, value = c(48, 60))
-                                    ),
-                                    column(6,
-                                           sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                       min = 0, max = 10, value = 2),
-                                           sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                       min = 100, max = 800, value = c(150,500)),
-                                           sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                       min = 0, max = 10, value = 0),
-                                           sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                       min = 0, max = 10, value = 5)
-                                    )
-                                  ),
-                                  conditionalPanel(
-                                    condtition="input.i_primer_type =='hp_CLEVER'",
-                                    column(6,
-                                           sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                       min = 0, max = 10, value = 7), 
-                                           sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                       min = 0, max = 50, value = 12),
-                                           sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                       min = 0, max = 1000, value = c(50, 300)),
-                                           sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                       min = 10, max = 80, value = c(23, 34)),
-                                           sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                       min = 40, max = 60, value = c(48, 60))
-                                    ),
-                                    column(6,
-                                           sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                       min = 0, max = 10, value = 2),
-                                           sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                       min = 100, max = 800, value = c(150,500)),
-                                           sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                       min = 0, max = 10, value = 0),
-                                           sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                       min = 0, max = 10, value = 5)
-                                    )
-                                  ),
-                                  conditionalPanel(
-                                    condtition="input.i_primer_type =='CrispRCas9PCR'",
-                                    column(6,
-                                           sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                                                       min = 0, max = 10, value = 7), 
-                                           sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                       min = 0, max = 50, value = 12),
-                                           sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                       min = 0, max = 1000, value = c(50, 300))
-                                    ),
+                                                        min = 0, max = 50, value = 12)
+                                          ),
                                     column(6,
                                            sliderInput("i_primerlength", label = h4("Primer Length"),
-                                                       min = 10, max = 80, value = c(18, 20)),
+                                                        min = 10, max = 80, value = c(23, 34))
+                                           ),
+                                    column(6,
                                            sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                       min = 40, max = 60, value = c(30, 60)),
-                                           sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                       min = 0, max = 10, value = 3),
-                                           sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
-                                                       min = 100, max = 800, value = c(200,500)),
-                                           sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                                                       min = 0, max = 10, value = 0),
-                                           sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                                                       min = 0, max = 10, value = 5)
-                                    )
-                                  )
+                                                        min = 40, max = 60, value = c(48, 60))
+                                           )
+                                ),
+                              fluidRow(
+                                column(6,
+                                       sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
+                                                     min = 0, max = 10, value = 3)
+                                       ),
+                                column(6,
+                                       sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
+                                                                 min = 0, max = 10, value = 3)
+                                       ),
+                                column(6,
+                                       sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                    min = 0, max = 10, value = 2)
+                                       ),
+                                column(6,
+                                       sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
+                                                    min = 100, max = 800, value = c(150,500))
+                                       ),
+                                column(6,
+                                       sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                                                    min = 0, max = 10, value = 0)
+                                       ),
+                                column(6,
+                                       sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                                                    min = 0, max = 10, value = 5)
+                                       )
+                              ),
+                              fluidRow(
+                                conditionalPanel(
+                                  condition = "input.i_primer_type == 'hp_bisulfite'", 
+                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                               min = 0, max = 1000, value = c(50, 300))
+                                ),
+                                conditionalPanel(
+                                  condition = "input.i_primer_type == 'hp_NOME'",
+                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                              min = 0, max = 1000, value = c(50, 300))
+                                ),
+                                conditionalPanel(
+                                  condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                               min = 0, max = 1000, value = c(50, 300))
+ 
+                                ),
+                                conditionalPanel(
+                                  condition = "input.i_primer_type == 'hp_genomic'",
+                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                              min = 0, max = 1000, value = c(50, 300))
+       
+                                ),
+                                column(6,
+                                       conditionalPanel(
+                                         condition = "input.i_primer_type == 'genomic'",
+                                         sliderInput("i_chop.size", label = h4("input sequence slicing"),
+                                                     min = 0, max = 50, value = 30)
+              
+                                       ))
+                                )
                               )
-                          )
-                      )   
-                   ),#end main panel
+                              )
+                          ),
                    
                    ############  UI For Results of Primers Design  #############
                    
