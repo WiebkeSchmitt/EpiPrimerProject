@@ -79,12 +79,12 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 ),
                                 checkboxInput("i_annotate.genes", label = h4("Annotate primers/amplicons for underlying genes"), FALSE),
                                 checkboxInput("i_annotate.cpg.islands", label = h4("Annotate primers/amplicons for underlying CpG islands"), FALSE),
-                                checkboxInput("adapterF", label = h4("Add adapter 5' to the forward primer"), FALSE),
+                                checkboxInput("adapterF", label = h4("Add a specific sequence to 5' end of forward primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterF == 1",
                                   textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
                                 ),
-                                checkboxInput("adapterR", label = h4("Add adapter 5' to the reverse primer"), FALSE),
+                                checkboxInput("adapterR", label = h4("Add a specific sequence to 5' end of reverse primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterR==1",
                                   textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
@@ -111,7 +111,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                   column(4,
                                          radioButtons("i_primer_type", label = h3("Primer Type"),
                                                       choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
-                                                                     "HP_Genomic"="hp_genomic", "HP_Bisulfite" = "hp_bisulfite", "HP_NOME" = "hp_NOME", "HP_CLEVER"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
+                                                                     "Genomic (hairpin)"="hp_genomic", "Bisulfite (hairpin)" = "hp_bisulfite", "NOME (hairpin)" = "hp_NOME", "CLEVER (hairpin)"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
                                                       selected = "genomic"), 
                                          
                                          bsTooltip("i_primer_type", "What kind of primer do you want to create?", "bottom", "hover")
@@ -148,16 +148,16 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                            ),
                                     column(6,
                                            sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                                                        min = 40, max = 60, value = c(48, 60))
+                                                        min = 40, max = 75, value = c(48, 60))
                                            )
                                 ),
                               fluidRow(
                                 column(6,
-                                       sliderInput("i_minC2T", h4("Minimum C2T conversions forward primer"),
+                                       sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
                                                      min = 0, max = 10, value = 3)
                                        ),
                                 column(6,
-                                       sliderInput("i_minG2A", h4("Minimum G2A conversions reverse primer"),
+                                       sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
                                                                  min = 0, max = 10, value = 3)
                                        ),
                                 column(6,
@@ -165,7 +165,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                                     min = 0, max = 10, value = 2)
                                        ),
                                 column(6,
-                                       sliderInput("i_lengthAmp", label = h4("Length Amplicon"),
+                                       sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
                                                     min = 100, max = 800, value = c(150,500))
                                        ),
                                 column(6,

@@ -1474,8 +1474,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             iseq.p1.end<-results2[iamplicons,"primer1.end"]
             iseq.p2.start<-results2[iamplicons,"primer2.start"]
             iseq.p2.end<-results2[iamplicons,"primer2.end"]
-           
-            results2[iamplicons,"SNP.db"] <- levels(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr","",iseq.chr)) & as.numeric(as.character(all_my_snps$start>=iseq.amp.start)) & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
+            
+            results2[iamplicons,"SNP.db"] <- levels(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr","",iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
             results2[iamplicons,"amplicon.nSNPs"] <- length(levels(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end , "rs_id"]))
             results2[iamplicons,"amplicon.SNP.ids"]<-paste(levels(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"rs_id"]),collapse=",")
             results2[iamplicons,"primer1.nSNPs"] <- length(levels(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.p1.start & as.numeric(as.character(all_my_snps$start))<=iseq.p1.end ,"rs_id"]))
