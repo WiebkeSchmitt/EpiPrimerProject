@@ -122,14 +122,14 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                                       choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
                                                       selected = "top"),
                                          bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
-                                  ),
+                                  )
                                 
-                                column(4,
-                                       radioButtons("inputtype", label = h3("Input Type"),
-                                                    choices = list("Sequence" = "sequences", "Region" = "regions"),
-                                                    selected = "sequences"),
-                                       bsTooltip("inputtype", "Would you like to design your primers for a specific genomic region or another nucleotide sequence?", "bottom", "hover")
-                                )
+                                # column(4,
+                                #        radioButtons("inputtype", label = h3("Input Type"),
+                                #                     choices = list("Sequence" = "sequences", "Region" = "regions"),
+                                #                     selected = "sequences"),
+                                #        bsTooltip("inputtype", "Would you like to design your primers for a specific genomic region or another nucleotide sequence?", "bottom", "hover")
+                                # )
                               ),
                               
                               h2(strong("Advanced primer settings: ")),

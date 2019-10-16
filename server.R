@@ -97,7 +97,7 @@ shinyServer(function(input, output) {
       
       #call the primer design pipeline
       primer.design.pipeline(Dataset(), 
-                             input.type = input$inputtype, 
+                             #input.type = input$inputtype, 
                              path.out = paste(getwd(),input$name,sep="/"),
                              primer.type = input$i_primer_type,
                              low.complexity.primer.removal=TRUE,
