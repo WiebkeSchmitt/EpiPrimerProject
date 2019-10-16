@@ -588,9 +588,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             chrom<-paste(bedia[,"chr"])
             allstarts<-as.numeric(as.character(bedia[,"start"]))
             allends<-as.numeric(as.character(bedia[,"end"]))
-            
-            print("chrom for snp abfrage")
-            print(chrom)
+          
             my_snps <- fetch.snp.info.rest(assembly = assem,
                                            chr = chrom,
                                            start = allstarts,
@@ -2394,8 +2392,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             
             
             tolo<-all_my_snps[all_my_snps$chr==selchr & 
-                                all_my_snps$start >= bedstart & 
-                                all_my_snps$end <= bedend,]
+                                as.numeric(as.character(all_my_snps$start)) >= bedstart & 
+                                as.numeric(as.character(all_my_snps$end)) <= bedend,]
             
             tolo$start.relative=tolo$chromStart-bedstart+1
             tolo$end.relative=tolo$chromEnd-bedstart+1

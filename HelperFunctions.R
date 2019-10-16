@@ -550,11 +550,7 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=variation")
   
-  for (i in 1:length(ext)){
-    r <- GET(paste(server, ext[i], sep=""))
-  }
-  
-  stop_for_status(r)
+  r <- GET(paste(server, ext[1], sep=""))
   
   s = content(r)
   s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})

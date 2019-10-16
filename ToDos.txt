@@ -5,7 +5,7 @@ EpiPrimer GUI
 - remove HP_Genomic option
 #- replace 'HP_x' with 'x (hairpin)'
 
-- idea: instead of user gives 'input type' we could implement code that actually recognizes it automatically 
+#- idea: instead of user gives 'input type' we could implement code that actually recognizes it automatically 
 ('regions' input file will have columns with 'chr', 'start', 'end', but 'sequences' will have column 'sequence')
 
 	  if(c("chr") %in% colnames(...)){
@@ -41,15 +41,15 @@ TTCTTTCTGTCCGTCTACACTGAGCGTACTCGGGGAATGAGTTAGAGCCAGTCTCTTCCTCCCCTCCCCCCTTCTCATCC
 
 #- change 'add adapter to 5'end of forward/reverse primer' to 'add a specific sequence to 5'end of forward/reverse primer' (do not display this option for crispRCas primers)
 
-- do not show 'strand' option for Genomic/crisp primers
+#- do not show 'strand' option for Genomic/crisp primers
 
-- replace 'Minimum C2T conversions forward primer' with 'Minimum 'C' to 'T' conversions in forward primer' (do not display this option for genomic/crispRCas primers)
-- replace 'Minimum G2A conversions reverse primer' with 'Minimum 'G' to 'A' conversions in reverse primer' (do not display this option for genomic/crispRCas primers)
-- CrispRCas9 Amplicon options shows a lot of options twice, many need to be removed completely
-- scale for Primer Melting Temperature should reach up to 75
+#- replace 'Minimum C2T conversions forward primer' with 'Minimum 'C' to 'T' conversions in forward primer' (do not display this option for genomic/crispRCas primers)
+#- replace 'Minimum G2A conversions reverse primer' with 'Minimum 'G' to 'A' conversions in reverse primer' (do not display this option for genomic/crispRCas primers)
+#- CrispRCas9 Amplicon options shows a lot of options twice, many need to be removed completely
+#- scale for Primer Melting Temperature should reach up to 75
 
 - Number of SNPs allowed in the amplicon: there should be only
-- 'Length Amplicon' changed to Amplicon Length
+#- 'Length Amplicon' changed to Amplicon Length
 
 - General shorten header for each parameter to take in one row (if possible)
 - change 'Annotate primers/amplicons for underlying genes' to 'Annotate genes' (not working at the moment, if we can't fix it, should be removed)
