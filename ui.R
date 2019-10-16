@@ -108,7 +108,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 DT::dataTableOutput("table"),
                                 h2(strong("Basic primer settings: ")),
                                 fluidRow(
-                                  column(4,
+                                  column(6,
                                          radioButtons("i_primer_type", label = h3("Primer Type"),
                                                       choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
                                                                      "Genomic (hairpin)"="hp_genomic", "Bisulfite (hairpin)" = "hp_bisulfite", "NOME (hairpin)" = "hp_NOME", "CLEVER (hairpin)"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
@@ -117,11 +117,14 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                          bsTooltip("i_primer_type", "What kind of primer do you want to create?", "bottom", "hover")
                                   ),
                                   
-                                  column(4,
-                                         radioButtons("i_strand", label = h3("Strand"),
-                                                      choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
-                                                      selected = "top"),
-                                         bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
+                                  column(6,
+                                         conditionalPanel(
+                                           condition = "input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                           radioButtons("i_strand", label = h3("Strand"),
+                                                        choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
+                                                        selected = "top"),
+                                           bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
+                                         )
                                   )
                                 
                                 # column(4,
