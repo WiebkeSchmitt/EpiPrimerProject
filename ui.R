@@ -77,8 +77,8 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                   checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
                                   checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
                                 ),
-                                checkboxInput("i_annotate.genes", label = h4("Annotate primers/amplicons for underlying genes"), FALSE),
-                                checkboxInput("i_annotate.cpg.islands", label = h4("Annotate primers/amplicons for underlying CpG islands"), FALSE),
+                                checkboxInput("i_annotate.genes", label = h4("Annotate genes"), FALSE),
+                                checkboxInput("i_annotate.cpg.islands", label = h4("Annotate CpG islands"), FALSE),
                                 checkboxInput("adapterF", label = h4("Add a specific sequence to 5' end of forward primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterF == 1",
@@ -126,13 +126,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                            bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
                                          )
                                   )
-                                
-                                # column(4,
-                                #        radioButtons("inputtype", label = h3("Input Type"),
-                                #                     choices = list("Sequence" = "sequences", "Region" = "regions"),
-                                #                     selected = "sequences"),
-                                #        bsTooltip("inputtype", "Would you like to design your primers for a specific genomic region or another nucleotide sequence?", "bottom", "hover")
-                                # )
+              
                               ),
                               
                               h2(strong("Advanced primer settings: ")),
@@ -144,7 +138,9 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                     column(6,
                                            sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
                                                         min = 0, max = 50, value = 12)
-                                          ),
+                                          )
+                                ),
+                                fluidRow(
                                     column(6,
                                            sliderInput("i_primerlength", label = h4("Primer Length"),
                                                         min = 10, max = 80, value = c(23, 34))
@@ -154,15 +150,8 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                                         min = 40, max = 75, value = c(48, 60))
                                            )
                                 ),
-                              fluidRow(
-                                column(6,
-                                       sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
-                                                     min = 0, max = 10, value = 3)
-                                       ),
-                                column(6,
-                                       sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
-                                                                 min = 0, max = 10, value = 3)
-                                       ),
+                                fluidRow(
+                                
                                 column(6,
                                        sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
                                                     min = 0, max = 10, value = 2)
@@ -170,7 +159,9 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 column(6,
                                        sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
                                                     min = 100, max = 800, value = c(150,500))
-                                       ),
+                                       )
+                                ),
+                                fluidRow(
                                 column(6,
                                        sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
                                                     min = 0, max = 10, value = 0)
@@ -179,37 +170,38 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                        sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
                                                     min = 0, max = 10, value = 5)
                                        )
-                              ),
-                              fluidRow(
-                                conditionalPanel(
-                                  condition = "input.i_primer_type == 'hp_bisulfite'", 
-                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                               min = 0, max = 1000, value = c(50, 300))
                                 ),
-                                conditionalPanel(
-                                  condition = "input.i_primer_type == 'hp_NOME'",
-                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                              min = 0, max = 1000, value = c(50, 300))
-                                ),
-                                conditionalPanel(
-                                  condition = "input.i_primer_type == 'hp_CLEVER'",
-                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                               min = 0, max = 1000, value = c(50, 300))
- 
-                                ),
-                                conditionalPanel(
-                                  condition = "input.i_primer_type == 'hp_genomic'",
-                                  sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                              min = 0, max = 1000, value = c(50, 300))
-       
-                                ),
-                                column(6,
+                                fluidRow(
+                                  column(6,
+                                       conditionalPanel(
+                                         condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER' || input.i_primer_type == 'hp_genomic'", 
+                                         sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                                     min = 0, max = 1000, value = c(50, 300))
+                                                        )
+                                       ),
+                                  column(6,
                                        conditionalPanel(
                                          condition = "input.i_primer_type == 'genomic'",
                                          sliderInput("i_chop.size", label = h4("input sequence slicing"),
                                                      min = 0, max = 50, value = 30)
               
                                        ))
+                                ),
+                                fluidRow(
+                                column(6,
+                                     conditionalPanel(
+                                       condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                       sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
+                                                   min = 0, max = 10, value = 3)
+                                     )
+                                ),
+                                column(6,
+                                     conditionalPanel(
+                                       condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                       sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
+                                                   min = 0, max = 10, value = 3)
+                                     )
+                                )
                                 )
                               )
                               )
