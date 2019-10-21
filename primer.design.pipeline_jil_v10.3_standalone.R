@@ -713,6 +713,22 @@ if (input.type=="regions"){
   print(def.cols)
   nregs<-nrow(iregs)#number of input regions
   print(nregs)
+  
+  
+  if("sequenceID" %in% colnames(iregs)){
+    
+    iregs = iregs[order(iregs$sequenceID),]
+    reg.rle = rle(as.character(iregs$sequenceID))
+    
+    if(any(reg.rle$lengths > 1)){
+      
+      ids.new <- paste0(rep(reg.rle$values, times = reg.rle$lengths), "_",unlist(lapply(reg.rle$lengths, seq_len)))      
+      iregs$sequenceID = ids.new 
+      log("Found duplicated sequence IDs...unify IDs") 
+      
+    }
+  } 
+  
   if(nregs>maximum.input.regions){
     
     stop(paste("Too many input regions [max: ",maximum.input.regions,"]",sep=""))
@@ -1138,6 +1154,20 @@ if (input.type=="sequences"){
   bed<-table.in #read.table(file=filename.in,sep="\t",dec=".",header=TRUE)
   #html.report(filenames =  filename.in,filename.out = paste(path.html,"bedfile_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
   log("Done.")
+  
+  if("sequenceID" %in% colnames(bed)){
+    
+    bed = bed[order(bed$sequenceID),]
+    reg.rle = rle(as.character(bed$sequenceID))
+    
+    if(any(reg.rle$lengths > 1)){
+      
+      ids.new <- paste0(rep(reg.rle$values, times = reg.rle$lengths), "_",unlist(lapply(reg.rle$lengths, seq_len)))      
+      bed$sequenceID = ids.new 
+      
+      log("Found duplicated sequence IDs...unify IDs") 
+    }
+  } 
 
   }
 ################################################################################
