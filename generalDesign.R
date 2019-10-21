@@ -2125,13 +2125,12 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
       #html.report(filenames =  paste(path.html,"summary_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
       
       # primer designs by input sequence
-      tbl<-data.frame(table(results2$sequence.id))
-      print(tbl)
-      print(colnames(tbl))
-      colnames(tbl)<-c("sequence.id","amplicons[n]")
-      write.table(tbl,file=paste(path.wd,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),col.names=TRUE,row.names=FALSE,sep="\t",dec=".")
-      #html.report(filenames =  paste(path.html,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
-      
+      if(!is.na(results2$sequence.id)){
+        tbl<-data.frame(table(results2$sequence.id))
+        colnames(tbl)<-c("sequence.id","amplicons[n]")
+        write.table(tbl,file=paste(path.wd,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),col.names=TRUE,row.names=FALSE,sep="\t",dec=".")
+        #html.report(filenames =  paste(path.html,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
+      }
       log("Done.")
       
       ###################################################Write Whitelist################################
@@ -2281,7 +2280,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                       amplicon.id=rep("input.sequence [linker]",2),
                                       feature=NA))
           }# linker line
-          
+          print("before rbind")
           lol<-rbind(lol,data.frame(relative.position=NA,
                                     cg.pos=sa[sa$cg==TRUE,"basecount"],
                                     gc.pos=NA,
