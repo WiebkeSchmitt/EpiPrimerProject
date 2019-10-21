@@ -456,6 +456,22 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     print(def.cols)
     nregs<-nrow(iregs)#number of input regions
     print(nregs)
+    
+    if("sequenceID" %in% colnames(iregs)){
+      
+      iregs = iregs[order(iregs$sequenceID),]
+      reg.rle = rle(as.character(iregs$sequenceID))
+
+      if(any(reg.rle$lengths > 1)){
+        
+        ids.new <- paste0(rep(reg.rle$values, times = reg.rle$lengths), "_",unlist(lapply(reg.rle$lengths, seq_len)))      
+        iregs$sequenceID = ids.new 
+        log("Found duplicated sequence IDs...unify IDs") 
+        
+      }
+      
+    }
+    
     if(nregs>maximum.input.regions){
       
       stop(paste("Too many input regions [max: ",maximum.input.regions,"]",sep=""))
@@ -852,6 +868,22 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     bed<-table.in #read.table(file=filename.in,sep="\t",dec=".",header=TRUE)
     #html.report(filenames =  filename.in,filename.out = paste(path.html,"bedfile_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
     log("Done.")
+    
+    if("sequenceID" %in% colnames(bed)){
+
+      bed = bed[order(bed$sequenceID),]
+      reg.rle = rle(as.character(bed$sequenceID))
+
+      if(any(reg.rle$lengths > 1)){
+
+        ids.new <- paste0(rep(reg.rle$values, times = reg.rle$lengths), "_",unlist(lapply(reg.rle$lengths, seq_len)))      
+        bed$sequenceID = ids.new 
+        log("Found duplicated sequence IDs...unify IDs") 
+        
+      }
+      
+    } 
+    
     
   }
   ######################################hairpin specific section: calculate restriction digests##########################################
@@ -2015,7 +2047,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                    file=ffn,add=TRUE)
         
         
-        if (create.toplist){ 
+        if (create.toplist && !(is.data.frame(toplist) && nrow(toplist)==0)){ 
           
           #for primer toplist.
           toplist$ucsc.color<-700
@@ -2094,6 +2126,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
       
       # primer designs by input sequence
       tbl<-data.frame(table(results2$sequence.id))
+      print(tbl)
+      print(colnames(tbl))
       colnames(tbl)<-c("sequence.id","amplicons[n]")
       write.table(tbl,file=paste(path.wd,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),col.names=TRUE,row.names=FALSE,sep="\t",dec=".")
       #html.report(filenames =  paste(path.html,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
