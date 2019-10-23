@@ -801,6 +801,10 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                start = allstarts,
                                end = allends)
             
+            print(my_cpgi)
+            print(nrow(my_cpgi))
+            print(ncol(my_cpgi))
+            
             if(nrow(my_cpgi)>0){
               
               my_cpgi$assembly<-assem
