@@ -50,7 +50,11 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                    tabPanel("Primers Design",
                             sidebarLayout(
                               sidebarPanel(
-                                tippy("Upload the region for which you want to calculate potential primers:","Your input must contain the fields 'chr', 'start', 'end', 'assembly' and 'sequenceID'"),
+                                tippy("Upload the region for which you want to calculate potential primers. Your file should contain either a specification by region or sequence. Download example files here:","Your input must contain the fields 'chr', 'start', 'end', 'assembly' and 'sequenceID'"),
+                                hr(),
+                                downloadButton("downloadSequenceFile", "example sequence file"),
+                                hr(),
+                                downloadButton("downloadRegionsFile", "example regions file"),
                                 hr(),
                                 # Upload data:
                                 fileInput("file", "Upload file:"),
