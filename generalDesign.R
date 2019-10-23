@@ -792,30 +792,14 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           
           if(assem %in% supported.assemblies.snp){
             
-            cpgitrack<-switch(assem, 
-                              "hg18" = "cpgIslandExt",
-                              "hg19" = "cpgIslandExt",
-                              "hg38" = "cpgIslandExt",
-                              "mm9"  = "cpgIslandExt",
-                              "mm10" = "cpgIslandExt")
-            
-            cpgitable<-switch(assem, 
-                              "hg18" = "cpgIslandExt",
-                              "hg19" = "cpgIslandExt",
-                              "hg38" = "cpgIslandExt",
-                              "mm9"  = "cpgIslandExt",
-                              "mm10" = "cpgIslandExt")
-            
             chrom<-paste(bedia[,"chr"])
             allstarts<-as.numeric(as.character(bedia[,"start"]))
             allends<-as.numeric(as.character(bedia[,"end"]))
             
-            my_cpgi<-ucsc.info(assembly = assem,
+            my_cpgi<-fetch.dna.sequence(assembly = assem,
                                chr = chrom,
                                start = allstarts,
-                               end = allends,
-                               track = cpgitrack,
-                               table = cpgitable)
+                               end = allends)
             
             if(nrow(my_cpgi)>0){
               
@@ -2165,739 +2149,742 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
         log("Create graphics...")
         require(ggplot2)
         
-        for(ibp in 1:length(levels(factor(results2$sequence.id)))){
+        if(length(levels(factor(results2$sequence.id))) >= 1){
           
-          ibps<-paste(levels(factor(results2$sequence.id)))[ibp]
-          plot.dat<-results2[as.character(results2$sequence.id)==ibps,]
-          
-          if(create.amplicon.barplots){
-            
-            png(filename=paste(path.graphics,"bar.amplicon.length_",ibps,".png",sep=""),height=1000,width=1200,pointsize=24)
-            par(mar=c(8,4,4,2)+0.1)
-            barplot(plot.dat[,"amplicon.length"],
-                    names.arg = paste(plot.dat$amplicon.id),las=3,cex.names = 0.5,
-                    ylab="amplicon length",
-                    main=paste(ibps,": size of designed amplicons [n=",nrow(plot.dat),"]",sep=""),
-                    cex.main=0.8)
-            dev.off()
-            
-            png(filename=paste(path.graphics,"bar.number.cgs_",ibps,".png",sep=""),height=1000,width=1200,pointsize=24)
-            par(mar=c(8,4,4,2)+0.1)
-            barplot(plot.dat[,"nCGs"],
-                    names.arg = paste(plot.dat$amplicon.id),las=3,cex.names = 0.5,
-                    ylab="number of CpGs",
-                    main=paste(ibps,": occurence of CpG sites in designed amplicons [n=",nrow(plot.dat),"]",sep=""),
-                    cex.main=0.8)
-            dev.off()
-            
-            png(filename=paste(path.graphics,"bar.number.gcs_",ibps,".png",sep=""),height=1000,width=1200,pointsize=24)
-            par(mar=c(8,4,4,2)+0.1)
-            barplot(plot.dat[,"nGCs"],
-                    names.arg = paste(plot.dat$amplicon.id),las=3,cex.names = 0.5,
-                    ylab="number of GpCs",
-                    main=paste(ibps,": occurence of GpC sites in designed amplicons [n=",nrow(plot.dat),"]",sep=""),
-                    cex.main=0.8)
-            dev.off()
-          }
-          
-          ####################################################per sequence id primer design overview plot###########################################################
-          
-          if(primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR"){
-            
-            #per sequence id primer design overview plot
-            
-            #bed[ir,c("start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")]
-            ipt<-NA
-            bed.length<-nchar(as.character(bed[as.character(bed$sequenceID)==ibps,"sequence"]))
-            sa<-seq.ana.all[[ibps]]#read.table(file="E:\\Science_Jil\\Projects\\SB_PrimerDesign\\#LiveDemo\\html_bis_withSNPanalysis\\sequences\\sequence.characterization_sequence1.txt",header=T,sep="\t",dec=".")
-            sels<-results2[as.character(results2$sequence.id)==ibps,]
-            
-          }# if(not hairpin)
-          
-          if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-             hp.initial.input.type == "regions"){
-            
-            #per sequence id primer design overview plot
-            
-            #bed[ir,c("start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")]
-            ipt<-paste(hpf2[hpf2$sequenceID==ibps,"inputID"])
-            bed.length<-nchar(as.character(hpf2[as.character(hpf2$sequenceID)==ibps,"sequence"]))
-            sa<-seq.ana.all[[ibps]]#read.table(file="E:\\Science_Jil\\Projects\\SB_PrimerDesign\\#LiveDemo\\html_bis_withSNPanalysis\\sequences\\sequence.characterization_sequence1.txt",header=T,sep="\t",dec=".")
-            sels<-results2[as.character(results2$sequence.id)==ibps,]
-          }#if hp
-          
-          lol<-data.frame(relative.position=rep(c(1,nrow(sa)),6),
-                          cg.pos=NA,
-                          gc.pos=NA,
-                          snp_start=NA,
-                          snp_end=NA,
-                          p1_start=NA,
-                          p1_end=NA,
-                          p2_start=NA,
-                          p2_end=NA,
-                          amp.start=NA,
-                          amp.end=NA,
-                          linker.start=NA,
-                          linker.end=NA,
-                          repeat.start=NA,
-                          repeat.end=NA,
-                          gene.start=NA,
-                          gene.end=NA,
-                          cpgi.start=NA,
-                          cpgi.end=NA,
-                          sequence.id=ibps,
-                          amplicon.id=c(rep("input.sequence [CpG]",2),
-                                        rep("input.sequence [GpC]",2),
-                                        rep("input.sequence [SNP]",2),
-                                        rep("input.sequence [Repeats]",2),
-                                        rep("input.sequence [CpG Island]",2),
-                                        rep("input.sequence [Genes]",2)),
-                          feature=NA)
-          
-          if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-             hp.initial.input.type == "regions"){
-            
-            lol<-rbind(lol,data.frame(relative.position=rep(c(1,nrow(sa)),2),
-                                      cg.pos=NA,
-                                      gc.pos=NA,
-                                      snp_start=NA,
-                                      snp_end=NA,
-                                      p1_start=NA,
-                                      p1_end=NA,
-                                      p2_start=NA,
-                                      p2_end=NA,
-                                      amp.start=NA,
-                                      amp.end=NA,
-                                      linker.start=NA,
-                                      linker.end=NA,
-                                      repeat.start=NA,
-                                      repeat.end=NA,
-                                      gene.start=NA,
-                                      gene.end=NA,
-                                      cpgi.start=NA,
-                                      cpgi.end=NA,
-                                      sequence.id=ibps,
-                                      amplicon.id=rep("input.sequence [linker]",2),
-                                      feature=NA))
-          }# linker line
-          print("before rbind")
-          lol<-rbind(lol,data.frame(relative.position=NA,
-                                    cg.pos=sa[sa$cg==TRUE,"basecount"],
-                                    gc.pos=NA,
-                                    snp_start=NA,
-                                    snp_end=NA,
-                                    p1_start=NA,
-                                    p1_end=NA,
-                                    p2_start=NA,
-                                    p2_end=NA,
-                                    amp.start=NA,
-                                    amp.end=NA,
-                                    linker.start=NA,
-                                    linker.end=NA,
-                                    repeat.start=NA,
-                                    repeat.end=NA,
-                                    gene.start=NA,
-                                    gene.end=NA,
-                                    cpgi.start=NA,
-                                    cpgi.end=NA,
-                                    sequence.id=ibps,
-                                    amplicon.id="input.sequence [CpG]",
-                                    feature="CpG"))
-          
-          lol<-rbind(lol,data.frame(relative.position=NA,
-                                    cg.pos=NA,
-                                    gc.pos=sa[sa$gc==TRUE,"basecount"],
-                                    snp_start=NA,
-                                    snp_end=NA,
-                                    p1_start=NA,
-                                    p1_end=NA,
-                                    p2_start=NA,
-                                    p2_end=NA,
-                                    amp.start=NA,
-                                    amp.end=NA,
-                                    linker.start=NA,
-                                    linker.end=NA,
-                                    repeat.start=NA,
-                                    repeat.end=NA,
-                                    gene.start=NA,
-                                    gene.end=NA,
-                                    cpgi.start=NA,
-                                    cpgi.end=NA,
-                                    sequence.id=ibps,
-                                    amplicon.id="input.sequence [GpC]",
-                                    feature="GpC"))
-          
-          if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-             hp.initial.input.type == "regions"){
-            
-            lol<-rbind(lol,data.frame(relative.position=NA,
-                                      cg.pos=NA,
-                                      gc.pos=NA,
-                                      snp_start=NA,
-                                      snp_end=NA,
-                                      p1_start=NA,
-                                      p1_end=NA,
-                                      p2_start=NA,
-                                      p2_end=NA,
-                                      amp.start=NA,
-                                      amp.end=NA,
-                                      linker.start=as.numeric(as.character(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])),
-                                      linker.end=as.numeric(as.character(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"])),
-                                      repeat.start=NA,
-                                      repeat.end=NA,
-                                      gene.start=NA,
-                                      gene.end=NA,
-                                      cpgi.start=NA,
-                                      cpgi.end=NA,
-                                      sequence.id=ibps,
-                                      amplicon.id="input.sequence [linker]",
-                                      feature="linker"))
-          }#if hp
-          
-          lol<-rbind(lol,data.frame(relative.position=NA,
-                                    cg.pos=NA,
-                                    gc.pos=NA,
-                                    snp_start=NA,
-                                    snp_end=NA,
-                                    p1_start=as.numeric(as.character(sels$primer1.start.relative)),
-                                    p1_end=as.numeric(as.character(sels$primer1.end.relative)),
-                                    p2_start=as.numeric(as.character(sels$primer2.start.relative)),
-                                    p2_end=as.numeric(as.character(sels$primer2.end.relative)),
-                                    amp.start=NA,
-                                    amp.end=NA,
-                                    linker.start=NA,
-                                    linker.end=NA,
-                                    repeat.start=NA,
-                                    repeat.end=NA,
-                                    gene.start=NA,
-                                    gene.end=NA,
-                                    cpgi.start=NA,
-                                    cpgi.end=NA,
-                                    sequence.id=sels$sequence.id,
-                                    amplicon.id=sels$amplicon.id,
-                                    feature="primer"))
-          
-          lol<-rbind(lol,data.frame(relative.position=NA,
-                                    cg.pos=NA,
-                                    gc.pos=NA,
-                                    snp_start=NA,
-                                    snp_end=NA,
-                                    p1_start=NA,
-                                    p1_end=NA,
-                                    p2_start=NA,
-                                    p2_end=NA,
-                                    amp.start=as.numeric(as.character(sels$amplicon.start.relative)),
-                                    amp.end=as.numeric(as.character(sels$amplicon.end.relative)),
-                                    linker.start=NA,
-                                    linker.end=NA,
-                                    repeat.start=NA,
-                                    repeat.end=NA,
-                                    gene.start=NA,
-                                    gene.end=NA,
-                                    cpgi.start=NA,
-                                    cpgi.end=NA,
-                                    sequence.id=sels$sequence.id,
-                                    amplicon.id=sels$amplicon.id,
-                                    feature=NA))
-          
-          if(check4snps & exists("all_my_snps")){
-            
-            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
-               input.type == "regions"){
+            for(ibp in 1:length(levels(factor(results2$sequence.id)))){
+    
+              ibps<-paste(levels(factor(results2$sequence.id)))[ibp]
+              plot.dat<-results2[as.character(results2$sequence.id)==ibps,]
               
-              selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
-              bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
-              bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+              if(create.amplicon.barplots){
+                
+                png(filename=paste(path.graphics,"bar.amplicon.length_",ibps,".png",sep=""),height=1000,width=1200,pointsize=24)
+                par(mar=c(8,4,4,2)+0.1)
+                barplot(plot.dat[,"amplicon.length"],
+                        names.arg = paste(plot.dat$amplicon.id),las=3,cex.names = 0.5,
+                        ylab="amplicon length",
+                        main=paste(ibps,": size of designed amplicons [n=",nrow(plot.dat),"]",sep=""),
+                        cex.main=0.8)
+                dev.off()
+                
+                png(filename=paste(path.graphics,"bar.number.cgs_",ibps,".png",sep=""),height=1000,width=1200,pointsize=24)
+                par(mar=c(8,4,4,2)+0.1)
+                barplot(plot.dat[,"nCGs"],
+                        names.arg = paste(plot.dat$amplicon.id),las=3,cex.names = 0.5,
+                        ylab="number of CpGs",
+                        main=paste(ibps,": occurence of CpG sites in designed amplicons [n=",nrow(plot.dat),"]",sep=""),
+                        cex.main=0.8)
+                dev.off()
+                
+                png(filename=paste(path.graphics,"bar.number.gcs_",ibps,".png",sep=""),height=1000,width=1200,pointsize=24)
+                par(mar=c(8,4,4,2)+0.1)
+                barplot(plot.dat[,"nGCs"],
+                        names.arg = paste(plot.dat$amplicon.id),las=3,cex.names = 0.5,
+                        ylab="number of GpCs",
+                        main=paste(ibps,": occurence of GpC sites in designed amplicons [n=",nrow(plot.dat),"]",sep=""),
+                        cex.main=0.8)
+                dev.off()
+              }
               
-            }#if not hp
-            
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              ####################################################per sequence id primer design overview plot###########################################################
               
-              selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
-              bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
-              bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
-                as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
-              lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+              if(primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR"){
+                
+                #per sequence id primer design overview plot
+                
+                #bed[ir,c("start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")]
+                ipt<-NA
+                bed.length<-nchar(as.character(bed[as.character(bed$sequenceID)==ibps,"sequence"]))
+                sa<-seq.ana.all[[ibps]]#read.table(file="E:\\Science_Jil\\Projects\\SB_PrimerDesign\\#LiveDemo\\html_bis_withSNPanalysis\\sequences\\sequence.characterization_sequence1.txt",header=T,sep="\t",dec=".")
+                sels<-results2[as.character(results2$sequence.id)==ibps,]
+                
+              }# if(not hairpin)
               
-            }#if hp
-            
-            
-            tolo<-all_my_snps[all_my_snps$chr==selchr & 
-                                as.numeric(as.character(all_my_snps$start)) >= bedstart & 
-                                as.numeric(as.character(all_my_snps$end)) <= bedend,]
-            
-            tolo$start.relative=tolo$chromStart-bedstart+1
-            tolo$end.relative=tolo$chromEnd-bedstart+1
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                 hp.initial.input.type == "regions"){
+                
+                #per sequence id primer design overview plot
+                
+                #bed[ir,c("start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")]
+                ipt<-paste(hpf2[hpf2$sequenceID==ibps,"inputID"])
+                bed.length<-nchar(as.character(hpf2[as.character(hpf2$sequenceID)==ibps,"sequence"]))
+                sa<-seq.ana.all[[ibps]]#read.table(file="E:\\Science_Jil\\Projects\\SB_PrimerDesign\\#LiveDemo\\html_bis_withSNPanalysis\\sequences\\sequence.characterization_sequence1.txt",header=T,sep="\t",dec=".")
+                sels<-results2[as.character(results2$sequence.id)==ibps,]
+              }#if hp
               
-              #trick to also show SNPs on the second part of the hairpin
-              tolo.temp<-tolo
-              tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-              tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
-              tolo<-rbind(tolo,tolo.temp)
+              lol<-data.frame(relative.position=rep(c(1,nrow(sa)),6),
+                              cg.pos=NA,
+                              gc.pos=NA,
+                              snp_start=NA,
+                              snp_end=NA,
+                              p1_start=NA,
+                              p1_end=NA,
+                              p2_start=NA,
+                              p2_end=NA,
+                              amp.start=NA,
+                              amp.end=NA,
+                              linker.start=NA,
+                              linker.end=NA,
+                              repeat.start=NA,
+                              repeat.end=NA,
+                              gene.start=NA,
+                              gene.end=NA,
+                              cpgi.start=NA,
+                              cpgi.end=NA,
+                              sequence.id=ibps,
+                              amplicon.id=c(rep("input.sequence [CpG]",2),
+                                            rep("input.sequence [GpC]",2),
+                                            rep("input.sequence [SNP]",2),
+                                            rep("input.sequence [Repeats]",2),
+                                            rep("input.sequence [CpG Island]",2),
+                                            rep("input.sequence [Genes]",2)),
+                              feature=NA)
               
-            }#if hp
-            
-            #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
-            #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-            
-            srs<-as.numeric(as.character(tolo$start.relative))
-            sre<-as.numeric(as.character(tolo$end.relative))
-            
-            if(length(srs)==0){srs<-NA}
-            if(length(sre)==0){sre<-NA}
-            
-            lol<-rbind(lol,data.frame(relative.position=NA,
-                                      cg.pos=NA,
-                                      gc.pos=NA,
-                                      snp_start=srs,
-                                      snp_end=sre,
-                                      p1_start=NA,
-                                      p1_end=NA,
-                                      p2_start=NA,
-                                      p2_end=NA,
-                                      amp.start=NA,
-                                      amp.end=NA,
-                                      linker.start=NA,
-                                      linker.end=NA,
-                                      repeat.start=NA,
-                                      repeat.end=NA,
-                                      gene.start=NA,
-                                      gene.end=NA,
-                                      cpgi.start=NA,
-                                      cpgi.end=NA,
-                                      sequence.id=ibps,
-                                      amplicon.id="input.sequence [SNP]",
-                                      feature="SNP"))
-          }# check4snps
-          
-          #############################################################################################################
-          
-          if(check4repeats & exists("all_my_repeats")){
-            
-            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
-               input.type == "regions"){
+              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                 hp.initial.input.type == "regions"){
+                
+                lol<-rbind(lol,data.frame(relative.position=rep(c(1,nrow(sa)),2),
+                                          cg.pos=NA,
+                                          gc.pos=NA,
+                                          snp_start=NA,
+                                          snp_end=NA,
+                                          p1_start=NA,
+                                          p1_end=NA,
+                                          p2_start=NA,
+                                          p2_end=NA,
+                                          amp.start=NA,
+                                          amp.end=NA,
+                                          linker.start=NA,
+                                          linker.end=NA,
+                                          repeat.start=NA,
+                                          repeat.end=NA,
+                                          gene.start=NA,
+                                          gene.end=NA,
+                                          cpgi.start=NA,
+                                          cpgi.end=NA,
+                                          sequence.id=ibps,
+                                          amplicon.id=rep("input.sequence [linker]",2),
+                                          feature=NA))
+              }# linker line
               
-              selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
-              bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
-              bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+              lol<-rbind(lol,data.frame(relative.position=NA,
+                                        cg.pos=sa[sa$cg==TRUE,"basecount"],
+                                        gc.pos=NA,
+                                        snp_start=NA,
+                                        snp_end=NA,
+                                        p1_start=NA,
+                                        p1_end=NA,
+                                        p2_start=NA,
+                                        p2_end=NA,
+                                        amp.start=NA,
+                                        amp.end=NA,
+                                        linker.start=NA,
+                                        linker.end=NA,
+                                        repeat.start=NA,
+                                        repeat.end=NA,
+                                        gene.start=NA,
+                                        gene.end=NA,
+                                        cpgi.start=NA,
+                                        cpgi.end=NA,
+                                        sequence.id=ibps,
+                                        amplicon.id="input.sequence [CpG]",
+                                        feature="CpG"))
               
-            }#if not hp
-            
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              lol<-rbind(lol,data.frame(relative.position=NA,
+                                        cg.pos=NA,
+                                        gc.pos=sa[sa$gc==TRUE,"basecount"],
+                                        snp_start=NA,
+                                        snp_end=NA,
+                                        p1_start=NA,
+                                        p1_end=NA,
+                                        p2_start=NA,
+                                        p2_end=NA,
+                                        amp.start=NA,
+                                        amp.end=NA,
+                                        linker.start=NA,
+                                        linker.end=NA,
+                                        repeat.start=NA,
+                                        repeat.end=NA,
+                                        gene.start=NA,
+                                        gene.end=NA,
+                                        cpgi.start=NA,
+                                        cpgi.end=NA,
+                                        sequence.id=ibps,
+                                        amplicon.id="input.sequence [GpC]",
+                                        feature="GpC"))
               
-              selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
-              bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
-              bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
-                as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
+              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                 hp.initial.input.type == "regions"){
+                
+                lol<-rbind(lol,data.frame(relative.position=NA,
+                                          cg.pos=NA,
+                                          gc.pos=NA,
+                                          snp_start=NA,
+                                          snp_end=NA,
+                                          p1_start=NA,
+                                          p1_end=NA,
+                                          p2_start=NA,
+                                          p2_end=NA,
+                                          amp.start=NA,
+                                          amp.end=NA,
+                                          linker.start=as.numeric(as.character(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])),
+                                          linker.end=as.numeric(as.character(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"])),
+                                          repeat.start=NA,
+                                          repeat.end=NA,
+                                          gene.start=NA,
+                                          gene.end=NA,
+                                          cpgi.start=NA,
+                                          cpgi.end=NA,
+                                          sequence.id=ibps,
+                                          amplicon.id="input.sequence [linker]",
+                                          feature="linker"))
+              }#if hp
               
-              lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+              lol<-rbind(lol,data.frame(relative.position=NA,
+                                        cg.pos=NA,
+                                        gc.pos=NA,
+                                        snp_start=NA,
+                                        snp_end=NA,
+                                        p1_start=as.numeric(as.character(sels$primer1.start.relative)),
+                                        p1_end=as.numeric(as.character(sels$primer1.end.relative)),
+                                        p2_start=as.numeric(as.character(sels$primer2.start.relative)),
+                                        p2_end=as.numeric(as.character(sels$primer2.end.relative)),
+                                        amp.start=NA,
+                                        amp.end=NA,
+                                        linker.start=NA,
+                                        linker.end=NA,
+                                        repeat.start=NA,
+                                        repeat.end=NA,
+                                        gene.start=NA,
+                                        gene.end=NA,
+                                        cpgi.start=NA,
+                                        cpgi.end=NA,
+                                        sequence.id=sels$sequence.id,
+                                        amplicon.id=sels$amplicon.id,
+                                        feature="primer"))
               
-            }#if hp
-            
-            tolo<-all_my_repeats[as.character(all_my_repeats$chr)==gsub("chr","",selchr),] #& 
-            #all_my_repeats$genoStart >= bedstart & 
-            #all_my_repeats$genoEnd <= bedend
-            
-            tolo$start.relative=tolo$start-bedstart+1
-            tolo$end.relative=tolo$end-bedstart+1
-            
-            #tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
-            #             ((tolo$start.relative<0 & tolo$end.relative<=bed.length) & tolo$end.relative>=0) |
-            #             (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
-            #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
-            
-            
-            tolo<-tolo[(!tolo$end.relative<0) &
-                         (!tolo$start.relative>=bed.length),]
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              lol<-rbind(lol,data.frame(relative.position=NA,
+                                        cg.pos=NA,
+                                        gc.pos=NA,
+                                        snp_start=NA,
+                                        snp_end=NA,
+                                        p1_start=NA,
+                                        p1_end=NA,
+                                        p2_start=NA,
+                                        p2_end=NA,
+                                        amp.start=as.numeric(as.character(sels$amplicon.start.relative)),
+                                        amp.end=as.numeric(as.character(sels$amplicon.end.relative)),
+                                        linker.start=NA,
+                                        linker.end=NA,
+                                        repeat.start=NA,
+                                        repeat.end=NA,
+                                        gene.start=NA,
+                                        gene.end=NA,
+                                        cpgi.start=NA,
+                                        cpgi.end=NA,
+                                        sequence.id=sels$sequence.id,
+                                        amplicon.id=sels$amplicon.id,
+                                        feature=NA))
               
-              #trick to also show SNPs on the second part of the hairpin
-              tolo.temp<-tolo
-              tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-              tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
-              tolo<-rbind(tolo,tolo.temp)
+              if(check4snps & exists("all_my_snps")){
+                
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
+                   input.type == "regions"){
+                  
+                  selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
+                  bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
+                  bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+                  
+                }#if not hp
+                
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
+                  bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
+                  bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
+                    as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
+                  lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+                  
+                }#if hp
+                
+                
+                tolo<-all_my_snps[all_my_snps$chr==selchr & 
+                                    as.numeric(as.character(all_my_snps$start)) >= bedstart & 
+                                    as.numeric(as.character(all_my_snps$end)) <= bedend,]
+                
+                tolo$start.relative=tolo$chromStart-bedstart+1
+                tolo$end.relative=tolo$chromEnd-bedstart+1
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  #trick to also show SNPs on the second part of the hairpin
+                  tolo.temp<-tolo
+                  tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
+                  tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+                  tolo<-rbind(tolo,tolo.temp)
+                  
+                }#if hp
+                
+                #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
+                #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+                
+                srs<-as.numeric(as.character(tolo$start.relative))
+                sre<-as.numeric(as.character(tolo$end.relative))
+                
+                if(length(srs)==0){srs<-NA}
+                if(length(sre)==0){sre<-NA}
+                
+                lol<-rbind(lol,data.frame(relative.position=NA,
+                                          cg.pos=NA,
+                                          gc.pos=NA,
+                                          snp_start=srs,
+                                          snp_end=sre,
+                                          p1_start=NA,
+                                          p1_end=NA,
+                                          p2_start=NA,
+                                          p2_end=NA,
+                                          amp.start=NA,
+                                          amp.end=NA,
+                                          linker.start=NA,
+                                          linker.end=NA,
+                                          repeat.start=NA,
+                                          repeat.end=NA,
+                                          gene.start=NA,
+                                          gene.end=NA,
+                                          cpgi.start=NA,
+                                          cpgi.end=NA,
+                                          sequence.id=ibps,
+                                          amplicon.id="input.sequence [SNP]",
+                                          feature="SNP"))
+              }# check4snps
               
-            }#if hp
-            
-            if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
-              tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
-            }
-            
-            if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
-              tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
-            }
-            
-            #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
-            #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-            
-            srs<-as.numeric(as.character(tolo$start.relative))
-            sre<-as.numeric(as.character(tolo$end.relative))
-            
-            if(length(srs)==0){srs<-NA}
-            if(length(sre)==0){sre<-NA}
-            
-            #lol$repeat.start<-NA
-            #lol$repeat.end<-NA
-            
-            lol<-rbind(lol,data.frame(relative.position=NA,
-                                      cg.pos=NA,
-                                      gc.pos=NA,
-                                      snp_start=NA,
-                                      snp_end=NA,
-                                      p1_start=NA,
-                                      p1_end=NA,
-                                      p2_start=NA,
-                                      p2_end=NA,
-                                      amp.start=NA,
-                                      amp.end=NA,
-                                      linker.start=NA,
-                                      linker.end=NA,
-                                      repeat.start=sre,
-                                      repeat.end=srs,
-                                      gene.start=NA,
-                                      gene.end=NA,
-                                      cpgi.start=NA,
-                                      cpgi.end=NA,
-                                      sequence.id=ibps,
-                                      amplicon.id="input.sequence [Repeats]",
-                                      feature=NA))
-          }# check4repeats
-          
-          ########################################################################################################    
-          
-          if(annotate.genes & exists("all_my_genes")){
-            
-            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
-               input.type == "regions"){
+              #############################################################################################################
               
-              selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
-              bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
-              bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+              if(check4repeats & exists("all_my_repeats")){
+                
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+                   input.type == "regions"){
+                  
+                  selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
+                  bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
+                  bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+                  
+                }#if not hp
+                
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
+                  bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
+                  bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
+                    as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
+                  
+                  lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+                  
+                }#if hp
+                
+                tolo<-all_my_repeats[as.character(all_my_repeats$chr)==gsub("chr","",selchr),] #& 
+                #all_my_repeats$genoStart >= bedstart & 
+                #all_my_repeats$genoEnd <= bedend
+                
+                tolo$start.relative=tolo$start-bedstart+1
+                tolo$end.relative=tolo$end-bedstart+1
+                
+                #tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
+                #             ((tolo$start.relative<0 & tolo$end.relative<=bed.length) & tolo$end.relative>=0) |
+                #             (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
+                #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
+                
+                
+                tolo<-tolo[(!tolo$end.relative<0) &
+                             (!tolo$start.relative>=bed.length),]
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  #trick to also show SNPs on the second part of the hairpin
+                  tolo.temp<-tolo
+                  tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
+                  tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+                  tolo<-rbind(tolo,tolo.temp)
+                  
+                }#if hp
+                
+                if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
+                  tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
+                }
+                
+                if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
+                  tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
+                }
+                
+                #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
+                #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+                
+                srs<-as.numeric(as.character(tolo$start.relative))
+                sre<-as.numeric(as.character(tolo$end.relative))
+                
+                if(length(srs)==0){srs<-NA}
+                if(length(sre)==0){sre<-NA}
+                
+                #lol$repeat.start<-NA
+                #lol$repeat.end<-NA
+                
+                lol<-rbind(lol,data.frame(relative.position=NA,
+                                          cg.pos=NA,
+                                          gc.pos=NA,
+                                          snp_start=NA,
+                                          snp_end=NA,
+                                          p1_start=NA,
+                                          p1_end=NA,
+                                          p2_start=NA,
+                                          p2_end=NA,
+                                          amp.start=NA,
+                                          amp.end=NA,
+                                          linker.start=NA,
+                                          linker.end=NA,
+                                          repeat.start=sre,
+                                          repeat.end=srs,
+                                          gene.start=NA,
+                                          gene.end=NA,
+                                          cpgi.start=NA,
+                                          cpgi.end=NA,
+                                          sequence.id=ibps,
+                                          amplicon.id="input.sequence [Repeats]",
+                                          feature=NA))
+              }# check4repeats
               
-            }#if not hp
-            
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              ########################################################################################################    
               
-              selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
-              bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
-              bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
-                as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
-              lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+              if(annotate.genes & exists("all_my_genes")){
+                
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+                   input.type == "regions"){
+                  
+                  selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
+                  bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
+                  bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+                  
+                }#if not hp
+                
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
+                  bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
+                  bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
+                    as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
+                  lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+                  
+                }#if hp
+                
+                tolo<-all_my_genes[all_my_genes$chrom==selchr ,]
+                
+                gns<-tolo
+                all.exons.start<-as.numeric(unlist(strsplit(as.character(gns$exonStarts),",")))
+                all.exons.end<-as.numeric(unlist(strsplit(as.character(gns$exonEnds),",")))
+                
+                if(length(all.exons.start) == length(all.exons.end)){
+                  
+                  add.n.rows<-length(all.exons.start)-nrow(tolo)
+                  adNA<-as.data.frame(matrix(NA,nrow = add.n.rows,ncol=ncol(tolo)))
+                  colnames(adNA)<-colnames(tolo)
+                  
+                  tolo<-rbind(tolo,adNA)
+                  tolo$exon.start=all.exons.start
+                  tolo$exon.end=all.exons.end
+                  
+                  tolo$start.relative=tolo$exon.start-bedstart+1
+                  tolo$end.relative=tolo$exon.end-bedstart+1
+                  
+                  # tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
+                  #             (tolo$start.relative<0 & tolo$end.relative<=bed.length & tolo$end.relative>=0) |
+                  #             (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
+                  #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
+                  
+                  tolo<-tolo[(!tolo$end.relative<0) &
+                               (!tolo$start.relative>=bed.length),]
+                  
+                }#if(length(all.exons.start) == length(all.exons.end)){
+                
+                if(length(all.exons.start) != length(all.exons.end)){
+                  
+                  tolo$start.relative=tolo$txStart-bedstart+1
+                  tolo$end.relative=tolo$txEnd-bedstart+1
+                  
+                }#if(length(all.exons.start) != length(all.exons.end)){
+                
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  #trick to also show SNPs on the second part of the hairpin
+                  tolo.temp<-tolo
+                  tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
+                  tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+                  tolo<-rbind(tolo,tolo.temp)
+                  
+                }#if hp
+                
+                if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
+                  tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
+                }
+                
+                if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
+                  tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
+                }
+                
+                #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
+                #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+                
+                srs<-as.numeric(as.character(tolo$start.relative))
+                sre<-as.numeric(as.character(tolo$end.relative))
+                
+                if(length(srs)==0){srs<-NA}
+                if(length(sre)==0){sre<-NA}
+                
+                lol<-rbind(lol,data.frame(relative.position=NA,
+                                          cg.pos=NA,
+                                          gc.pos=NA,
+                                          snp_start=NA,
+                                          snp_end=NA,
+                                          p1_start=NA,
+                                          p1_end=NA,
+                                          p2_start=NA,
+                                          p2_end=NA,
+                                          amp.start=NA,
+                                          amp.end=NA,
+                                          linker.start=NA,
+                                          linker.end=NA,
+                                          repeat.start=NA,
+                                          repeat.end=NA,
+                                          gene.start=srs,
+                                          gene.end=sre,
+                                          cpgi.start=NA,
+                                          cpgi.end=NA,
+                                          sequence.id=ibps,
+                                          amplicon.id="input.sequence [Genes]",
+                                          feature=NA))
+              }# annotate.genes
               
-            }#if hp
-            
-            tolo<-all_my_genes[all_my_genes$chrom==selchr ,]
-            
-            gns<-tolo
-            all.exons.start<-as.numeric(unlist(strsplit(as.character(gns$exonStarts),",")))
-            all.exons.end<-as.numeric(unlist(strsplit(as.character(gns$exonEnds),",")))
-            
-            if(length(all.exons.start) == length(all.exons.end)){
+              ##############################################################################################################
               
-              add.n.rows<-length(all.exons.start)-nrow(tolo)
-              adNA<-as.data.frame(matrix(NA,nrow = add.n.rows,ncol=ncol(tolo)))
-              colnames(adNA)<-colnames(tolo)
+              if(annotate.cpg.islands & exists("all_my_cpgis")){
+                
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
+                   input.type == "regions"){
+                  
+                  selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
+                  bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
+                  bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+                  
+                }#if not hp
+                
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
+                  bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
+                  bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
+                    as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
+                  lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+                  
+                }#if hp
+                
+                tolo<-all_my_cpgis[all_my_cpgis$chrom==selchr,]# & 
+                #all_my_cpgis$chromStart >= bedstart & 
+                #all_my_cpgis$chromEnd <= bedend,]
+                
+                tolo$start.relative=tolo$chromStart-bedstart+1
+                tolo$end.relative=tolo$chromEnd-bedstart+1
+                
+                # tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
+                #               (tolo$start.relative<0 & tolo$end.relative<=bed.length & tolo$end.relative>=0) |
+                #               (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
+                #               (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
+                
+                tolo<-tolo[(!tolo$end.relative<0) &
+                             (!tolo$start.relative>=bed.length),]
+                
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                   hp.initial.input.type == "regions"){
+                  
+                  #trick to also show SNPs on the second part of the hairpin
+                  tolo.temp<-tolo
+                  tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
+                  tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+                  tolo<-rbind(tolo,tolo.temp)
+                  
+                }#if hp
+                
+                if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
+                  tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
+                }
+                
+                if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
+                  tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
+                }
+                
+                
+                #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
+                #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+                
+                srs<-as.numeric(as.character(tolo$start.relative))
+                sre<-as.numeric(as.character(tolo$end.relative))
+                
+                if(length(srs)==0){srs<-NA}
+                if(length(sre)==0){sre<-NA}
+                
+                lol<-rbind(lol,data.frame(relative.position=NA,
+                                          cg.pos=NA,
+                                          gc.pos=NA,
+                                          snp_start=NA,
+                                          snp_end=NA,
+                                          p1_start=NA,
+                                          p1_end=NA,
+                                          p2_start=NA,
+                                          p2_end=NA,
+                                          amp.start=NA,
+                                          amp.end=NA,
+                                          linker.start=NA,
+                                          linker.end=NA,
+                                          repeat.start=NA,
+                                          repeat.end=NA,
+                                          gene.start=NA,
+                                          gene.end=NA,
+                                          cpgi.start=srs,
+                                          cpgi.end=sre,
+                                          sequence.id=ibps,
+                                          amplicon.id="input.sequence [CpG Island]",
+                                          feature=NA))
+              }# annotate.cpgis
               
-              tolo<-rbind(tolo,adNA)
-              tolo$exon.start=all.exons.start
-              tolo$exon.end=all.exons.end
+              ####################################################################################################################################        
+              #export(lol object)
+              lol$feature<-as.character(lol$feature)
               
-              tolo$start.relative=tolo$exon.start-bedstart+1
-              tolo$end.relative=tolo$exon.end-bedstart+1
+              #v9.7 bugfix
+              lolmax<-max(lol$relative.position,na.rm=T)
+              lol[lol>lolmax]<-lolmax
               
-              # tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
-              #             (tolo$start.relative<0 & tolo$end.relative<=bed.length & tolo$end.relative>=0) |
-              #             (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
-              #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
+              write.table(lol,file=paste(path.temp,"lol.object.for.plots_",ibps,".txt",sep=""),
+                          sep="\t",dec=".",col.names=T,row.names=F,quote=F)
               
-              tolo<-tolo[(!tolo$end.relative<0) &
-                           (!tolo$start.relative>=bed.length),]
+              ##############PREPARE Data for the plot
               
-            }#if(length(all.exons.start) == length(all.exons.end)){
-            
-            if(length(all.exons.start) != length(all.exons.end)){
+              if(primer.type!="NOME" & primer.type!="hp_NOME"){
+                lol<-lol[lol$amplicon.id != "input.sequence [GpC]",]
+              }
               
-              tolo$start.relative=tolo$txStart-bedstart+1
-              tolo$end.relative=tolo$txEnd-bedstart+1
+              if(check4snps == FALSE){
+                lol<-lol[lol$amplicon.id != "input.sequence [SNP]",]
+              }
               
-            }#if(length(all.exons.start) != length(all.exons.end)){
-            
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              if(check4repeats == FALSE){
+                lol<-lol[lol$amplicon.id != "input.sequence [Repeats]",]
+              } 
               
-              #trick to also show SNPs on the second part of the hairpin
-              tolo.temp<-tolo
-              tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-              tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
-              tolo<-rbind(tolo,tolo.temp)
+              if(annotate.genes == FALSE){
+                lol<-lol[lol$amplicon.id != "input.sequence [Genes]",]
+              }
               
-            }#if hp
-            
-            if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
-              tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
-            }
-            
-            if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
-              tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
-            }
-            
-            #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
-            #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-            
-            srs<-as.numeric(as.character(tolo$start.relative))
-            sre<-as.numeric(as.character(tolo$end.relative))
-            
-            if(length(srs)==0){srs<-NA}
-            if(length(sre)==0){sre<-NA}
-            
-            lol<-rbind(lol,data.frame(relative.position=NA,
-                                      cg.pos=NA,
-                                      gc.pos=NA,
-                                      snp_start=NA,
-                                      snp_end=NA,
-                                      p1_start=NA,
-                                      p1_end=NA,
-                                      p2_start=NA,
-                                      p2_end=NA,
-                                      amp.start=NA,
-                                      amp.end=NA,
-                                      linker.start=NA,
-                                      linker.end=NA,
-                                      repeat.start=NA,
-                                      repeat.end=NA,
-                                      gene.start=srs,
-                                      gene.end=sre,
-                                      cpgi.start=NA,
-                                      cpgi.end=NA,
-                                      sequence.id=ibps,
-                                      amplicon.id="input.sequence [Genes]",
-                                      feature=NA))
-          }# annotate.genes
-          
-          ##############################################################################################################
-          
-          if(annotate.cpg.islands & exists("all_my_cpgis")){
-            
-            if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
-               input.type == "regions"){
+              if(annotate.cpg.islands ==FALSE){
+                lol<-lol[lol$amplicon.id != "input.sequence [CpG Island]",]
+              }
               
-              selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
-              bedstart<-as.numeric(bed[bed$sequenceID==ibps,"start"])
-              bedend<-as.numeric(bed[bed$sequenceID==ibps,"end"])
+              if(!primer.type %in% c("hp_bisulfite","hp_NOME","hp_genomic","hp_CLEVER")){
+                lol<-lol[lol$amplicon.id != "input.sequence [linker]",]
+              }
               
-            }#if not hp
-            
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              ##############CREATE THE PLOT 
               
-              selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
-              bedstart<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"]))
-              bedend<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"start.absolute"])) + 
-                as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerStartInMolecule"])) - 1
-              lnk.eim<-as.numeric(unique(hpf2[hpf2$sequenceID==ibps,"LinkerEndInMolecule"]))
+              lopl<-ggplot(lol,aes(relative.position,amplicon.id))+
+                geom_line(colour="black",size=0.7)
               
-            }#if hp
-            
-            tolo<-all_my_cpgis[all_my_cpgis$chrom==selchr,]# & 
-            #all_my_cpgis$chromStart >= bedstart & 
-            #all_my_cpgis$chromEnd <= bedend,]
-            
-            tolo$start.relative=tolo$chromStart-bedstart+1
-            tolo$end.relative=tolo$chromEnd-bedstart+1
-            
-            # tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
-            #               (tolo$start.relative<0 & tolo$end.relative<=bed.length & tolo$end.relative>=0) |
-            #               (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
-            #               (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
-            
-            tolo<-tolo[(!tolo$end.relative<0) &
-                         (!tolo$start.relative>=bed.length),]
-            
-            if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
-               hp.initial.input.type == "regions"){
+              if(check4repeats){
+                if(nrow(lol[!is.na(lol$repeat.start) & !is.na(lol$repeat.end),])>0){
+                  lopl<-lopl+geom_segment(colour="black",size=3,
+                                          aes(x=repeat.start,xend=repeat.end,y=amplicon.id,yend=amplicon.id))#repeats
+                }
+              }
               
-              #trick to also show SNPs on the second part of the hairpin
-              tolo.temp<-tolo
-              tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-              tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
-              tolo<-rbind(tolo,tolo.temp)
+              if(annotate.genes){
+                if(nrow(lol[!is.na(lol$gene.start) & !is.na(lol$gene.end),])>0){
+                  lopl<-lopl+geom_segment(colour="orange",size=3,
+                                          aes(x=gene.start,xend=gene.end,y=amplicon.id,yend=amplicon.id))#genes
+                }
+              }
               
-            }#if hp
-            
-            if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
-              tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
-            }
-            
-            if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
-              tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
-            }
-            
-            
-            #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
-            #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-            
-            srs<-as.numeric(as.character(tolo$start.relative))
-            sre<-as.numeric(as.character(tolo$end.relative))
-            
-            if(length(srs)==0){srs<-NA}
-            if(length(sre)==0){sre<-NA}
-            
-            lol<-rbind(lol,data.frame(relative.position=NA,
-                                      cg.pos=NA,
-                                      gc.pos=NA,
-                                      snp_start=NA,
-                                      snp_end=NA,
-                                      p1_start=NA,
-                                      p1_end=NA,
-                                      p2_start=NA,
-                                      p2_end=NA,
-                                      amp.start=NA,
-                                      amp.end=NA,
-                                      linker.start=NA,
-                                      linker.end=NA,
-                                      repeat.start=NA,
-                                      repeat.end=NA,
-                                      gene.start=NA,
-                                      gene.end=NA,
-                                      cpgi.start=srs,
-                                      cpgi.end=sre,
-                                      sequence.id=ibps,
-                                      amplicon.id="input.sequence [CpG Island]",
-                                      feature=NA))
-          }# annotate.cpgis
-          
-          ####################################################################################################################################        
-          #export(lol object)
-          lol$feature<-as.character(lol$feature)
-          
-          #v9.7 bugfix
-          lolmax<-max(lol$relative.position,na.rm=T)
-          lol[lol>lolmax]<-lolmax
-          
-          write.table(lol,file=paste(path.temp,"lol.object.for.plots_",ibps,".txt",sep=""),
-                      sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-          
-          ##############PREPARE Data for the plot
-          
-          if(primer.type!="NOME" & primer.type!="hp_NOME"){
-            lol<-lol[lol$amplicon.id != "input.sequence [GpC]",]
-          }
-          
-          if(check4snps == FALSE){
-            lol<-lol[lol$amplicon.id != "input.sequence [SNP]",]
-          }
-          
-          if(check4repeats == FALSE){
-            lol<-lol[lol$amplicon.id != "input.sequence [Repeats]",]
-          } 
-          
-          if(annotate.genes == FALSE){
-            lol<-lol[lol$amplicon.id != "input.sequence [Genes]",]
-          }
-          
-          if(annotate.cpg.islands ==FALSE){
-            lol<-lol[lol$amplicon.id != "input.sequence [CpG Island]",]
-          }
-          
-          if(!primer.type %in% c("hp_bisulfite","hp_NOME","hp_genomic","hp_CLEVER")){
-            lol<-lol[lol$amplicon.id != "input.sequence [linker]",]
-          }
-          
-          ##############CREATE THE PLOT 
-          
-          lopl<-ggplot(lol,aes(relative.position,amplicon.id))+
-            geom_line(colour="black",size=0.7)
-          
-          if(check4repeats){
-            if(nrow(lol[!is.na(lol$repeat.start) & !is.na(lol$repeat.end),])>0){
-              lopl<-lopl+geom_segment(colour="black",size=3,
-                                      aes(x=repeat.start,xend=repeat.end,y=amplicon.id,yend=amplicon.id))#repeats
-            }
-          }
-          
-          if(annotate.genes){
-            if(nrow(lol[!is.na(lol$gene.start) & !is.na(lol$gene.end),])>0){
-              lopl<-lopl+geom_segment(colour="orange",size=3,
-                                      aes(x=gene.start,xend=gene.end,y=amplicon.id,yend=amplicon.id))#genes
-            }
-          }
-          
-          if(annotate.cpg.islands){
-            if(nrow(lol[!is.na(lol$cpgi.start) & !is.na(lol$cpgi.end),])>0){
-              lopl<-lopl+geom_segment(colour="darkgreen",size=3,
-                                      aes(x=cpgi.start,xend=cpgi.end,y=amplicon.id,yend=amplicon.id))#cpg islands
-            }
-          }
-          
-          if(nrow(lol[!is.na(lol$amp.start) & !is.na(lol$amp.end),])>0){
-            lopl<-lopl+geom_segment(colour="darkblue",size=2,
-                                    aes(x=amp.start,xend=amp.end,y=amplicon.id,yend=amplicon.id))   #amplicon
-          }
-          
-          if(nrow(lol[!is.na(lol$p1_start) & !is.na(lol$p1_end),])>0){
-            lopl<-lopl+geom_segment(colour="darkred",size=2.5,
-                                    aes(x=p1_start,xend=p1_end,y=amplicon.id,yend=amplicon.id))   #primer1
-          }
-          
-          if(nrow(lol[!is.na(lol$p2_start) & !is.na(lol$p2_end),])>0){
-            lopl<-lopl+geom_segment(colour="darkred",size=2.5,
-                                    aes(x=p2_start,xend=p2_end,y=amplicon.id,yend=amplicon.id))   #primer2
-          }
-          
-          if(primer.type =="hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER"){
-            
-            if(nrow(lol[!is.na(lol$linker.start) & !is.na(lol$linker.end),])>0){
-              lopl<-lopl+geom_segment(colour="darkgrey",size=2.5,
-                                      aes(x=linker.start,xend=linker.end,y=amplicon.id,yend=amplicon.id))#linker
-            }
-          }
-          
-          if(nrow(lol[!is.na(lol$cg.pos),])>0){
-            lopl<-lopl+geom_point(shape = 23, colour = "black", fill = "white", size = 4, stroke = 0.5,
-                                  aes(x = cg.pos,y=amplicon.id))#CpGs
-          } 
-          
-          if(primer.type=="NOME" | primer.type=="hp_NOME"){
-            
-            if(nrow(lol[!is.na(lol$gc.pos),])>0){
-              lopl<-lopl+geom_point(shape = 23, colour = "white", fill = "black", size = 4, stroke = 0.5,
-                                    aes(x = gc.pos,y=amplicon.id))#GpCs
-            }
-            
-          }
-          
-          if(check4snps & exists("all_my_snps")){  
-            if(nrow(lol[!is.na(lol$snp_start) & !is.na(lol$snp_end),])>0){
-              lopl<-lopl+geom_segment(colour="black",size=6,
-                                      aes(x=snp_start,xend=snp_end,y=amplicon.id,yend=amplicon.id))#SNPs
-            }
-          }
-          
-          lopl<-lopl+facet_wrap(~sequence.id)+#separate plots by ampliconID  
-            
-            theme(axis.text.x = element_text(colour = "black",angle=0,size=10,hjust=0))+
-            theme(axis.text.y = element_text(colour = "darkblue",angle=0,size=7,hjust=0))+
-            theme(panel.grid.minor=element_blank())+
-            theme(panel.background=element_rect(fill="grey90"))+
-            theme(panel.background=element_rect(linetype="solid"))+
-            labs(title=paste(analysis.id))
-          
-          ggsave(filename=paste("amplicon.design_",ibps,".png",sep=""),
-                 plot = lopl,path = path.graphics,width = 4,height = 4)
-        }#for 
+              if(annotate.cpg.islands){
+                if(nrow(lol[!is.na(lol$cpgi.start) & !is.na(lol$cpgi.end),])>0){
+                  lopl<-lopl+geom_segment(colour="darkgreen",size=3,
+                                          aes(x=cpgi.start,xend=cpgi.end,y=amplicon.id,yend=amplicon.id))#cpg islands
+                }
+              }
+              
+              if(nrow(lol[!is.na(lol$amp.start) & !is.na(lol$amp.end),])>0){
+                lopl<-lopl+geom_segment(colour="darkblue",size=2,
+                                        aes(x=amp.start,xend=amp.end,y=amplicon.id,yend=amplicon.id))   #amplicon
+              }
+              
+              if(nrow(lol[!is.na(lol$p1_start) & !is.na(lol$p1_end),])>0){
+                lopl<-lopl+geom_segment(colour="darkred",size=2.5,
+                                        aes(x=p1_start,xend=p1_end,y=amplicon.id,yend=amplicon.id))   #primer1
+              }
+              
+              if(nrow(lol[!is.na(lol$p2_start) & !is.na(lol$p2_end),])>0){
+                lopl<-lopl+geom_segment(colour="darkred",size=2.5,
+                                        aes(x=p2_start,xend=p2_end,y=amplicon.id,yend=amplicon.id))   #primer2
+              }
+              
+              if(primer.type =="hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER"){
+                
+                if(nrow(lol[!is.na(lol$linker.start) & !is.na(lol$linker.end),])>0){
+                  lopl<-lopl+geom_segment(colour="darkgrey",size=2.5,
+                                          aes(x=linker.start,xend=linker.end,y=amplicon.id,yend=amplicon.id))#linker
+                }
+              }
+              
+              if(nrow(lol[!is.na(lol$cg.pos),])>0){
+                lopl<-lopl+geom_point(shape = 23, colour = "black", fill = "white", size = 4, stroke = 0.5,
+                                      aes(x = cg.pos,y=amplicon.id))#CpGs
+              } 
+              
+              if(primer.type=="NOME" | primer.type=="hp_NOME"){
+                
+                if(nrow(lol[!is.na(lol$gc.pos),])>0){
+                  lopl<-lopl+geom_point(shape = 23, colour = "white", fill = "black", size = 4, stroke = 0.5,
+                                        aes(x = gc.pos,y=amplicon.id))#GpCs
+                }
+                
+              }
+              
+              if(check4snps & exists("all_my_snps")){  
+                if(nrow(lol[!is.na(lol$snp_start) & !is.na(lol$snp_end),])>0){
+                  lopl<-lopl+geom_segment(colour="black",size=6,
+                                          aes(x=snp_start,xend=snp_end,y=amplicon.id,yend=amplicon.id))#SNPs
+                }
+              }
+              
+              lopl<-lopl+facet_wrap(~sequence.id)+#separate plots by ampliconID  
+                
+                theme(axis.text.x = element_text(colour = "black",angle=0,size=10,hjust=0))+
+                theme(axis.text.y = element_text(colour = "darkblue",angle=0,size=7,hjust=0))+
+                theme(panel.grid.minor=element_blank())+
+                theme(panel.background=element_rect(fill="grey90"))+
+                theme(panel.background=element_rect(linetype="solid"))+
+                labs(title=paste(analysis.id))
+              
+              ggsave(filename=paste("amplicon.design_",ibps,".png",sep=""),
+                     plot = lopl,path = path.graphics,width = 4,height = 4)
+            }#for 
+        }
         log("Done.")
       }# if create.graphics
       log("Primer design pipeline finished.")

@@ -108,7 +108,7 @@ shinyServer(function(input, output) {
                              allow.repeats.in.primers=input$i_allow.repeats.in.primers,
                              allow.repeats.in.amplicon=input$i_allow.repeats.in.amplicon,
                              annotate.genes=input$i_annotate.genes,
-                             annotate.cpg.islands=input$i_annotate.cpg.islands,
+                             annotate.cpg.islands=FALSE,
                              #create.toplist=input$i_create.toplist,
                              #create.graphics=input$i_create.graphics,
                              max.bins.low.complexity=input$i_max.bins.low.complexity,

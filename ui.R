@@ -78,7 +78,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                   checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
                                 ),
                                 checkboxInput("i_annotate.genes", label = h4("Annotate genes"), FALSE),
-                                checkboxInput("i_annotate.cpg.islands", label = h4("Annotate CpG islands"), FALSE),
+                                #checkboxInput("i_annotate.cpg.islands)", label = h4("Annotate CpG islands"), FALSE),
                                 checkboxInput("adapterF", label = h4("Add a specific sequence to 5' end of forward primer"), FALSE),
                                 conditionalPanel(
                                   "input.adapterF == 1",
@@ -111,7 +111,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                   column(6,
                                          radioButtons("i_primer_type", label = h3("Primer Type"),
                                                       choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
-                                                                     "Genomic (hairpin)"="hp_genomic", "Bisulfite (hairpin)" = "hp_bisulfite", "NOME (hairpin)" = "hp_NOME", "CLEVER (hairpin)"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
+                                                                      "Bisulfite (hairpin)" = "hp_bisulfite", "NOME (hairpin)" = "hp_NOME", "CLEVER (hairpin)"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
                                                       selected = "genomic"), 
                                          
                                          bsTooltip("i_primer_type", "What kind of primer do you want to create?", "bottom", "hover")
@@ -174,7 +174,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 fluidRow(
                                   column(6,
                                        conditionalPanel(
-                                         condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER' || input.i_primer_type == 'hp_genomic'", 
+                                         condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER'", 
                                          sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
                                                      min = 0, max = 1000, value = c(50, 300))
                                                         )
