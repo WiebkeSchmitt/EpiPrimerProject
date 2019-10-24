@@ -467,18 +467,24 @@ fetch.repeat.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=repeat")
   
-  for (i in 1:length(ext)){
-    r <- GET(paste(server, ext[i], sep = ""))
+  if(length(ext) != 0){
+    r <- GET(paste(server, ext[1], sep = ""))
+    s <- content(r)
   }
   
-  stop_for_status(r)
+  if(length(ext) >= 2){
+    for (i in 2:length(ext)){
+      r <- GET(paste(server, ext[i], sep = ""))
+      stop_for_status(r)
+      s <- rbind(s, content(r))
+    }
+  }
   
-  s = content(r)
   s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
   s3 = sapply(1:length(s2), function(x) { s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end","strand","assembly_name","feature_type","description"),"c2"])})
   s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 7, byrow = TRUE))
   colnames(s4) = c("chr","start","end","strand","assembly","feature_type","description")
-  
+
   return(s4)
   
 }
@@ -563,9 +569,6 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
     }
   }
 
-  
-  
-  #s = content(r)
   s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
   s3 = sapply(1:length(s2), function(x) { s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end","strand","assembly_name","id","feature_type","consequence_type","source"),"c2"])})
   s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 9, byrow = TRUE))

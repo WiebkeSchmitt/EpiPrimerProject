@@ -149,6 +149,8 @@ shinyServer(function(input, output) {
       sprintf("Finished Computation!!")
     }})
   
+  ################ download example files for sequence and region input ####################
+  
   output$downloadSequenceFile <- downloadHandler(
     filename = function() {
       paste(input$name, "txt", sep=".")

@@ -1571,52 +1571,53 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
         
         if(exists(x = "all_my_repeats")){
           
-          results2$repeat.db<-"Repeatmasker"
-          results2$amplicon.n.repeats<-NA
-          results2$primer1.n.repeats<-NA
-          results2$primer2.n.repeats<-NA
-          #results2$amplicon.repeat.ids<-NA
-          #results2$primer1.repeat.ids<-NA
-          #results2$primer2.repeat.ids<-NA
+          #results2$repeat.db<-"Repeatmasker"
+          # results2$amplicon.n.repeats<-NA
+          # results2$primer1.n.repeats<-NA
+          # results2$primer2.n.repeats<-NA
+          # results2$amplicon.repeat.ids<-NA
+          # results2$primer1.repeat.ids<-NA
+          # results2$primer2.repeat.ids<-NA
           
-          for (iamplicons in 1:nrow(results2)){
-            
-            iseqid<-paste(results2[iamplicons,"sequence.id"])
-            iseq.chr<-paste(results2[iamplicons,"amplicon.chr"])
-            iseq.amp.start<-results2[iamplicons,"amplicon.start"]
-            iseq.amp.end<-results2[iamplicons,"amplicon.end"]
-            iseq.p1.start<-results2[iamplicons,"primer1.start"]
-            iseq.p1.end<-results2[iamplicons,"primer1.end"]
-            iseq.p2.start<-results2[iamplicons,"primer2.start"]
-            iseq.p2.end<-results2[iamplicons,"primer2.end"]
-            
-            
-            p1.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
-                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & 
-                                         as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end) |
-                                      (as.numeric(as.character(all_my_repeats$start))<=iseq.p1.start & 
-                                         as.numeric(as.character(all_my_repeats$end))>=iseq.p1.start) |
-                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end),]
-            
-            p2.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
-                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end) |
-                                      (as.numeric(as.character(all_my_repeats$start))<=iseq.p2.start & as.numeric(as.character(all_my_repeats$end))>=iseq.p2.start) |
-                                      (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end),]
-            
-            amp.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
-                                       (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end) |
-                                       (as.numeric(as.character(all_my_repeats$start))<=iseq.amp.start & as.numeric(as.character(all_my_repeats$end))>=iseq.amp.start) |
-                                       (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end),]
-            
-            results2[iamplicons,"amplicon.n.repeats"] <- nrow(amp.reps)
-            #results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
-            results2[iamplicons,"primer1.n.repeats"] <- nrow(p1.reps)
-            #results2[iamplicons,"primer1.repeat.ids"] <- paste(p1.reps[,"repClass"],collapse=",")
-            results2[iamplicons,"primer2.n.repeats"] <- nrow(p2.reps)
-            #results2[iamplicons,"primer2.repeat.ids"] <- paste(p2.reps[,"repClass"],collapse=",")
-            
-          }# iamplicons
-          
+          if(nrow(results2) >= 1){
+              for (iamplicons in 1:nrow(results2)){
+                
+                iseqid<-paste(results2[iamplicons,"sequence.id"])
+                iseq.chr<-paste(results2[iamplicons,"amplicon.chr"])
+                iseq.amp.start<-results2[iamplicons,"amplicon.start"]
+                iseq.amp.end<-results2[iamplicons,"amplicon.end"]
+                iseq.p1.start<-results2[iamplicons,"primer1.start"]
+                iseq.p1.end<-results2[iamplicons,"primer1.end"]
+                iseq.p2.start<-results2[iamplicons,"primer2.start"]
+                iseq.p2.end<-results2[iamplicons,"primer2.end"]
+                
+                
+                p1.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                          (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & 
+                                             as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end) |
+                                          (as.numeric(as.character(all_my_repeats$start))<=iseq.p1.start & 
+                                             as.numeric(as.character(all_my_repeats$end))>=iseq.p1.start) |
+                                          (as.numeric(as.character(all_my_repeats$start))>=iseq.p1.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p1.end),]
+                
+                p2.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                          (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end) |
+                                          (as.numeric(as.character(all_my_repeats$start))<=iseq.p2.start & as.numeric(as.character(all_my_repeats$end))>=iseq.p2.start) |
+                                          (as.numeric(as.character(all_my_repeats$start))>=iseq.p2.start & as.numeric(as.character(all_my_repeats$start))<=iseq.p2.end),]
+                
+                amp.reps<-all_my_repeats[as.character(all_my_repeats$chr)==as.character(gsub("chr","",iseq.chr)) &
+                                           (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end) |
+                                           (as.numeric(as.character(all_my_repeats$start))<=iseq.amp.start & as.numeric(as.character(all_my_repeats$end))>=iseq.amp.start) |
+                                           (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end),]
+                
+                results2[iamplicons,"amplicon.n.repeats"] <- nrow(amp.reps)
+                results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"description"],collapse=",")
+                results2[iamplicons,"primer1.n.repeats"] <- nrow(p1.reps)
+                results2[iamplicons,"primer1.repeat.ids"] <- paste(p1.reps[,"description"],collapse=",")
+                results2[iamplicons,"primer2.n.repeats"] <- nrow(p2.reps)
+                results2[iamplicons,"primer2.repeat.ids"] <- paste(p2.reps[,"description"],collapse=",")
+                
+              }# iamplicons
+          }
           log("Done.")
           
           #export
@@ -1662,9 +1663,9 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           results2$amplicon.n.repeats<-NA
           results2$primer1.n.repeats<-NA
           results2$primer2.n.repeats<-NA
-          #results2$amplicon.repeat.ids<-NA
-          #results2$primer1.repeat.ids<-NA
-          #results2$primer2.repeat.ids<-NA
+          results2$amplicon.repeat.ids<-NA
+          results2$primer1.repeat.ids<-NA
+          results2$primer2.repeat.ids<-NA
           
         }#if!exists
         

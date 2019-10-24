@@ -3,7 +3,6 @@ library(DT)
 
 #### for primer design ########
 primersDesign_wd <- getwd() 
-#source("C:\\Users\\Wiebk\\Desktop\\epiprimer\\primer.design.pipeline_jil_v10.3_standalone.R")
 
 #### for primer QC ########
 library(devtools)
