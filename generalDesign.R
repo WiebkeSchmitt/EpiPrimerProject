@@ -730,6 +730,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                          start = allstarts,
                                          end = allends)
             
+            
             my_genes$assembly<-assem
             
             if(iasem==1){
