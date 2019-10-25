@@ -587,28 +587,18 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           
           if(assem %in% supported.assemblies.snp){
             
-            snptrack<-switch(assem, 
-                             "hg18" = "snp130",
-                             "hg19" = "snp147Common",
-                             "hg38" = "snp150Common",
-                             "mm9"  = "snp128",
-                             "mm10" = "snp142Common")
-            
-            snptable<-switch(assem, 
-                             "hg18" = "snp130",
-                             "hg19" = "snp147Common",
-                             "hg38" = "snp150Common",
-                             "mm9"  = "snp128",
-                             "mm10" = "snp142Common")
-            
             chrom<-paste(bedia[,"chr"])
             allstarts<-as.numeric(as.character(bedia[,"start"]))
             allends<-as.numeric(as.character(bedia[,"end"]))
-          
-            my_snps <- fetch.snp.info.rest(assembly = assem,
-                                           chr = chrom,
-                                           start = allstarts,
-                                           end = allends)
+            
+            if (is.null(allstarts) || is.null(allends) || is.null(assem) || is.null(chrom)){
+              my_snps<-NA
+            } else {
+              my_snps <- fetch.snp.info.rest(assembly = assem,
+                                             chr = chrom,
+                                             start = allstarts,
+                                             end = allends)
+            }
             
             if(iasem==1){
               all_my_snps<-my_snps
@@ -801,11 +791,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                start = allstarts,
                                end = allends)
             
-            print(my_cpgi)
-            print(nrow(my_cpgi))
-            print(ncol(my_cpgi))
-            
-            if(nrow(my_cpgi)>0){
+            if(!is.null(nrow(my_cpgi)) && nrow(my_cpgi)>0){
               
               my_cpgi$assembly<-assem
               my_cpgi$cpgi.db<-cpgitable
