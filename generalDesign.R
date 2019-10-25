@@ -2519,11 +2519,11 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                   
                 }#if hp
                 
-                if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
+                if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0 && !is.na(tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"])){
                   tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
                 }
 
-                if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
+                if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0 && !is.na(tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"])){
                   tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
                 }
                 
