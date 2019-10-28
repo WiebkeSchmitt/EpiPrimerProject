@@ -333,8 +333,6 @@ shinyServer(function(input, output) {
     #print(wd)
     
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
-    #check, if there are results, so sth smart if this is not the case
-    
     print(files)
     file_path <- as.character(files[["results"]][grep("primerdesigns.by.sequence",files[["results"]])])
     print(file_path)
