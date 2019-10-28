@@ -331,7 +331,10 @@ shinyServer(function(input, output) {
   showPrimerdesigns.by.sequence <- reactive({ if (!input$primerdesigns.by.sequence) {return(NULL)}
     #wd <- setwd(primersDesign_wd)
     #print(wd)
+    
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    #check, if there are results, so sth smart if this is not the case
+    
     print(files)
     file_path <- as.character(files[["results"]][grep("primerdesigns.by.sequence",files[["results"]])])
     print(file_path)
@@ -392,17 +395,27 @@ shinyServer(function(input, output) {
     #wd <- setwd(primersDesign_wd)
     #print(wd)
     files <- data.frame(graphs=list.files(paste(getwd(),input$name,"PrimerAnalysis","graphics",sep="/"),full.names=TRUE, pattern =".png"))
-    
   })
   
   output$plot3 <-renderUI({
-    ss <- lapply(1:nrow(showGraphics()),function(x){
-      out_ui <- paste0("image",x)
-      imageOutput(out_ui)
-      print(imageOutput(out_ui))
-    })
     
-    do.call(tagList,ss)
+    #check, if there are graphics that can be displayed, if not inform the user 
+    if(is.data.frame(showGraphics()) && nrow(showGraphics())== 0){
+      ww <-showModal(modalDialog(
+        title = "No Primers Found!",
+        sprintf(paste0("Unfortunateley, we could not find any primers for your current job. Feel free to check your settings and try again."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+    } else {
+      ss <- lapply(1:nrow(showGraphics()),function(x){
+        out_ui <- paste0("image",x)
+        imageOutput(out_ui)
+        print(imageOutput(out_ui))
+      })
+      
+      do.call(tagList,ss)
+    }
     
   })
   

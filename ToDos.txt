@@ -56,6 +56,6 @@ TTCTTTCTGTCCGTCTACACTGAGCGTACTCGGGGAATGAGTTAGAGCCAGTCTCTTCCTCCCCTCCCCCCTTCTCATCC
 #- change 'Annotate primers/amplicons for underlying CpG islands' to 'Annotate CpG islands' (not working at the moment, if we can't fix it, should be removed)
 - should we move 'Basic primer settings' to the left part of the page?
 - test tool with sequence file input
-
-
+- when no primers are found, there are some errors in the results of primer design tab("invalid description argument"). Replace errors by message saying, that no primers could be found with the given settings
+- the same goes for the graphs of primer design tab: remove error message and kindly inform the user, that no primers could be found 
 
