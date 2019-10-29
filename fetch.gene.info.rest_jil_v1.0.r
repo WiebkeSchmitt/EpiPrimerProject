@@ -1,7 +1,8 @@
 
 
 
-#get SNP info for a genomic intervall 
+
+#get gene info for a genomic intervall 
 # will call ensembl rest API (http://mar2017.rest.ensembl.org/)
 #
 
@@ -35,16 +36,23 @@ fetch.gene.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   stop_for_status(r)
   
   s = content(r)
-  s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
-  s3 = sapply(1:length(s2), function(x) {s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end",
-                                                                                 "strand","assembly_name","id",
-                                                                                 "external_name","feature_type",
-                                                                                 "biotype","version","description",
-                                                                                 "source"),"c2"])})
-  s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 12, byrow = TRUE))
-  colnames(s4) = c("chr","start","end","strand","assembly","id","gene_name","feature_type","biotype",
-                   "version","description","source")
   
+  if(length(s)>0){
+    s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
+    s3 = sapply(1:length(s2), function(x) {s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end",
+                                                                                   "strand","assembly_name","id",
+                                                                                   "external_name","feature_type",
+                                                                                   "biotype","version","description",
+                                                                                   "source"),"c2"])})
+    s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 12, byrow = TRUE))
+    colnames(s4) = c("chr","start","end","strand","assembly","id","gene_name","feature_type","biotype",
+                     "version","description","source")
+  }
+  
+  if(length(s)==0){
+    s4 = data.frame(chr=NULL,start=NULL,end=NULL,strand=NULL,assembly=NULL,id=NULL,gene_name=NULL,
+                    feature_type=NULL,biotype=NULL,version=NULL,description=NULL,source=NULL)
+  }  
   return(s4)
   
 }
@@ -52,7 +60,7 @@ fetch.gene.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
 ##########
 
 ##example
-#snp = fetch.snp.info.rest(assembly = "hg38",
+#gene = fetch.gene.info.rest(assembly = "hg38",
 #                          chr = "chr7",
 #                          start = "140424943",
 #                          end = "140426943")
