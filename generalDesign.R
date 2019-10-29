@@ -1671,7 +1671,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
         
         log("Assign gene information to designed amplicons...")
         
-        if(exists(x = "all_my_genes")){
+        if(exists(x = "all_my_genes") && is.data.frame(results2) && nrow(results2) > 0){
           
           results2$gene.db<-NA
           results2$amplicon.n.genes<-NA
