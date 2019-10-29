@@ -725,7 +725,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             allstarts<-as.numeric(as.character(bedia[,"start"]))
             allends<-as.numeric(as.character(bedia[,"end"]))
             
-            my_genes<-fetch.dna.sequence(assembly = assem,
+            my_genes<-fetch.gene.info.rest(assembly = assem,
                                          chr = chrom,
                                          start = allstarts,
                                          end = allends)
@@ -787,7 +787,14 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             allstarts<-as.numeric(as.character(bedia[,"start"]))
             allends<-as.numeric(as.character(bedia[,"end"]))
             
-            my_cpgi<-fetch.dna.sequence(assembly = assem,
+            cpgitable<-switch(assem, 
+                              "hg18" = "cpgIslandExt",
+                              "hg19" = "cpgIslandExt",
+                              "hg38" = "cpgIslandExt",
+                              "mm9"  = "cpgIslandExt",
+                              "mm10" = "cpgIslandExt")
+            
+            my_cpgi<-fetch.gene.info.rest(assembly = assem,
                                chr = chrom,
                                start = allstarts,
                                end = allends)
@@ -1685,9 +1692,10 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                       (all_my_genes$txStart>=iseq.amp.start & all_my_genes$txStart<=iseq.amp.end) |
                                       (all_my_genes$txStart<=iseq.amp.start & all_my_genes$txEnd>=iseq.amp.start) |
                                       (all_my_genes$txStart>=iseq.amp.start & all_my_genes$txStart<=iseq.amp.end),]
-            
+            print("amp.genes")
+            print(amp.genes)
             results2[iamplicons,"amplicon.n.genes"] <- nrow(amp.genes)
-            results2[iamplicons,"amplicon.gene.ids"] <- paste(amp.genes[,"name2"],collapse=",")
+            results2[iamplicons,"amplicon.gene.ids"] <- paste(amp.genes[,"gene_name"],collapse=",")
             
           }# iamplicons
           

@@ -582,86 +582,6 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
 }
 
-#this function is deprecated and should not be used anymore
-ucsc.info<-function(assembly="hg19",
-                    chr=NULL,                   # c("chr1","chr4","chr5"...)
-                    start=NULL,                #c(1234567,1234567,1234567)
-                    end=NULL,                  #c(1235567,1235567,1235567)
-                    strand=NULL,               #c(+","-","+")
-                    seqinfo=NULL,
-                    track="snp147Common",###'rmsk' for repeats
-                    table="snp147Common",###'rmsk' for repeats
-                    browser="UCSC"){
-  
-  if(is.null(chr) | is.null(start) | is.null(end)){
-    stop("input of chromosome, start and end are mandatory")
-  }
-  
-  if(length(track)>1 | length(table)>1 | length(browser)>1){
-    stop("only 1 entry for track, table and browser")
-  }
-  
-  if(length(assembly)>1){
-    warning("only one assembly per session allowed...use only first one")
-    
-    assembly.chosen<-assembly[1]
-    
-    filter.by.assembly<-assembly==assembly.chosen
-    assembly<-assembly[filter.by.assembly]
-    chr<-chr[filter.by.assembly]
-    start<-start[filter.by.assembly]
-    end<-end[filter.by.assembly]
-    
-    if(!is.null(strand)){
-      strand<-strand[filter.by.assembly]
-    }
-    
-    if(!is.null(seqinfo)){
-      seqinfo<-seqinfo[filter.by.assembly]
-    }
-  }
-  
-  user <- unname(Sys.info()["user"])
-  
-  # if (user == "shiny") {
-  # 
-  #   # Set library locations
-  #   ds <- .libPaths(c("/home/users/amerg/R/x86_64-redhat-linux-gnu-library/3.3","/opt/Rlib/3.2","/usr/lib64/R/library","/usr/share/R/library"))
-  # print(ds)
-  # }
-  require (rtracklayer)
-  mySession = browserSession(browser)
-  genome(mySession) <- assembly
-  
-  #GRanges(seqnames=NULL,ranges=NULL, strand=NULL,
-  #..., seqlengths=NULL, seqinfo=NULL): Creates a GRanges object.
-  #
-  #see help GRanges
-  #gr0 <- GRanges(seqnames = chr, IRanges(start = start,end = end))
-  #  
-  #  if(!is.null(strand)){strand(gr0)<-strand}
-  #  
-  #  if(!is.null(seqinfo)){
-  #    to.seq.info <- Seqinfo(seqinfo)
-  #    #seqinfo(gr0) <- merge(seqinfo(gr0), to.seq.info)
-  #    seqinfo(gr0)<-merge(seqinfo(gr0), to.seq.info)
-  #    #seqlevels(gr0) <- seqlevels(to.seq.info)
-  #  }
-  
-  myquer<-ucscTableQuery(mySession,track,GRangesForUCSCGenome(assembly,chr,IRanges(start,end,names=seqinfo)))
-  
-  tableName(myquer)<- paste(table)
-  
-  #genebrowser.info <- getTable(session = mySession, trackName = track, tableName = table,)
-  genebrowser.info <- getTable(myquer)
-  
-  return(genebrowser.info)
-  
-}# end of ucsc function
-
-
-
-
 #get SNP info for a genomic intervall 
 # will call ensembl rest API (http://mar2017.rest.ensembl.org/)
 #
@@ -691,11 +611,19 @@ fetch.gene.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
                    "mm10" = "http://rest.ensembl.org")
   
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=gene")
-  r <- GET(paste(server, ext, sep = ""))
+  if(length(ext) != 0){
+    r <- GET(paste(server, ext[1], sep=""))
+    s <- content(r)
+  }
   
-  stop_for_status(r)
-  
-  s = content(r)
+  if(length(ext) >= 2){
+    for (i in 2:length(ext)){
+      r <- GET(paste(server, ext[i], sep=""))
+      stop_for_status(r)
+      s <- rbind(s, content(r))
+    }
+  }
+
   s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
   s3 = sapply(1:length(s2), function(x) {s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end",
                                                                                  "strand","assembly_name","id",
