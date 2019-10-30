@@ -702,6 +702,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
         fileConn<-file(paste(path.warnings,"Warning.GeneAnnotationcheck.data.error.txt",sep=""))
         writeLines(c("WARNING: To check for Gene Annotation input type must be regions."), fileConn)
         close(fileConn)
+        hp.initial.input.type<-input.type
       }
       
       
@@ -2199,6 +2200,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 sels<-results2[as.character(results2$sequence.id)==ibps,]
                 
               }# if(not hairpin)
+              
+              hp.initial.input.type <- input.type
               
               if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
                  hp.initial.input.type == "regions"){

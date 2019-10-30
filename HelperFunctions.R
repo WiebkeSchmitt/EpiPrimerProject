@@ -582,7 +582,7 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
 }
 
-#get SNP info for a genomic intervall 
+#get gene info for a genomic intervall 
 # will call ensembl rest API (http://mar2017.rest.ensembl.org/)
 #
 
@@ -624,16 +624,23 @@ fetch.gene.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
     }
   }
 
-  s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
-  s3 = sapply(1:length(s2), function(x) {s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end",
-                                                                                 "strand","assembly_name","id",
-                                                                                 "external_name","feature_type",
-                                                                                 "biotype","version","description",
-                                                                                 "source"),"c2"])})
-  s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 12, byrow = TRUE))
-  colnames(s4) = c("chr","start","end","strand","assembly","id","gene_name","feature_type","biotype",
-                   "version","description","source")
+  if(length(s)>0){
+    s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
+    s3 = sapply(1:length(s2), function(x) {s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end",
+                                                                                   "strand","assembly_name","id",
+                                                                                   "external_name","feature_type",
+                                                                                   "biotype","version","description",
+                                                                                   "source"),"c2"])})
+    s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 12, byrow = TRUE))
+    colnames(s4) = c("chr","start","end","strand","assembly","id","gene_name","feature_type","biotype",
+                     "version","description","source")
+  }
   
+  if(length(s) == 0){
+    s4 = data.frame(chr=NULL, start= NULL, end=NULL, assembly=NULL, id=NULL, gene_name= NULL,
+                    feature_type=NULL, biotype=NULL, description=NULL, source=NULL)
+  }
+
   return(s4)
   
 }
