@@ -544,6 +544,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     log("Start characterization of input sequences...")
     
     seq.ana.all<-list()
+    
     for (iiii in 1:nrow(bed)){
       
       seqanai<-sequence.characterization(paste(bed[iiii,"sequence"]))
@@ -851,6 +852,28 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     bed<-table.in #read.table(file=filename.in,sep="\t",dec=".",header=TRUE)
     #html.report(filenames =  filename.in,filename.out = paste(path.html,"bedfile_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
     log("Done.")
+    
+    
+    ###########################################perform input sequence characterization########################################
+    
+    log("Start characterization of input sequences...")
+    
+    seq.ana.all<-list()
+    
+    for (iiii in 1:nrow(bed)){
+      
+      seqanai<-sequence.characterization(paste(bed[iiii,"sequence"]))
+      write.table(seqanai,file=paste(path.sequences,"sequence.characterization_",bed[iiii,"sequenceID"],".txt",sep=""),
+                  sep="\t",dec=".",col.names=T,row.names = FALSE,quote=F)
+      
+      seq.ana.all[[paste(bed[iiii,"sequenceID"])]]<-seqanai
+    }
+    
+    log("Done.")
+    
+    #############################################retrieve snp information for input sequences##########################################
+    
+    
     
     if("sequenceID" %in% colnames(bed)){
 
