@@ -68,11 +68,11 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 conditionalPanel(
                                   "input.i_check4snps ==1",
                                   sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the amplicon"),
-                                              min = 0, max = 80, value = c(0, 20)),
+                                              min = 0, max = 80, value = 0),
                                   sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the forward primer"),
-                                              min = 0, max = 80, value = c(0, 0)),
+                                              min = 0, max = 80, value = 0),
                                   sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the reverse primer"),
-                                              min = 0, max = 80, value = c(0, 0))
+                                              min = 0, max = 80, value = 0)
                                 ),
                                 checkboxInput("i_check4repeats", label = h4("Check for repeats"), FALSE),
                                 conditionalPanel(
