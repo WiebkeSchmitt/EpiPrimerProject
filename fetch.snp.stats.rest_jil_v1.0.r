@@ -40,6 +40,25 @@ fetch.snp.stats.rest = function(id = NULL, # e.g. "rs539335951"
   results$ambiguity = paste0(unlist(results$ambiguity),collapse=",")
   results$synonyms = paste0(unlist(results$synonyms),collapse=",")
   
+  if(!"clinical_significance" %in% colnames(results)){
+    results$clinical_significance = NA
+    }
+  if("clinical_significance" %in% colnames(results)){
+    results$clinical_significance = paste0(unlist(results$clinical_significance),collapse=",")
+    }
+  
+  if("clinical_significance1" %in% colnames(results)){
+    results$clinical_significance = results$clinical_significance1
+    results$clinical_significance1 = NULL
+    }
+  
+  if("clinical_significance2" %in% colnames(results)){
+    results$clinical_significance = paste0(
+    results$clinical_significance,
+    results$clinical_significance2,collapse=",")
+    results$clinical_significance2 = NULL
+    }
+  
   results = results[,order(colnames(results))]
   
   return(results)
@@ -49,8 +68,8 @@ fetch.snp.stats.rest = function(id = NULL, # e.g. "rs539335951"
 #
 #example
 #ids = c("rs1305355659","rs539335951")
-#sa = as.data.frame(t(sapply(ids,fetch.snp.stats.rest,assembly = "hg19)))
-#
+#sa = as.data.frame(t(sapply(ids,fetch.snp.stats.rest,assembly = "hg19")))
+#sa2 = do.call(sa,what = "rbind")
 #
 #
 #

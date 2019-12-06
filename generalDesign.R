@@ -622,10 +622,12 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
         
         
         #fetch additional SNP stats (most important MAF!)
-        snp.meta.info = as.data.frame(t(sapply(paste0(all_my_snps$rs_id,fetch.snp.stats.rest,assembly=assem))))
-        snp.meta.info = snp.meta.info
+        snp.meta.info = as.data.frame(sapply(paste0(all_my_snps$rs_id),fetch.snp.stats.rest,assembly=assems[1]))
+        snp.meta.info = do.call(snp.meta.info,what = "rbind")
+        #snp.meta.info$MAF = as.numeric(as.character(snp.meta.info$MAF))
+        
         write.table(snp.meta.info,file=paste(path.tracks,"#SNP.stats.txt",sep=""),
-                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+                    sep="\t",dec=".",col.names=T,row.names=T,quote=F)
         
         #filter SNPs based on MAF
         snp.meta.info.maf = snp.meta.info[snp.meta.info$MAF >= min.MAF.snp &! is.na(snp.meta.info$MAF),]
