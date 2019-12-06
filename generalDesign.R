@@ -24,6 +24,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                  min.C2T.primer1=3,   # minimum n of C to T conversions in primer1 (numeric)
                                  min.G2A.primer2=3,   # minimum n of G to A conversions in primer2  (numeric)
                                  check4snps=TRUE,     # check & annotate primers/amplicons for underlying SNPs (TRUE/FALSE)
+                                 min.MAF.snp = 0.01,   #max allowed minor allele frequency for SNPs
                                  min.snps.amplicon=0, #minimum n of allowed SNPs undelying amplicons (set to 0 to disable) (numeric)
                                  max.snps.amplicon=20,#maximum n of allowed SNPs undelying amplicons (set to 0 to disable) (numeric)
                                  min.snps.primer1=0, #minimum n of allowed SNPs undelying primer1 (set to 0 to disable) (numeric)
@@ -365,6 +366,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                     paste("Minimum 'G' to 'A' conversions in primer 2",sep=""),
                                     "Primer Dimer BinSize",
                                     "Check for Primer SNPs",
+                                    "Minimum MAF of SNPs",
                                     "Minimum SNPs in amplicon",
                                     "Maximum SNPs in amplicon",
                                     "Minimum SNPs in primer1",
@@ -404,6 +406,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                   paste(min.G2A.primer2),
                                   paste(primer.align.binsize),
                                   paste(check4snps),
+                                  paste(min.MAF.snp),
                                   paste(min.snps.amplicon),
                                   paste(max.snps.amplicon),
                                   paste(min.snps.primer1),
@@ -612,8 +615,28 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
           }#if assem
         }#for assem
         
+        all_my_snps = all_my_snps[!duplicated(all_my_snps$rs_id),]
+        
         write.table(all_my_snps,file=paste(path.tracks,"#SNP.info.input.regions.txt",sep=""),
                     sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+        
+        
+        #fetch additional SNP stats (most important MAF!)
+        snp.meta.info = as.data.frame(t(sapply(paste0(all_my_snps$rs_id,fetch.snp.stats.rest,assembly=assem))))
+        snp.meta.info = snp.meta.info
+        write.table(snp.meta.info,file=paste(path.tracks,"#SNP.stats.txt",sep=""),
+                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+        
+        #filter SNPs based on MAF
+        snp.meta.info.maf = snp.meta.info[snp.meta.info$MAF >= min.MAF.snp &! is.na(snp.meta.info$MAF),]
+        write.table(snp.meta.info.maf,file=paste(path.tracks,"#SNP.stats.MAF.txt",sep=""),
+                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+        
+        all_my_snps = merge(all_my_snps,snp.meta.info.maf,by.x="rs_id",by.y="name")
+        
+        write.table(snp.meta.info,file=paste(path.tracks,"#SNP.info.input.regions&stats.txt",sep=""),
+                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+        
       }#if regions
     }#check4snps
     
