@@ -577,69 +577,37 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
       
       
       if(input.type=="regions"){
-        assems<-paste(unique(bed[,"assembly"]))
-        for (iasem in 1:length(assems)){
-          
-          assem<-assems[iasem]
-          
-          bedia<-bed[as.character(bed$assembly)==assem,]
-          
-          if(!assem %in% supported.assemblies.snp){
-            log(paste("...assembly [",assem, "] not supported for SNP analysis",sep=""))   
-            next()
-          }
-          
-          if(assem %in% supported.assemblies.snp){
-            
-            chrom<-paste(bedia[,"chr"])
-            allstarts<-as.numeric(as.character(bedia[,"start"]))
-            allends<-as.numeric(as.character(bedia[,"end"]))
-            
-            if (is.null(allstarts) || is.null(allends) || is.null(assem) || is.null(chrom)){
-              my_snps<-NA
-            } else {
-              my_snps <- fetch.snp.info.rest(assembly = assem,
-                                             chr = chrom,
-                                             start = allstarts,
-                                             end = allends)
-            }
-            
-            if(iasem==1){
-              all_my_snps<-my_snps
-            }#if assem
-            
-            if(iasem>1){
-              all_my_snps<-rbind(all_my_snps,my_snps)
-            }#if >1
-            
-          }#if assem
-        }#for assem
         
-        all_my_snps = all_my_snps[!duplicated(all_my_snps$rs_id),]
+        fetched_snp = mapply(rtl.get.snp.info.by.region,
+                             paste0(bed$assembly),
+                             paste0(bed$chr),
+                             as.numeric(as.character(bed$start)),
+                             as.numeric(as.character(bed$end)))
+        
+        for(isnp in 1:ncol(fetched_snp)){
+        
+          if(isnp == 1){
+            
+           all_my_snps = as.data.frame(fetched_snp[,isnp])
+        
+          }
+        
+          if(isnp > 1){
+        
+            all_my_snps = rbind(all_my_snps,as.data.frame(fetched_snp[,isnp]))
+          }
+        }
+        
+        colnames(all_my_snps) = gsub("chrom","chr",
+                                     gsub("chromStart","start",
+                                          gsub("chromEnd","end",
+                                               gsub("submitters","source",
+                                                    gsub("name","rs_id",colnames(all_my_snps))))))
         
         write.table(all_my_snps,file=paste(path.tracks,"#SNP.info.input.regions.txt",sep=""),
                     sep="\t",dec=".",col.names=T,row.names=F,quote=F)
         
-        
-        #fetch additional SNP stats (most important MAF!)
-        snp.meta.info = as.data.frame(sapply(paste0(all_my_snps$rs_id),fetch.snp.stats.rest,assembly=assems[1]))
-        snp.meta.info = do.call(snp.meta.info,what = "rbind")
-        #snp.meta.info$MAF = as.numeric(as.character(snp.meta.info$MAF))
-        
-        write.table(snp.meta.info,file=paste(path.tracks,"#SNP.stats.txt",sep=""),
-                    sep="\t",dec=".",col.names=T,row.names=T,quote=F)
-        
-        #filter SNPs based on MAF
-        snp.meta.info.maf = snp.meta.info[snp.meta.info$MAF >= min.MAF.snp &! is.na(snp.meta.info$MAF),]
-        write.table(snp.meta.info.maf,file=paste(path.tracks,"#SNP.stats.MAF.txt",sep=""),
-                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-        
-        all_my_snps = merge(all_my_snps,snp.meta.info.maf,by.x="rs_id",by.y="name")
-        
-        write.table(snp.meta.info,file=paste(path.tracks,"#SNP.info.input.regions&stats.txt",sep=""),
-                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
-        
-      }#if regions
+        }#if regions
     }#check4snps
     
     
@@ -2465,8 +2433,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                     as.numeric(as.character(all_my_snps$start)) >= bedstart & 
                                     as.numeric(as.character(all_my_snps$end)) <= bedend,]
                 
-                tolo$start.relative=tolo$chromStart-bedstart+1
-                tolo$end.relative=tolo$chromEnd-bedstart+1
+                tolo$start.relative=tolo$start-bedstart+1
+                tolo$end.relative=tolo$end-bedstart+1
                 
                 if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
                    hp.initial.input.type == "regions"){
