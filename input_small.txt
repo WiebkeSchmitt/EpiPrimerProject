@@ -1,0 +1,4 @@
+chr	start	end	assembly	sequenceID
+chr10	8095800	8098000	hg19	GATA3_prom
+chr12	68552620	68553800	hg19	IFNg_prom
+chr1	151803300	151805100	hg19	RORC_prom_1
