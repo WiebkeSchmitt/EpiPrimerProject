@@ -1003,6 +1003,11 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     hp$start.hpreg.absolute<-NA
     hp$end.hpreg.absolute<-NA
     
+    if(!(exists("hp.initial.input.type"))){
+      log("Hairpinprimer input type must be a regions file!")
+      stop("Hairpinprimer input type must be a regions file!")
+    }
+    
     if(hp.initial.input.type == "regions"){
       
       for (iicor in 1:nrow(hp)){
