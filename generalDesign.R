@@ -2231,11 +2231,9 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 
               }# if(not hairpin)
               
-              hp.initial.input.type <- input.type
-              
+              #should do this if!
               if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
                  hp.initial.input.type == "regions"){
-                
                 #per sequence id primer design overview plot
                 
                 #bed[ir,c("start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")]
@@ -2245,33 +2243,33 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 sels<-results2[as.character(results2$sequence.id)==ibps,]
               }#if hp
               
-              lol<-data.frame(relative.position=rep(c(1,nrow(sa)),6),
-                              cg.pos=NA,
-                              gc.pos=NA,
-                              snp_start=NA,
-                              snp_end=NA,
-                              p1_start=NA,
-                              p1_end=NA,
-                              p2_start=NA,
-                              p2_end=NA,
-                              amp.start=NA,
-                              amp.end=NA,
-                              linker.start=NA,
-                              linker.end=NA,
-                              repeat.start=NA,
-                              repeat.end=NA,
-                              gene.start=NA,
-                              gene.end=NA,
-                              cpgi.start=NA,
-                              cpgi.end=NA,
-                              sequence.id=ibps,
-                              amplicon.id=c(rep("input.sequence [CpG]",2),
-                                            rep("input.sequence [GpC]",2),
-                                            rep("input.sequence [SNP]",2),
-                                            rep("input.sequence [Repeats]",2),
-                                            rep("input.sequence [CpG Island]",2),
-                                            rep("input.sequence [Genes]",2)),
-                              feature=NA)
+                lol<-data.frame(relative.position=rep(c(1,nrow(sa)),6),
+                                cg.pos=NA,
+                                gc.pos=NA,
+                                snp_start=NA,
+                                snp_end=NA,
+                                p1_start=NA,
+                                p1_end=NA,
+                                p2_start=NA,
+                                p2_end=NA,
+                                amp.start=NA,
+                                amp.end=NA,
+                                linker.start=NA,
+                                linker.end=NA,
+                                repeat.start=NA,
+                                repeat.end=NA,
+                                gene.start=NA,
+                                gene.end=NA,
+                                cpgi.start=NA,
+                                cpgi.end=NA,
+                                sequence.id=ibps,
+                                amplicon.id=c(rep("input.sequence [CpG]",2),
+                                              rep("input.sequence [GpC]",2),
+                                              rep("input.sequence [SNP]",2),
+                                              rep("input.sequence [Repeats]",2),
+                                              rep("input.sequence [CpG Island]",2),
+                                              rep("input.sequence [Genes]",2)),
+                                feature=NA)
               
               if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
                  hp.initial.input.type == "regions"){
