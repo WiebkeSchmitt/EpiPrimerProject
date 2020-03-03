@@ -287,6 +287,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 selectInput("genome", "Choose the genome",choices=c(installed.genomes())),
                                 bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                                 sliderInput("gap", "Maximum Fragment Size:", min = 0, max = 50000, value = 2000),
+                                helpText("Please set an E-value for your quality control. This value can be used to filter your results by only returning results, that are equal or better than the E-Value."),
                                 sliderInput("Evalue", "E Value:", min = 0, max = 100, value = 10),
                                 actionButton("computePQC", "Start Primers QC"),
                                 bsTooltip("computePQC", "A virtual PCR of your primers is being computed. The results show potential PCR products resulting form your choice of primers", "top", "hover"),

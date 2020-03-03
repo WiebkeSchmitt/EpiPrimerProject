@@ -640,8 +640,8 @@ shinyServer(function(input, output) {
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap &
-                      as.character(vector) == refgen@name)
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)# &
+                      #as.character(vector) == refgen@name)
       
       print(sub1)
       return(sub1)
