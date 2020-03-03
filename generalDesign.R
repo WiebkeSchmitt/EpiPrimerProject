@@ -2236,8 +2236,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 
               }# if(not hairpin)
               
-              #should do this if!
-              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                  hp.initial.input.type == "regions"){
                 #per sequence id primer design overview plot
                 
@@ -2276,7 +2275,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                               rep("input.sequence [Genes]",2)),
                                 feature=NA)
               
-              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                  hp.initial.input.type == "regions"){
                 
                 lol<-rbind(lol,data.frame(relative.position=rep(c(1,nrow(sa)),2),
@@ -2349,7 +2348,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                         amplicon.id="input.sequence [GpC]",
                                         feature="GpC"))
               
-              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+              if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                  hp.initial.input.type == "regions"){
                 
                 lol<-rbind(lol,data.frame(relative.position=NA,
@@ -2424,7 +2423,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
               
               if(check4snps & exists("all_my_snps")){
                 
-                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &&
                    input.type == "regions"){
                   
                   selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2434,7 +2433,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 }#if not hp
                 
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -2453,7 +2452,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 tolo$start.relative=tolo$start-bedstart+1
                 tolo$end.relative=tolo$end-bedstart+1
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   #trick to also show SNPs on the second part of the hairpin
@@ -2501,7 +2500,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
               
               if(check4repeats & exists("all_my_repeats")){
                 
-                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &&
                    input.type == "regions"){
                   
                   selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2511,7 +2510,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 }#if not hp
                 
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -2539,7 +2538,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 tolo<-tolo[(!tolo$end.relative<0) &
                              (!tolo$start.relative>=bed.length),]
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   #trick to also show SNPs on the second part of the hairpin
@@ -2598,7 +2597,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
               
               if(annotate.genes & exists("all_my_genes")){
                 
-                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &&
                    input.type == "regions"){
                   
                   selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2608,7 +2607,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 }#if not hp
                 
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -2656,7 +2655,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 }#if(length(all.exons.start) != length(all.exons.end)){
                 
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   #trick to also show SNPs on the second part of the hairpin
@@ -2712,7 +2711,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
               
               if(annotate.cpg.islands & exists("all_my_cpgis")){
                 
-                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
+                if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &&
                    input.type == "regions"){
                   
                   selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2722,7 +2721,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 }#if not hp
                 
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -2748,7 +2747,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 tolo<-tolo[(!tolo$end.relative<0) &
                              (!tolo$start.relative>=bed.length),]
                 
-                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+                if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   #trick to also show SNPs on the second part of the hairpin
