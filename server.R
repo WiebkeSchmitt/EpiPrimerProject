@@ -464,7 +464,7 @@ shinyServer(function(input, output) {
     }
   )
   
-  ################ displaying the results of Primers QC #############
+  ################ displaying the results of Primer QC #############
   
   FP <- reactive({
     if (is.null(input$Fprimers)){

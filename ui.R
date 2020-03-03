@@ -287,26 +287,17 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 selectInput("genome", "Choose the genome",choices=c(installed.genomes())),
                                 bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                                 sliderInput("gap", "Maximum Fragment Size:", min = 0, max = 50000, value = 2000),
-                                #tippy_this("gap", "Tooltip", "top"),
-                                #bsTooltip("gap", "lalala test", "right", "hover"), hr(),
                                 sliderInput("Evalue", "E Value:", min = 0, max = 100, value = 10),
-                                #bsTooltip("Evalue", "Hello from Evalue tooltip", "left", "hover"),
                                 actionButton("computePQC", "Start Primers QC"),
                                 bsTooltip("computePQC", "A virtual PCR of your primers is being computed. The results show potential PCR products resulting form your choice of primers", "top", "hover"),
                                 h3("Parameters to filter Results"),
-                                #bsTooltip("Text", "Setting these features will adjust the results accordingly", "top", "hover"), 
                                 sliderInput("FMismatches", "Forward Primers Mismatches", min = 0, max = 5, value = 3),
-                                #bsTooltip("FMismatches", "Test", "bottom", "hover"),
                                 sliderInput("RMismatches", "Reverse Primers Mismatches", min = 0, max = 5, value = 3),
-                                #bsTooltip("RMismatches", "tooltip R mismathces", "top", "hover"),
                                 sliderInput("FbitScore", "Forward Primers Bit Score", min = 0, max = 100, value = 25),
-                                #bsTooltip("FbitScore", "Score fbit tooltip", "top", "hover"),
                                 sliderInput("RbitScore", "Reverse Primers Bit Score", min = 0, max = 100, value = 25) 
-                                #bsTooltip("RbitScore", "Tooltip", "top", "hover")
                               ),
                               
                               # Show the results
-                              #TODO: Display results properly, not just as a table?!
                               mainPanel(
                                 h4("Forward Primers"),
                                 DT::dataTableOutput("forward.primers"),
