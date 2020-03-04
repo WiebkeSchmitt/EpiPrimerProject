@@ -215,22 +215,34 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                    tabPanel("Results of Primers Design",
                             sidebarLayout(
                               sidebarPanel(
+                                helpText(h4("To analyze the results of your primer design use the buttons below:")),
+                                helpText("Find out for which sequences primers could be created by pushing this button"),
                                 actionButton("primerdesigns.by.sequence", label = "results overview"),
+                                #tippy_this("primersdesigns.by.sequence", "Tooltip", "right"),
+                                #bsTooltip("primerdesigns.by.sequence", "which primers could be created?", "bottom", "hover"),
                                 hr(),
+                                helpText("A list of the best rated primers will be shown after clicking this button:"),
                                 actionButton("toplist", label = "show toplist"),
                                 hr(),
+                                helpText("Generate a list of selected primers by marking primers from the toplist above and pushing this button. You can either download these primers using the button on the right or further analyze them in the Primer QC panel. (Use the 'Import Primers' button there)"),
                                 actionButton("selectlist", label = "generate selected list"), downloadButton('downloadSelectedPrimers', 'Selected Primers'),
                                 hr(),
+                                helpText("Show the whole list of created primers with this button: "),
                                 actionButton("wholelist", label = "show The whole list"),
                                 hr(),
+                                helpText("See the sequences, for which no primers  could be designed:"),
                                 actionButton("blacklist", label = "show blacklist"),
                                 hr(),
+                                helpText("See the sequences for which primers could be designed:"),
                                 actionButton("whitelist", label = "show whitelist"),
                                 hr(),
+                                helpText("View the computational details of this primer design"),
                                 actionButton("logfile", label = "show logfile"),
                                 hr(),
+                                helpText("Review the settings of this primer design: "),
                                 actionButton("settings", label = "show settings"),
                                 hr(),
+                                helpText("Show further details of the primer design, such as duration and number of created primers:"),
                                 actionButton("Summary", label = "show Summary"),
                                 hr()
                               ),
@@ -262,7 +274,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                    tabPanel("Graphs of Primers Design",
                             sidebarLayout(
                               sidebarPanel(
-                                helpText(h4("Graphs of the prime design procedure will be shown")),
+                                helpText(h4("Graphs of the primer design will be shown after clicking this button:")),
                                 actionButton("graphics", label = "show figures")
                               ),
                               # Main:
