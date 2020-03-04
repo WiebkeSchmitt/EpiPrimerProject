@@ -199,6 +199,16 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("toplist",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Primers in the Top List!",
+        sprintf(paste0("Unfortunateley, we could not find any primers in the Top List."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No primers contained in the Top List!")
+    }
+    
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -220,6 +230,16 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("wholelist",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Primers in the Whole List!",
+        sprintf(paste0("Unfortunateley, we could not find any primers in the Whole List."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No primers contained in the Whole List!")
+    }
+    
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -275,6 +295,15 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("blacklist",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Primers in the Black List!",
+        sprintf(paste0("Unfortunateley, we could not find any primers in the Black List."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No primers contained in the Black List!")
+    }
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -294,6 +323,15 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("white",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Primers Found on the White List!",
+        sprintf(paste0("Unfortunateley, we could not find any primers in the White List."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No primers were found on the White List!")
+    }
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -314,6 +352,15 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Logfile Found!",
+        sprintf(paste0("Unfortunateley, we could not find any Logfile."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Logfile found!")
+    }
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -335,6 +382,15 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("primerdesigns.by.sequence",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Primers Found!",
+        sprintf(paste0("Unfortunateley, we could not find any primers for your current job. Feel free to check your settings and try again."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No primers were found!")
+    }
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -355,6 +411,15 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("summary",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Summary Found!",
+        sprintf(paste0("Unfortunateley, we could not find any Summary for your Primer Design Job."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Summary found!")
+    }
     print(file_path)
     read_file <- read.delim(file_path)
     
@@ -375,6 +440,15 @@ shinyServer(function(input, output) {
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("settings",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Settings Found!",
+        sprintf(paste0("Unfortunateley, we could not find any settings for your current job. "),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Settings were found!")
+    }
     print(file_path)
     read_file <- read.delim(file_path)
     
