@@ -8,9 +8,8 @@ library(Biostrings)
 
 
 setClass("ReferenceGenome",
-         #contains="BSgenome", --> use this, if inheritance of BSgenome is indeed needed
-         slots = list(
-           genome="BSgenome",
+         #contains="BSgenome", #--> use this, if inheritance of BSgenome is indeed needed
+         slots = list(genome="BSgenome",
            name="character",
            wd="character"))
 
@@ -49,7 +48,7 @@ setGeneric(
 )
 
 setMethod("getBlastDB", "ReferenceGenome", function(z){
-  
+
   print("checking ref genome wd")
   print(getwd())
   #create a folder, if there is not yet one for this genome - this line throws a warning, if the dir exists already
@@ -67,11 +66,11 @@ setMethod("getBlastDB", "ReferenceGenome", function(z){
       blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
     }
     else{
-      #files already exist so no need to build the database again 
+      #files already exist so no need to build the database again
       blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
     }
   )
-  
+
   GAdb <- (
     if(!file.exists(paste(z@wd, z@name, ".fa.nhr", sep=""))
        || !file.exists(paste(z@wd, z@name, ".fa.nin", sep=""))
@@ -82,13 +81,13 @@ setMethod("getBlastDB", "ReferenceGenome", function(z){
       blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
     }
     else{
-      #files already exist so no need to build the database again 
+      #files already exist so no need to build the database again
       blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
     }
   )
-  
+
   #return CTdb and GAdb for further calculations in server.R as a list of CTdb and GAdb
   dbList <- list("CTdb"= CTdb, "GAdb"= GAdb)
   return (dbList)
-  
+
 })

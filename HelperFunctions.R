@@ -1,4 +1,4 @@
-source("generalDesign.R")
+#source("generalDesign.R")
 
 sequence.characterization<-function(sequence,
                                     feature1="cg",

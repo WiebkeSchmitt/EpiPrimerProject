@@ -194,6 +194,28 @@ shinyServer(function(input, output) {
   
   ############# display the top list of primers ########### 
   
+  #solution for selectInput slider
+  output$viewlogfile <- reactive({ if (!input$logfile) {return(NULL)}
+    #wd <- setwd(primersDesign_wd)
+    #print(wd)
+    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    print(files)
+    file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Logfile Found!",
+        sprintf(paste0("Unfortunateley, we could not find any Logfile."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Logfile found!")
+    }
+    print(file_path)
+    read_file <- read.delim(file_path)
+    
+    print(read_file)
+    return(read_file)
+  })
   
   showToplist <- reactive({ if (!input$toplist) {return(NULL)}
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
