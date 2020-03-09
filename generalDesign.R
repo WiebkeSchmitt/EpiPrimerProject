@@ -2449,20 +2449,21 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                     as.numeric(as.character(all_my_snps$start)) >= bedstart & 
                                     as.numeric(as.character(all_my_snps$end)) <= bedend,]
                 
-                tolo$start.relative=tolo$start-bedstart+1
-                tolo$end.relative=tolo$end-bedstart+1
+                tolo$start.relative=as.numeric(as.character(tolo$start))-bedstart+1
+                tolo$end.relative=as.numeric(as.character(tolo$end))-bedstart+1
                 
                 if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   #trick to also show SNPs on the second part of the hairpin
                   tolo.temp<-tolo
-                  tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-                  tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+                  tolo.temp$end.relative <- lnk.eim + as.numeric(as.character(tolo$start.relative)) - 1 
+                  tolo.temp$start.relative <- lnk.eim + as.numeric(as.character(tolo$end.relative)) - 1
                   tolo<-rbind(tolo,tolo.temp)
                   
                 }#if hp
                 
+                #debug output for tolo table
                 #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
                 #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
                 
@@ -2526,8 +2527,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 #all_my_repeats$genoStart >= bedstart & 
                 #all_my_repeats$genoEnd <= bedend
                 
-                tolo$start.relative=tolo$start-bedstart+1
-                tolo$end.relative=tolo$end-bedstart+1
+                tolo$start.relative=as.numeric(as.character(tolo$start))-bedstart+1
+                tolo$end.relative=as.numeric(as.character(tolo$end))-bedstart+1
                 
                 #tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
                 #             ((tolo$start.relative<0 & tolo$end.relative<=bed.length) & tolo$end.relative>=0) |
@@ -2535,16 +2536,16 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
                 
                 
-                tolo<-tolo[(!tolo$end.relative<0) &
-                             (!tolo$start.relative>=bed.length),]
+                tolo<-tolo[(!as.numeric(as.character(tolo$end.relative))<0) &
+                             (!as.numeric(as.character(tolo$start.relative))>=bed.length),]
                 
                 if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
                   
                   #trick to also show SNPs on the second part of the hairpin
                   tolo.temp<-tolo
-                  tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-                  tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+                  tolo.temp$end.relative <- lnk.eim + as.numeric(as.character(tolo$start.relative)) - 1 
+                  tolo.temp$start.relative <- lnk.eim + as.numeric(as.character(tolo$end.relative)) - 1
                   tolo<-rbind(tolo,tolo.temp)
                   
                 }#if hp
@@ -2557,6 +2558,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                   tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
                 }
                 
+                #debug tolo
                 #write.table(tolo,file=paste(path.tracks,"tolo.object.for.plots_temp_",ibps,".txt",sep=""),
                 #            sep="\t",dec=".",col.names=T,row.names=F,quote=F)
                 
@@ -2634,16 +2636,16 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                   tolo$exon.start=all.exons.start
                   tolo$exon.end=all.exons.end
                   
-                  tolo$start.relative=tolo$exon.start-bedstart+1
-                  tolo$end.relative=tolo$exon.end-bedstart+1
+                  tolo$start.relative=as.numeric(as.character(tolo$exon.start))-bedstart+1
+                  tolo$end.relative=as.numeric(as.character(tolo$exon.end))-bedstart+1
                   
                   # tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
                   #             (tolo$start.relative<0 & tolo$end.relative<=bed.length & tolo$end.relative>=0) |
                   #             (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
                   #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
                   
-                  tolo<-tolo[(!tolo$end.relative<0) &
-                               (!tolo$start.relative>=bed.length),]
+                  tolo<-tolo[(!as.numeric(as.character(tolo$end.relative))<0) &
+                               (!as.numeric(as.character(tolo$start.relative))>=bed.length),]
                   
                 }#if(length(all.exons.start) == length(all.exons.end)){
                 
@@ -2744,8 +2746,8 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                 #               (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
                 #               (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
                 
-                tolo<-tolo[(!tolo$end.relative<0) &
-                             (!tolo$start.relative>=bed.length),]
+                tolo<-tolo[(!as.numeric(as.character(tolo$end.relative))<0) &
+                             (!as.numeric(as.character(tolo$start.relative))>=bed.length),]
                 
                 if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
                    hp.initial.input.type == "regions"){
