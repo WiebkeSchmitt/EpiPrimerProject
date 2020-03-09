@@ -1,5 +1,3 @@
-#source("generalDesign.R")
-
 sequence.characterization<-function(sequence,
                                     feature1="cg",
                                     feature1.subpos=1,#1st position = 1, 2nd position =2,...

@@ -244,18 +244,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 hr(),
                                 helpText("Show further details of the primer design, such as duration and number of created primers:"),
                                 actionButton("Summary", label = "show Summary"),
-                                hr(),
-                                selectInput("table",
-                                            label = "Display results: ",
-                                            choices = c("Overview of all Primers found",                                                        "Toplist of primers",
-                                                        "Show the Toplist",
-                                                        "Show the whole list",
-                                                        "Show the Whitelist",
-                                                        "Show the Blacklist",
-                                                        "Show the Logfile",
-                                                        "Show the Settings",
-                                                        "Show the Summary"),
-                                            selected = "Show the Summary")
+                                hr()
                               ),
                               
                               # Main:
