@@ -56,7 +56,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 downloadButton("downloadRegionsFile", "example regions file"),
                                 hr(),
                                 # Upload data:
-                                fileInput("file", "Upload file:"),
+                                fileInput("file", "Upload regions or sequence file:"),
                                 hr(),
                                 textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
                                 bsTooltip("name", "Choose a name for your primer design folder", "top", "hover"),
@@ -96,7 +96,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 #compute primers
                                 actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
                                              style="color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:25px; font-size:200%; width:400px"),
-                                bsTooltip("action", "Computation takes approx. 4 minutes, please wait until you receive a notifiication"),
+                                bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished."),
                                 hr(),
                                 #download primers
                                 downloadButton('downloadPrimer', 'Download Primers',

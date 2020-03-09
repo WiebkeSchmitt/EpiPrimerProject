@@ -72,7 +72,7 @@ shinyServer(function(input, output) {
     #print(primersDesign_wd)
     
     if (is.null(input$file)){
-      sprintf("No Input file Uploaded!!")
+      sprintf("Please upload an input file!")
     }
     
     else if(file.exists(paste(getwd(),input$name,sep="/"))){ #dir.exists(paste(getwd(),"Data",input$name,sep="/") 
@@ -80,7 +80,7 @@ shinyServer(function(input, output) {
       sprintf("Dataset %s already exists, please choose other ID!", input$name)
     }else{
 
-      showNotification("Computation started!!",duration = 15,type="message")
+      showNotification("The computation of your primers has started!",duration = 25,type="message")
       
       #get input values for Forward and Reverse adapters
       adaF <- input$adapterForward
