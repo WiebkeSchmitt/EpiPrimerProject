@@ -1,4 +1,5 @@
 source("primer.design.r")
+source("HelperFunctions.R")
 
 primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to the file with i) regions (.bed format) or ii) sequences (filepath) (character)
                                  input.type="regions",#"regions" (for a file with regions in .bed format) or "sequences" (for a ".txt" file with sequences) (fixed vocabulary) (character)

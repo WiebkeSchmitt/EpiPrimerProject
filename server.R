@@ -518,12 +518,10 @@ shinyServer(function(input, output) {
   
   output$downloadSelectedPrimers<- downloadHandler(
     filename = function() {
-      # paste("SelectedPrimers","txt",sep=".")
       paste0("SelectedPrimers", ".zip")
     },
     
     content <- function(con) {
-      #ss <- getwd()
       ss <-  paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers",".txt")
       tmpdir <- tempdir()
       setwd(tempdir())
@@ -561,20 +559,16 @@ shinyServer(function(input, output) {
   })
   
   import_Fprimers <- eventReactive(input$loadprimers, {
-    #wd <- setwd(primersDesign_wd)
     vF <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
     print(vF)
     return(vF)
-    #vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
   })
   
   #user can import primers from previous step to display them
   import_Rprimers <- eventReactive(input$loadprimers, {
-    #wd <- setwd(primersDesign_wd)
     vR <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
     print(vR)
     return(vR)
-    #vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
   })
   
   output$forward.primers <- DT::renderDataTable({
@@ -612,7 +606,6 @@ shinyServer(function(input, output) {
       
       #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
       Fseq <- (if(is.null(input$Fprimers)) {
-        #wd <- setwd(primersDesign_wd)
         vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
         
       }
@@ -621,7 +614,6 @@ shinyServer(function(input, output) {
       } )
       
       Rseq <- (if(is.null(input$Rprimers)) {
-        #wd <- setwd(primersDesign_wd)
         vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
         
       }
@@ -714,8 +706,7 @@ shinyServer(function(input, output) {
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)# &
-                      #as.character(vector) == refgen@name)
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
       
       print(sub1)
       return(sub1)
@@ -830,10 +821,6 @@ shinyServer(function(input, output) {
   # })
   
   ###################start operations####################
-  
-  #print(getwd())
-  #set_dir <- setwd(primersDesign_wd)
-  #print(getwd())
   
   output$state1 <- eventReactive(input$excute,{
     
@@ -972,7 +959,6 @@ shinyServer(function(input, output) {
       print(tables_path)
       
       #building dataframe for information of all indices 
-      
       df_indices <- data.frame(path=unlist(tables_path,use.names = FALSE))
       df_indices[["package"]]<-sapply(strsplit(as.character(df_indices[["path"]]),"/"),function(x) x[grepl("samples",x)==TRUE])
       df_indices[["table"]]<-sapply(strsplit(as.character(df_indices[["path"]]),"/"),function(x) x[grepl("L001_counts",x)==TRUE])#df_indices[["index_path"]]<-sapply(strsplit(as.character(df_indices[["path"]]),"/"),function(x) substr(df_indices[["path"]],1,length(x)-1))
