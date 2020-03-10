@@ -80,7 +80,14 @@ shinyServer(function(input, output) {
       sprintf("Dataset %s already exists, please choose other ID!", input$name)
     }else{
 
-      showNotification("The computation of your primers has started!",duration = 25,type="message")
+      
+      ww <-showModal(modalDialog(
+        title = "We are currently computing your primers!",
+        sprintf(paste0("You will be notified when the computation of your primers is finished. Please be patient, this might take a few minutes."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      #showNotification("The computation of your primers has started!",duration = 25,type="message")
       
       #get input values for Forward and Reverse adapters
       adaF <- input$adapterForward
@@ -141,7 +148,7 @@ shinyServer(function(input, output) {
       sprintf("Finished Computation!!")
       ww <-showModal(modalDialog(
         title = "Primers are READY!",
-        sprintf(paste0("Check the results in the folder %s"),input$name),
+        sprintf(paste0("You can find details concerning your run in the next tap and further analyze them using the created files in the folder %s"),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
