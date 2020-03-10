@@ -114,14 +114,14 @@ ui <- dashboardPage(skin = "yellow",
                 fluidRow(
                   actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
                                style="color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:25px; font-size:200%; width:1400px; margin-left:100px; margin-right:0px"),
-                  bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished.")
+                  bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished.", "left")
                 )
               )
                     
               ),
       tabItem(tabName = "AdvancedPrimerSettings",
               box(title = "",
-                  checkboxInput("i_check4snps", label = h4("Check for SNPs"), TRUE),
+                  checkboxInput("i_check4snps", label = h4("Check my primerpair for SNPs"), TRUE),
                   conditionalPanel(
                     "input.i_check4snps ==1",
                     sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the amplicon"),
@@ -180,9 +180,64 @@ ui <- dashboardPage(skin = "yellow",
               )
               ),
       tabItem(tabName = "PDresults",
-              box(title = "",
-                  helpText("tbd")
-                  )
+              fluidRow(
+                  tabBox(title = "",
+                        id = "PDresultsTabbox",
+                         #height = "25x",
+                         tabPanel("Overview",
+                                 actionButton("primerdesigns.by.sequence", label = "refresh results overview"),
+                                 hr(),
+                                  DT::dataTableOutput("viewprimerdesigns")
+                                 ),
+                         tabPanel("Toplist",
+                                  actionButton("toplist", label = "refresh toplist"),
+                                  hr(),
+                                 DT::dataTableOutput("viewtoplist")
+                                 ),
+                         tabPanel("Wholelist",
+                                  actionButton("wholelist", label = "refresh whole list"),
+                                  hr(),
+                                 DT::dataTableOutput("viewwholelist")
+                                  ),
+                        tabPanel("Whitelist",
+                                 actionButton("whitelist", label = "refresh whitelist"),
+                                  hr(),
+                                  DT::dataTableOutput("viewwhitelist")
+                                  ),
+                        tabPanel("Blacklist",
+                                  actionButton("blacklist", label = "refresh blacklist"),
+                                 hr(),
+                                  DT::dataTableOutput("viewblacklist")
+                                  ),
+                        tabPanel("Logfile",
+                                 actionButton("logfile", label = "refresh logfile"),
+                                 hr(),
+                                 DT::dataTableOutput("viewlogfile")
+                                 ),
+                        tabPanel("Settings",
+                                 actionButton("settings", label = "refresh settings"),
+                                 hr(),
+                                 DT::dataTableOutput("viewsettings")
+                                  ),
+                        tabPanel("Summary",
+                                  actionButton("Summary", label = "refresh Summary"),
+                                  hr(),
+                                  DT::dataTableOutput("viewSummary")
+                                 )
+                      )
+              ),
+              fluidRow(
+                    box(title = "Selected List",
+                        helpText("You can download primerpairs or analyze them further by adding them to your list of selected primers below."),
+                        helpText("To do add primers to your Selected List, mark them on the Toplist and add them to the Selected List."),
+                        hr(),
+                        actionButton("selectlist", label = "Generate Selected List"),
+                        hr(),
+                        DT::dataTableOutput("viewSelectlist"),
+                        hr(),
+                        downloadButton('downloadSelectedPrimers', 'Selected Primers')
+                        )
+              )
               ),
       tabItem(tabName = "PDgraphs",
               box(title = "Graphs: ",

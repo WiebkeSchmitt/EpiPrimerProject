@@ -251,7 +251,9 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                               
                               # Main:
                               mainPanel(
-                                h4("Primer Designs For Each Sequence"),DT::dataTableOutput("viewprimerdesigns"),br(),
+                                h4("Primer Designs For Each Sequence"),
+                                DT::dataTableOutput("viewprimerdesigns"),
+                                br(),
                                 h4("Top List"),DT::dataTableOutput("viewtoplist"),
                                 br(),
                                 h4("The List of selected primers"),
