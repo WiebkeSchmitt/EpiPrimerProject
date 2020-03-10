@@ -55,7 +55,10 @@ ui <- dashboardPage(skin = "yellow",
       tabItem(tabName = "PrimerDesign",
               fluidRow(
                 box(title = h2("Upload file for Primer Design:"),
+                    status = "primary", 
+                    solidHeader = TRUE,
                     # Upload data:
+                    helpText("Primers can be computed for: hg18, hg19, mm9, mm10"), 
                     fileInput("file", "Upload regions or sequence file:"),
                     hr(),
                     textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
@@ -76,6 +79,8 @@ ui <- dashboardPage(skin = "yellow",
                     downloadButton("downloadRegionsFile", "example regions file")
                     ),
                 box(title = h2("Basic Primer Settings: "), 
+                    status = "primary",
+                    solidHeader = TRUE,
                     radioButtons("i_primer_type", label = h3("Primer Type"),
                                  choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
                                                 "Bisulfite (hairpin)" = "hp_bisulfite", "NOME (hairpin)" = "hp_NOME", "CLEVER (hairpin)"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
@@ -141,9 +146,6 @@ ui <- dashboardPage(skin = "yellow",
                               min = 10, max = 80, value = c(23, 34)),
                   sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
                               min = 40, max = 75, value = c(48, 60))
-                  
-                  
-                    
                   ),
               box(title = "",
                   sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
@@ -184,6 +186,7 @@ ui <- dashboardPage(skin = "yellow",
                   tabBox(title = "",
                         id = "PDresultsTabbox",
                          #height = "25x",
+                         #width="1x",
                          tabPanel("Overview",
                                  actionButton("primerdesigns.by.sequence", label = "refresh results overview"),
                                  hr(),
