@@ -58,6 +58,14 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 # Upload data:
                                 fileInput("file", "Upload regions or sequence file:"),
                                 hr(),
+                                textOutput("state"),
+                                tags$head(tags$style("#state{color: red;
+                                                            font-size: 30px;
+                                                            font-style: italic;
+                                                            }"
+                                          )
+                                ),
+                                hr(),
                                 textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
                                 bsTooltip("name", "Choose a name for your primer design folder", "top", "hover"),
                                 hr(),
@@ -97,14 +105,7 @@ shinyUI(navbarPage(title=div(img(src="EpiPrimerLogo.png"), height="10", width="1
                                 actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
                                              style="color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:25px; font-size:200%; width:400px"),
                                 bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished."),
-                                hr(),
-                                #download primers
-                                downloadButton('downloadPrimer', 'Download Primers',
-                                              style="padding:25px; font-size:200%; width:400px"),
-                                bsTooltip("downloadPrimer", "Download your primers to a local folder"),
-                                br(),
-                                textOutput("state"),
-                                br()
+                                hr()
                               ),
                               # Main:
                               mainPanel(
