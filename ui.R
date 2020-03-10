@@ -29,6 +29,7 @@ source(wrapper_file)
 library(seqinr)
 
 library(shiny)
+library(shinydashboard)
 
 ####### For Tooltips #########
 library(shinyBS)
