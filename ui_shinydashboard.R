@@ -42,14 +42,18 @@ ui <- dashboardPage(skin = "yellow",
   dashboardHeader(title="EpiPrimer"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Primer Design", tabName = "PrimerDesign", icon = icon("dashboard")),
-      menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("th")),
-      menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("th")),
-      menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("th")),
-      menuItem("Primer Quality Control", tabName = "PrimerQC", icon = icon("th"))
+      menuItem("Primer Design", tabName = "PrimerDesign", icon = icon("dna")),
+      menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dna")),
+      menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("dashboard")),
+      menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
+      menuItem("Primer Quality Control", tabName = "PrimerQC", icon = icon("check-circle")),
+      menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
     )
   ),
   dashboardBody(
+    # tags$head(
+    #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    # ),
     tabItems(
       # Content of Primer Design Tab
       tabItem(tabName = "PrimerDesign",
@@ -58,7 +62,10 @@ ui <- dashboardPage(skin = "yellow",
                     status = "primary", 
                     solidHeader = TRUE,
                     # Upload data:
-                    helpText("Primers can be computed for: hg18, hg19, mm9, mm10"), 
+                    helpText("Provided genomes are:"),
+                    helpText("Human genome assemblies: hg18, hg19"),
+                    helpText("Mouse genome assemblies: mm9, mm10"), 
+                    helpText("If your primer design job was unsuccesful, please check your advanced settings on the next tab before computing again."),
                     fileInput("file", "Upload regions or sequence file:"),
                     hr(),
                     textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
@@ -74,6 +81,7 @@ ui <- dashboardPage(skin = "yellow",
                     hr(),
                     DT::dataTableOutput("table"),
                     hr(),
+                    helpText("You can view the results of your primer design job using the 'Results' and 'Graphs' tabs."),
                     helpText( h4("Download Example Files here: ")),
                     downloadButton("downloadSequenceFile", "example sequence file"),
                     downloadButton("downloadRegionsFile", "example regions file")
@@ -85,14 +93,14 @@ ui <- dashboardPage(skin = "yellow",
                                  choices = list("Genomic"="genomic", "Bisulfite" = "bisulfite", "NOME" = "NOME", "CLEVER"="CLEVER",
                                                 "Bisulfite (hairpin)" = "hp_bisulfite", "NOME (hairpin)" = "hp_NOME", "CLEVER (hairpin)"="hp_CLEVER", "CrispRCas9 Amplicon"="CrispRCas9PCR"),
                                  selected = "genomic"),
-                    bsTooltip("i_primer_type", "What kind of primer do you want to create?", "bottom", "hover"),
+                    bsTooltip("i_primer_type", "What kind of primer do you want to create?", "left", "hover"),
                     hr(),
                     conditionalPanel(
                       condition = "input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
                       radioButtons("i_strand", label = h3("Strand"),
                                    choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
                                    selected = "top"),
-                      bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "bottom", "hover")
+                      bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "left", "hover")
                     ),
                     hr(),
                     helpText( h3("Choose some options for your primer design: ")),
@@ -185,6 +193,7 @@ ui <- dashboardPage(skin = "yellow",
               fluidRow(
                   tabBox(title = "",
                         id = "PDresultsTabbox",
+                        width = 12,
                          #height = "25x",
                          #width="1x",
                          tabPanel("Overview",
@@ -231,6 +240,7 @@ ui <- dashboardPage(skin = "yellow",
               ),
               fluidRow(
                     box(title = "Selected List",
+                        width = 12,
                         helpText("You can download primerpairs or analyze them further by adding them to your list of selected primers below."),
                         helpText("To do add primers to your Selected List, mark them on the Toplist and add them to the Selected List."),
                         hr(),
@@ -244,11 +254,16 @@ ui <- dashboardPage(skin = "yellow",
               ),
       tabItem(tabName = "PDgraphs",
               box(title = "Graphs: ",
+                  width = 12,
                   actionButton("graphics", label = "Refresh Graphics"),
                   uiOutput("plot3"))
               ),
       tabItem(tabName = "PrimerQC",
               helpText("tbd")
+              ),
+      tabItem(tabName = "Imprint",
+              helpText("This website was created by the Epigenetics department of Saarland University:"),
+              helpText("http://epigenetik.uni-saarland.de/en/home/")
               )
               
     )
@@ -432,7 +447,13 @@ server <- function(input, output) {
   output$viewtoplist <- DT::renderDataTable({
     if (!input$toplist) {return(data.frame())}
     showToplist()
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   
   ############# display the whole list of primers ###########
@@ -463,7 +484,13 @@ server <- function(input, output) {
   output$viewwholelist <- DT::renderDataTable({
     if (!input$wholelist) {return(data.frame())}
     showWholelist()
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   ######### displaying selected primers table #######
   #also generate fasta files for forward and reverse primers 
@@ -496,7 +523,13 @@ server <- function(input, output) {
   output$viewSelectlist <- DT::renderDataTable({
     
     return(showSelectlist())
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   
   
@@ -527,7 +560,13 @@ server <- function(input, output) {
   output$viewblacklist <- DT::renderDataTable({
     if (!input$blacklist) {return(data.frame())}
     showBlacklist()
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   ############# display the white list of primers ###########
   showWhitelist <- reactive({ if (!input$whitelist) {return(NULL)}
@@ -555,7 +594,13 @@ server <- function(input, output) {
   output$viewwhitelist <- DT::renderDataTable({
     if (!input$whitelist) {return(data.frame())}
     showWhitelist()
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   ############# display the log file of the primer design ###########
   
@@ -677,13 +722,10 @@ server <- function(input, output) {
   #################### display graphics of primer design#############
   
   showGraphics <-eventReactive(input$graphics,{
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(graphs=list.files(paste(getwd(),input$name,"PrimerAnalysis","graphics",sep="/"),full.names=TRUE, pattern =".png"))
   })
   
   output$plot3 <-renderUI({
-    
     #check, if there are graphics that can be displayed, if not inform the user 
     if(is.data.frame(showGraphics()) && nrow(showGraphics())== 0){
       ww <-showModal(modalDialog(
