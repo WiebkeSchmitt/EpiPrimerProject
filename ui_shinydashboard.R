@@ -65,10 +65,12 @@ ui <- dashboardPage(skin = "yellow",
                     helpText("Provided genomes are:"),
                     helpText("Human genome assemblies: hg18, hg19"),
                     helpText("Mouse genome assemblies: mm9, mm10"), 
-                    helpText("If your primer design job was unsuccesful, please check your advanced settings on the next tab before computing again."),
+                    helpText("If your primer design job was unsuccesful, you are recommended to check your advanced settings and to compute again."),
                     fileInput("file", "Upload regions or sequence file:"),
                     hr(),
-                    textInput("name","Dataset name:", paste0("PrimerSet",Sys.Date(),",",format(Sys.time(), "%X"))),
+                    DT::dataTableOutput("table"),
+                    hr(),
+                    textInput("name","Dataset name:", paste0("MyPrimerSet")),
                     bsTooltip("name", "Choose a name for your primer design folder", "top", "hover"),
                     hr(),
                     textOutput("state"),
@@ -79,12 +81,10 @@ ui <- dashboardPage(skin = "yellow",
                                           )
                               ),
                     hr(),
-                    DT::dataTableOutput("table"),
-                    hr(),
                     helpText("You can view the results of your primer design job using the 'Results' and 'Graphs' tabs."),
                     helpText( h4("Download Example Files here: ")),
-                    downloadButton("downloadSequenceFile", "example sequence file"),
-                    downloadButton("downloadRegionsFile", "example regions file")
+                    downloadButton("downloadSequenceFile", "Sequence File"),
+                    downloadButton("downloadRegionsFile", "Regions File")
                     ),
                 box(title = h2("Basic Primer Settings: "), 
                     status = "primary",
@@ -197,42 +197,42 @@ ui <- dashboardPage(skin = "yellow",
                          #height = "25x",
                          #width="1x",
                          tabPanel("Overview",
-                                 actionButton("primerdesigns.by.sequence", label = "refresh results overview"),
+                                 actionButton("primerdesigns.by.sequence", label = "Overview", icon = icon("sync-alt")),
                                  hr(),
                                   DT::dataTableOutput("viewprimerdesigns")
                                  ),
                          tabPanel("Toplist",
-                                  actionButton("toplist", label = "refresh toplist"),
+                                  actionButton("toplist", label = "Toplist", icon = icon("sync-alt")),
                                   hr(),
                                  DT::dataTableOutput("viewtoplist")
                                  ),
                          tabPanel("Wholelist",
-                                  actionButton("wholelist", label = "refresh whole list"),
+                                  actionButton("wholelist", label = "Wholelist", icon = icon("sync-alt")),
                                   hr(),
                                  DT::dataTableOutput("viewwholelist")
                                   ),
                         tabPanel("Whitelist",
-                                 actionButton("whitelist", label = "refresh whitelist"),
+                                 actionButton("whitelist", label = "Whitelist", icon = icon("sync-alt")),
                                   hr(),
                                   DT::dataTableOutput("viewwhitelist")
                                   ),
                         tabPanel("Blacklist",
-                                  actionButton("blacklist", label = "refresh blacklist"),
+                                  actionButton("blacklist", label = "Blacklist", icon = icon("sync-alt")),
                                  hr(),
                                   DT::dataTableOutput("viewblacklist")
                                   ),
                         tabPanel("Logfile",
-                                 actionButton("logfile", label = "refresh logfile"),
+                                 actionButton("logfile", label = "Logfile", icon = icon("sync-alt")),
                                  hr(),
                                  DT::dataTableOutput("viewlogfile")
                                  ),
                         tabPanel("Settings",
-                                 actionButton("settings", label = "refresh settings"),
+                                 actionButton("settings", label = "Settings", icon = icon("sync-alt")),
                                  hr(),
                                  DT::dataTableOutput("viewsettings")
                                   ),
                         tabPanel("Summary",
-                                  actionButton("Summary", label = "refresh Summary"),
+                                  actionButton("Summary", label = "Summary", icon = icon("sync-alt")),
                                   hr(),
                                   DT::dataTableOutput("viewSummary")
                                  )
@@ -262,15 +262,18 @@ ui <- dashboardPage(skin = "yellow",
               helpText("tbd")
               ),
       tabItem(tabName = "Imprint",
-              helpText("This website was created by the Epigenetics department of Saarland University:"),
-              helpText("http://epigenetik.uni-saarland.de/en/home/")
+              box(title = "Imprint",
+                  width = 12,
+                  helpText("This website was created by the Epigenetics department of Saarland University."),
+                  tags$a(href="http://epigenetik.uni-saarland.de/en/home/", "Visit our Homepage here.")
               )
+      )
               
     )
   )
 )
 
-server <- function(input, output) { 
+server <- function(input, output) {
   ### Data import:
   Dataset <- reactive({
     if (is.null(input$file)) {
@@ -287,7 +290,13 @@ server <- function(input, output) {
   output$table <- DT::renderDataTable({
     
     return(Dataset())
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   output$state <- eventReactive(input$action, {
     #primerDesign_wd <- setwd(primersDesign_wd)
