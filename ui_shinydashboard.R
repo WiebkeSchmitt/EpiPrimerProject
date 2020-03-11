@@ -42,9 +42,9 @@ ui <- dashboardPage(skin = "yellow",
   dashboardHeader(title="EpiPrimer"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Primer Design", tabName = "PrimerDesign", icon = icon("dna")),
-      menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dna")),
-      menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("dashboard")),
+      menuItem("Primer Design Start", tabName = "PrimerDesign", icon = icon("dna")),
+      menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dashboard")),
+      menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
       menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
       menuItem("Primer Quality Control", tabName = "PrimerQC", icon = icon("check-circle")),
       menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
@@ -791,12 +791,9 @@ server <- function(input, output) {
       setwd(tempdir())
       filesToSave <- c(ss) #List to hold paths to your files in shiny
       #Put all file paths inside filesToSave...
-      
       zz <- zip(zipfile=con, files = filesToSave,flags = "-r9X", extras = "",zip ="zip")
-      #x <- zip(paste0(input$name), file.path(input$name), flags = "-r9X", extras = "",zip = Sys.getenv("R_ZIPCMD", "zip"))
       return(zz)
       print(getwd())
-      
     }
   )
   
