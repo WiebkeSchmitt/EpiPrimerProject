@@ -1529,27 +1529,31 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
             iseq.p2.start<-results2[iamplicons,"primer2.start"]
             iseq.p2.end<-results2[iamplicons,"primer2.end"]
             
-            results2[iamplicons,"SNP.db"] <- levels(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr","",iseq.chr)) & 
-                                                                  as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & 
-                                                                  as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
-            results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==gsub("chr", "", iseq.chr) & 
-                                                                        as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & 
-                                                                        as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,]) 
-            results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
-                                                                         (as.numeric(as.character(all_my_snps$start))>=iseq.amp.start) & 
-                                                                         (as.numeric(as.character(all_my_snps$start))<=iseq.amp.end) ,"rs_id"],collapse=",")
-            results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr)) & 
-                                                                       as.numeric(as.character(all_my_snps$start))>=iseq.p1.start & 
-                                                                       as.numeric(as.character(all_my_snps$start))<=iseq.p1.end ,])
-            results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
-                                                                        (as.numeric(as.character(all_my_snps$start))>=iseq.p1.start) & 
-                                                                        (as.numeric(as.character(all_my_snps$start))<=iseq.p1.end) ,"rs_id"],collapse=",")
-            results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr)) & 
-                                                                       as.numeric(as.character(all_my_snps$start))>=iseq.p2.start & 
-                                                                       as.numeric(as.character(all_my_snps$start))<=iseq.p2.end,])
-            results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
-                                                                        (as.numeric(as.character(all_my_snps$start))>=iseq.p2.start) & 
-                                                                        (as.numeric(as.character(all_my_snps$start))<=iseq.p2.end) ,"rs_id"],collapse=",")
+            if(exists("all_my_snps") && nrow(all_my_snps) != 0 && length(levels(all_my_snps) != 0) ){
+              results2[iamplicons,"SNP.db"] <- levels(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr","",iseq.chr)) & 
+                                                                    as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & 
+                                                                    as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
+              results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==gsub("chr", "", iseq.chr) & 
+                                                                          as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & 
+                                                                          as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,]) 
+              results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
+                                                                           (as.numeric(as.character(all_my_snps$start))>=iseq.amp.start) & 
+                                                                           (as.numeric(as.character(all_my_snps$start))<=iseq.amp.end) ,"rs_id"],collapse=",")
+              results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr)) & 
+                                                                         as.numeric(as.character(all_my_snps$start))>=iseq.p1.start & 
+                                                                         as.numeric(as.character(all_my_snps$start))<=iseq.p1.end ,])
+              results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
+                                                                          (as.numeric(as.character(all_my_snps$start))>=iseq.p1.start) & 
+                                                                          (as.numeric(as.character(all_my_snps$start))<=iseq.p1.end) ,"rs_id"],collapse=",")
+              results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr)) & 
+                                                                         as.numeric(as.character(all_my_snps$start))>=iseq.p2.start & 
+                                                                         as.numeric(as.character(all_my_snps$start))<=iseq.p2.end,])
+              results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
+                                                                          (as.numeric(as.character(all_my_snps$start))>=iseq.p2.start) & 
+                                                                          (as.numeric(as.character(all_my_snps$start))<=iseq.p2.end) ,"rs_id"],collapse=",")
+              
+            }
+            
             
           }# iamplicons
           

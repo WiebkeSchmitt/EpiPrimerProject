@@ -51,9 +51,9 @@ ui <- dashboardPage(skin = "yellow",
     )
   ),
   dashboardBody(
-    # tags$head(
-    #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-    # ),
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    ),
     tabItems(
       # Content of Primer Design Tab
       tabItem(tabName = "PrimerDesign",
@@ -111,17 +111,6 @@ ui <- dashboardPage(skin = "yellow",
                       "input.i_check4repeats == 1",
                       checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
                       checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
-                    ),
-                    checkboxInput("i_annotate.genes", label = h4("Annotate genes"), FALSE),
-                    checkboxInput("adapterF", label = h4("Add a specific sequence to 5' end of forward primer"), FALSE),
-                    conditionalPanel(
-                      "input.adapterF == 1",
-                      textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
-                    ),
-                    checkboxInput("adapterR", label = h4("Add a specific sequence to 5' end of reverse primer"), FALSE),
-                    conditionalPanel(
-                      "input.adapterR==1",
-                      textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
                     )
                   ),
                 fluidRow(
@@ -179,7 +168,18 @@ ui <- dashboardPage(skin = "yellow",
                                 min = 0, max = 50, value = 30)
                     
                   )
-              )
+              ),
+              box(title = "Add Adapters to my primers: ",
+                checkboxInput("adapterF", label = h4("Add a specific sequence to 5' end of forward primer"), FALSE),
+                conditionalPanel(
+                  "input.adapterF == 1",
+                  textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
+                ),
+                checkboxInput("adapterR", label = h4("Add a specific sequence to 5' end of reverse primer"), FALSE),
+                conditionalPanel(
+                  "input.adapterR==1",
+                  textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
+                ))
               ),
       tabItem(tabName = "PDresults",
               fluidRow(
@@ -371,7 +371,7 @@ server <- function(input, output) {
                              check4repeats=input$i_check4repeats,
                              allow.repeats.in.primers=input$i_allow.repeats.in.primers,
                              allow.repeats.in.amplicon=input$i_allow.repeats.in.amplicon,
-                             annotate.genes=input$i_annotate.genes,
+                             annotate.genes=FALSE,
                              annotate.cpg.islands=FALSE,
                              #create.toplist=input$i_create.toplist,
                              #create.graphics=input$i_create.graphics,
