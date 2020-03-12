@@ -37,9 +37,11 @@ wrapper_file <- file.path(primersDesign_wd, "wrapper.r", fsep=.Platform$file.sep
 source(wrapper_file)
 library(seqinr)
 
+dbHeader <- dashboardHeader(title = "EpiPrimer")
+
 ## UI using shiny dashboard ##
 ui <- dashboardPage(skin = "yellow",
-  dashboardHeader(title="EpiPrimer"),
+  dbHeader,
   dashboardSidebar(
     sidebarMenu(
       menuItem("Primer Design Start", tabName = "PrimerDesign", icon = icon("dna")),
@@ -67,7 +69,7 @@ ui <- dashboardPage(skin = "yellow",
                     helpText("Human genome assemblies: hg18, hg19"),
                     helpText("Mouse genome assemblies: mm9, mm10"), 
                     helpText("If your primer design job was unsuccesful, you are recommended to check your advanced settings and to compute again."),
-                    fileInput("file", "Upload regions or sequence file:"),
+                    fileInput("file", "Upload regions or sequence file:", accept=c("txt", "text/plain")),
                     hr(),
                     DT::dataTableOutput("table"),
                     hr(),
@@ -84,8 +86,10 @@ ui <- dashboardPage(skin = "yellow",
                     hr(),
                     helpText("You can view the results of your primer design job using the 'Results' and 'Graphs' tabs."),
                     helpText( h4("Download Example Files here: ")),
-                    downloadButton("downloadSequenceFile", "Sequence File"),
-                    downloadButton("downloadRegionsFile", "Regions File")
+                    downloadButton("downloadSequenceFile", "Sequence File",
+                                   style="margin-left:150px; margin-right:0px"),
+                    downloadButton("downloadRegionsFile", "Regions File",
+                                   style="margin-left:150px; margin-right:0px")
                     ),
                 box(title = h2("Basic Primer Settings"), 
                     status = "primary",
@@ -428,7 +432,8 @@ ui <- dashboardPage(skin = "yellow",
                 conditionalPanel(
                   "input.adapterR==1",
                   textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
-                ))
+                )
+                )
               ),
       tabItem(tabName = "PDresults",
               fluidRow(
