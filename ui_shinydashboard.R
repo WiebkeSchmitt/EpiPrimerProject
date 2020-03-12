@@ -47,6 +47,7 @@ ui <- dashboardPage(skin = "yellow",
       menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
       menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
       menuItem("Primer Quality Control", tabName = "PrimerQC", icon = icon("check-circle")),
+      menuItem("Results of Quality Control", tabName = "PrimerQCResults", icon = icon("list-ol")),
       menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
     )
   ),
@@ -106,16 +107,12 @@ ui <- dashboardPage(skin = "yellow",
                     helpText( h3("Choose some options for your primer design: ")),
                     hr(),
                     checkboxInput("i_remove.primers.with.n", label = h4("Remove primers that contain N bases"), TRUE),
-                    checkboxInput("i_check4repeats", label = h4("Check for repeats"), FALSE),
-                    conditionalPanel(
-                      "input.i_check4repeats == 1",
-                      checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
-                      checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
-                    )
+                    checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
+                    checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
                   ),
                 fluidRow(
                   actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
-                               style="color: #fff; background-color: #3c8dbc; border-color: #3c8dbc; padding:25px; font-size:200%; width:1400px; margin-left:100px; margin-right:0px"),
+                               style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:100px; margin-right:0px"),
                   bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished.", "left")
                 )
               )
@@ -123,35 +120,286 @@ ui <- dashboardPage(skin = "yellow",
               ),
       tabItem(tabName = "AdvancedPrimerSettings",
               box(
-                  sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the amplicon"),
+                  sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the Amplicon"),
+                              min = 0, max = 80, value = 10),
+                  sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the Forward Primer"),
                               min = 0, max = 80, value = 0),
-                  sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the forward primer"),
+                  sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the Reverse Primer"),
                               min = 0, max = 80, value = 0),
-                  sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the reverse primer"),
-                              min = 0, max = 80, value = 0),
-                  sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
-                               min = 0, max = 10, value = 7),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'genomic'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 5)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'bisulfite'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 7)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'NOME'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 7)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'CLEVER'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 5)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_bisulfite'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 7)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_NOME'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 7)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_CLEVER'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 5)
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                    sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                min = 0, max = 10, value = 5)
+                  ),
                   sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
                               min = 0, max = 50, value = 12),
-                  sliderInput("i_primerlength", label = h4("Primer Length"),
-                              min = 10, max = 80, value = c(23, 34)),
-                  sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
-                              min = 40, max = 75, value = c(48, 60))
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'genomic'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(18, 25))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'bisulfite'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(20, 32))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'NOME'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(20, 32))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'CLEVER'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(18, 25))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_bisulfite'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(20, 32))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_NOME'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(20, 32))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_CLEVER'",
+                    sliderInput("i_primerlength", label = h4("Primer Length"),
+                                min = 10, max = 80, value = c(18, 25))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'genomic'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(50, 60))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'bisulfite'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(48, 60))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'NOME'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(48, 60))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'CLEVER'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(50, 60))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_bisulfite'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(48, 60))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_NOME'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(48, 60))
+                  ),
+                  conditionalPanel(
+                    condition = "input.i_primer_type == 'hp_CLEVER'",
+                    sliderInput("i_primertemp", label = h4("Primer Melting Temperature"),
+                                min = 40, max = 75, value = c(50, 60))
+                  )
                   ),
               box(
+                conditionalPanel(
+                  condition="input.i_primer_type == 'genomic'",
                   sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                              min = 0, max = 10, value = 2),
+                              min = 0, max = 10, value = 3)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type == 'bisulfite'",
+                  sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                              min = 0, max = 10, value = 5)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type == 'NOME'",
+                  sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                              min = 0, max = 10, value = 6)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type == 'CLEVER'",
+                  sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                              min = 0, max = 10, value = 3)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type == 'hp_bisulfite'",
+                  sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                              min = 0, max = 10, value = 5)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type == 'hp_NOME'",
+                  sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                              min = 0, max = 10, value = 6)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type == 'hp_CLEVER'",
+                  sliderInput("i_meltdiff", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                              min = 0, max = 10, value = 3)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'genomic'",
                   sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
-                              min = 100, max = 800, value = c(150,500)),
+                              min = 100, max = 800, value = c(200,500))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'bisulfite'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,400))
+                ),  
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'NOME'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,400))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'CLEVER'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,500))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_bisulfite'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,400))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_NOME'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,400))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_CLEVER'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,500))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                  sliderInput("i_lengthAmp", label = h4("Amplicon Length"),
+                              min = 100, max = 800, value = c(200,500))
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'genomic'",
                   sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
-                              min = 0, max = 10, value = 0),
+                              min = 0, max = 10, value = 0)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'bisulfite'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 0)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'NOME'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 5)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'CLEVER'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 0)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_bisulfite'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 0)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_NOME'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 1)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_CLEVER'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 0)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                  sliderInput("i_minGC", h4("Minimum Number of GCs per amplicon"),
+                              min = 0, max = 10, value = 0)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'genomic'",
                   sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
-                              min = 0, max = 10, value = 5),
-                  conditionalPanel(
-                    condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
-                    sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
-                                min = 0, max = 10, value = 3)
-                  ),
+                              min = 0, max = 10, value = 0)
+                ), 
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'bisulfite'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 5)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'NOME'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 5)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'CLEVER'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 5)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_bisulfite'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 1)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_NOME'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 1)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'hp_CLEVER'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 1)
+                ),
+                conditionalPanel(
+                  condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                  sliderInput("i_minCG", h4("Minimum Number of CGs per amplicon"),
+                              min = 0, max = 10, value = 1)
+                ),
+                conditionalPanel(
+                  condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                  sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
+                              min = 0, max = 10, value = 3)
+                ),
                   conditionalPanel(
                     condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
                     sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
@@ -160,7 +408,7 @@ ui <- dashboardPage(skin = "yellow",
                   conditionalPanel(
                     condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER'", 
                     sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                min = 0, max = 1000, value = c(50, 300))
+                                min = 0, max = 1000, value = c(50, 200))
                   ),
                   conditionalPanel(
                     condition = "input.i_primer_type == 'genomic'",
@@ -169,13 +417,14 @@ ui <- dashboardPage(skin = "yellow",
                     
                   )
               ),
-              box(title = "Add Adapters to my primers: ",
-                checkboxInput("adapterF", label = h4("Add a specific sequence to 5' end of forward primer"), FALSE),
+              box(title = h3("Add Adapters to my primers: "),
+                  width = 12,
+                checkboxInput("adapterF", label = h4("Add a specific sequence to the 5' end of the forward primer"), FALSE),
                 conditionalPanel(
                   "input.adapterF == 1",
                   textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
                 ),
-                checkboxInput("adapterR", label = h4("Add a specific sequence to 5' end of reverse primer"), FALSE),
+                checkboxInput("adapterR", label = h4("Add a specific sequence to the 5' end of the reverse primer"), FALSE),
                 conditionalPanel(
                   "input.adapterR==1",
                   textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
@@ -233,8 +482,9 @@ ui <- dashboardPage(skin = "yellow",
               fluidRow(
                     box(title = "Selected List",
                         width = 12,
-                        helpText("You can download primerpairs or analyze them further by adding them to your list of selected primers below."),
-                        helpText("To do add primers to your Selected List, mark them on the Toplist and add them to the Selected List."),
+                        helpText("You can download primerpairs and analyze them further by adding them to your list of selected primers below."),
+                        helpText("Primers added to the Selected List will automatically be downloaded to the Folder containing all details of your Primer Design run."),
+                        helpText("To add primers to your Selected List, mark them on the Toplist before generating your Selected List."),
                         hr(),
                         actionButton("selectlist", label = "Generate Selected List"),
                         hr(),
@@ -257,34 +507,46 @@ ui <- dashboardPage(skin = "yellow",
                   status = "primary", 
                   solidHeader = TRUE,
                   width = 6,
-                  helpText("Upload Primers for Quality Control or import them from your Primer Design"),
-                  fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), 
-                  fileInput("Rprimers", "Upload Reverse Primers", multiple = TRUE, accept = ".fasta"), 
-                  hr(),
-                  helpText("Import primers you added to the Select List during Primer Design:"),
-                  actionButton("loadprimers", "Import Primers", icon = icon("file-import")),
+                  helpText("Upload your own Primers for Quality Control or import them from the Selected List you created during Primer Design"),
+                  actionButton("loadprimers", "Import Primers", icon = icon("file-import"),
+                               style="margin-left:275px; margin-right:0px"),
                   bsTooltip("loadprimers", "Import primers you added to the Select List during Primer Design", "bottom", "hover"),
                   hr(),
-                  selectInput("genome", "Choose the genome",choices=c(installed.genomes())),
-                  bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover")
+                  textOutput("PrimerqcState"),
+                  hr(),
+                  helpText("Or Upload your own Primers (.fasta file format is needed)"),
+                  fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), 
+                  DT::dataTableOutput("forward.primers"),
+                  fileInput("Rprimers", "Upload Reverse Primers", multiple = TRUE, accept = ".fasta"), 
+                  DT::dataTableOutput("reverse.primers")
                   ),
               box(title = h2("Settings for Primer Quality Control"),
                   status = "primary", 
                   solidHeader = TRUE,
                   width = 6,
+                  selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
+                  bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                   sliderInput("gap", "Maximum Fragment Size:", min = 0, max = 50000, value = 2000),
                   helpText("Please set an E-value for your quality control. This value can be used to filter your results by only returning results, that are equal or better than the E-Value."),
                   sliderInput("Evalue", "E Value:", min = 0, max = 100, value = 10),
-                  actionButton("computePQC", "Start Primers QC"),
-                  bsTooltip("computePQC", "A virtual PCR of your primers is being computed. The results show potential PCR products resulting form your choice of primers", "top", "hover"),
                   h3("Parameters to filter Results"),
                   sliderInput("FMismatches", "Forward Primers Mismatches", min = 0, max = 5, value = 3),
                   sliderInput("RMismatches", "Reverse Primers Mismatches", min = 0, max = 5, value = 3),
                   sliderInput("FbitScore", "Forward Primers Bit Score", min = 0, max = 100, value = 25),
                   sliderInput("RbitScore", "Reverse Primers Bit Score", min = 0, max = 100, value = 25)
               ),
-              helpText("tbd")
+              actionButton("computePQC", "Primer Quality Control", icon("fas fa-flask"), 
+                           style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
               ),
+      tabItem(tabName = "PrimerQCResults",
+              box(title = h2("Results of Primer Quality Control"),
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = 12,
+                  DT::dataTableOutput("pQC.results"),
+                  helpText("tbd.")
+              )
+      ),
       tabItem(tabName = "Imprint",
               box(title = h2("Imprint"),
                   status = "primary", 
@@ -359,6 +621,18 @@ server <- function(input, output) {
         adaR <- NULL
       }
       
+      if (input$i_allow.repeats.in.primers || input$i_allow.repeats.in.amplicon){
+        check_repeats = TRUE
+      } else {
+        check_repeats = FALSE
+      }
+      
+      if (input$i_snps.amplicon != 0 || input$i_snps.primer1 != 0 || input$i_snps.primer2 != 0){
+        check_snps = TRUE
+      } else {
+        check_snps = FALSE
+      }
+      
       #call the primer design pipeline
       primer.design.pipeline(Dataset(), 
                              #input.type = input$inputtype, 
@@ -367,8 +641,8 @@ server <- function(input, output) {
                              low.complexity.primer.removal=TRUE,
                              remove.primers.with.n=input$i_remove.primers.with.n,
                              #use.target.columns=input$i_use.target.columns,
-                             check4snps=TRUE,
-                             check4repeats=input$i_check4repeats,
+                             check4snps=check_snps,
+                             check4repeats=check_repeats,
                              allow.repeats.in.primers=input$i_allow.repeats.in.primers,
                              allow.repeats.in.amplicon=input$i_allow.repeats.in.amplicon,
                              annotate.genes=FALSE,
@@ -866,7 +1140,13 @@ server <- function(input, output) {
       
       return(FP())
     }
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   output$reverse.primers <- DT::renderDataTable({
     
@@ -877,13 +1157,19 @@ server <- function(input, output) {
       
       return(RP())
     }
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   primer_qc <-  eventReactive(input$computePQC, {
     
-    showModal(modalDialog(
-      title = "Computation has already started!",
-      paste0("Primers QC being computed"),
+    ww <- showModal(modalDialog(
+      title = "Computation has started!",
+      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You will be notified, when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
     refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
@@ -1018,7 +1304,13 @@ server <- function(input, output) {
                              
     )
     
-  })
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = TRUE,
+                 scrollY = TRUE),
+  fillContainer = T,
+  class = "display"
+  )
   
   # showSelectedpQC <- reactive({ if (!input$extractregions) {return(NULL)}
   # s = input$pQC.results_rows_selected

@@ -509,7 +509,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     #for each entry in input.file retrieve dna seq
     for (ir in 1:nregs){
       dna<-getDNA(iregs[ir,"chr"],iregs[ir,"start"],iregs[ir,"end"],iregs[ir,"assembly"])
-      
+        
       sid<-iregs[ir,"sequenceID"]
       if(is.na(sid)|sid==""){
         sid<-paste(c(iregs[ir,"assembly"],"_",iregs[ir,"chr"],"_",iregs[ir,"start"],"_",iregs[ir,"end"]),sep="")
