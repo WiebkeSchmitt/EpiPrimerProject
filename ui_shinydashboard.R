@@ -1311,9 +1311,9 @@ server <- function(input, output) {
     
   },
   extensions = 'FixedHeader',
-  options = list(fixedHeader = TRUE,
+  options = list(fixedHeader = FALSE,
                  scrollY = TRUE),
-  fillContainer = T,
+  fillContainer = TRUE,
   class = "display"
   )
   

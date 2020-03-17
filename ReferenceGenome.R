@@ -49,17 +49,18 @@ setGeneric(
 
 setMethod("getBlastDB", "ReferenceGenome", function(z){
 
-  print("checking ref genome wd")
-  print(getwd())
   #create a folder, if there is not yet one for this genome - this line throws a warning, if the dir exists already
-  dir.create(file.path(z@wd, fsep=.Platform$file.sep), recursive = TRUE)
-  #get the fasta file for the corresponding genome
-  fastafile <- export(getReferenceGenome(z), (file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), compress="no", compression_level=NA, verbose=TRUE)
+  if(!dir.exists(paste(z@wd, fsep=.Platform$file.sep))){
+    dir.create(file.path(z@wd, fsep=.Platform$file.sep), recursive = TRUE)
+    #get the fasta file for the corresponding genome
+    fastafile <- export(getReferenceGenome(z), (file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), compress="no", compression_level=NA, verbose=TRUE)
+  }
+  
   #now check if makeblastdb is needed for this genome
   CTdb <- (
-    if(!file.exists(paste(z@wd, z@name, ".fa.nhr", sep=""))
-       || !file.exists(paste(z@wd, z@name, ".fa.nin", sep=""))
-       || !file.exists(paste(z@wd, z@name, ".fa.nsq", sep=""))
+    if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
+       || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
+       || !file.exists(paste(z@wd, "/", z@name, ".fasta.nsq", sep=""))
     ){
       # build the database and index for ref genome
       makeblastdb(file=(file.path(z@wd, paste( z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), dbtype = "nucl")
@@ -72,9 +73,9 @@ setMethod("getBlastDB", "ReferenceGenome", function(z){
   )
 
   GAdb <- (
-    if(!file.exists(paste(z@wd, z@name, ".fa.nhr", sep=""))
-       || !file.exists(paste(z@wd, z@name, ".fa.nin", sep=""))
-       || !file.exists(paste(z@wd, z@name, ".fa.nsq", sep=""))
+    if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
+       || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
+       || !file.exists(paste(z@wd, "/", z@name, ".fasta.nsq", sep=""))
     ){
       # build the database and index for ref genome
       makeblastdb(file=(file.path(z@wd, paste( z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), dbtype = "nucl")
