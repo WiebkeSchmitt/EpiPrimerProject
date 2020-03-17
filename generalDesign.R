@@ -1507,8 +1507,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
       if (check4snps){
         
         log("Assign SNP information to designed amplicons...")
-        
-        if(exists(x = "all_my_snps")){
+        if(exists("x") && x == "all_my_snps"){
           
           results2$SNP.db<-NA
           results2$amplicon.nSNPs<-NA

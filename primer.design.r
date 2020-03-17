@@ -182,7 +182,7 @@ generalDesign<-function(seq,
   
   #VERY POWERFULL FUNCTION:
   lvl.frgs<-levels(factor(amp.sel2$fragment12.id))
-  mins<-sapply(X = lvl.frgs, function(x) {y=which.min(amp.sel2[amp.sel2$fragment12.id==x,
+  mins<-sapply(X = lvl.frgs, function(x) {y=which.min(amp.sel2[amp.sel2$fragment12.id %in% x,
                                                                     "tm.difference"])
   return(amp.sel2[amp.sel2$fragment12.id==x,"fragment12.primer.ids"][y])}
   )
@@ -1265,7 +1265,7 @@ crispR.Cas9.amp.primer.design<-function(sequence,
   
   #VERY POWERFULL FUNCTION:
   lvl.frgs<-levels(factor(amp.sel2$fragment12.id))
-  mins<-sapply(X = lvl.frgs,FUN = function(x) {y=which.min(amp.sel2[amp.sel2$fragment12.id==x,
+  mins<-sapply(X = lvl.frgs,FUN = function(x) {y=which.min(amp.sel2[amp.sel2$fragment12.id %in% x,
                                                                     "tm.difference"])
   return(amp.sel2[amp.sel2$fragment12.id==x,"fragment12.primer.ids"][y])}
   )

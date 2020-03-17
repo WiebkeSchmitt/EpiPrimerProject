@@ -517,7 +517,7 @@ ui <- dashboardPage(skin = "yellow",
                                style="margin-left:275px; margin-right:0px"),
                   bsTooltip("loadprimers", "Import primers you added to the Select List during Primer Design", "bottom", "hover"),
                   hr(),
-                  textOutput("PrimerqcState"),
+                  textOutput("primer_qc"),
                   hr(),
                   helpText("Or Upload your own Primers (.fasta file format is needed)"),
                   fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), 
@@ -548,6 +548,7 @@ ui <- dashboardPage(skin = "yellow",
                   status = "primary",
                   solidHeader = TRUE,
                   width = 12,
+                  helpText("Find here the alignment of your primers to the selected Reference genome: "),
                   DT::dataTableOutput("pQC.results"),
                   helpText("tbd.")
               )
@@ -592,7 +593,7 @@ server <- function(input, output) {
   )
   
   output$state <- eventReactive(input$action, {
-    #primerDesign_wd <- setwd(primersDesign_wd)
+    primerDesign_wd <- setwd(primersDesign_wd)
     #print(primersDesign_wd)
     
     if (is.null(input$file)){
@@ -1109,7 +1110,6 @@ server <- function(input, output) {
       # User has not uploaded a file yet
       return(data.frame())
     }
-    
     read_Fprimers_file <- read.table(input$Fprimers$datapath)
     return(read_Fprimers_file)
   })
@@ -1119,7 +1119,6 @@ server <- function(input, output) {
       # User has not uploaded a file yet
       return(data.frame())
     }
-    
     read_Rprimers_file <- read.table(input$Rprimers$datapath)
     return(read_Rprimers_file)
   })
@@ -1142,7 +1141,6 @@ server <- function(input, output) {
       return(import_Fprimers())
     }
     else{
-      
       return(FP())
     }
   },
@@ -1154,12 +1152,10 @@ server <- function(input, output) {
   )
   
   output$reverse.primers <- DT::renderDataTable({
-    
     if(is.null(input$Rprimers)){
       return(import_Rprimers())
     }
     else{
-      
       return(RP())
     }
   },
@@ -1170,13 +1166,17 @@ server <- function(input, output) {
   class = "display"
   )
   
-  primer_qc <-  eventReactive(input$computePQC, {
-    
-    ww <- showModal(modalDialog(
-      title = "Computation has started!",
-      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You will be notified, when they are ready."),
+  comp_started <- observeEvent(input$computePQC,{
+    # inform the user that the virtual PCR has started
+    showModal(modalDialog(
+      title = "Computation of your virtual PCR has started!",
+      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You van find them in the Primer Design Quality Control tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
+  })
+  
+  primer_qc <-  eventReactive(input$computePQC, {
+    # get a new reference genome to the organism in question using the ReferenceGenome class
     refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
     
     #building databases
