@@ -718,19 +718,15 @@ server <- function(input, output) {
   output$downloadPrimer<- downloadHandler(
     filename = function() {
       paste(input$name,"zip",sep=".")
-      #paste0(input$name, ".zip")
     },
     
     content <- function(con) {
-      #ss <- getwd()
       ss <- paste(getwd(),input$name,sep="/")
       tmpdir <- tempdir()
       setwd(tempdir())
       filesToSave <- c(ss) #List to hold paths to your files in shiny
       #Put all file paths inside filesToSave...
-      
       zz <- zip(zipfile=con, files = filesToSave,flags = "-r9X", extras = "",zip ="zip")
-      #x <- zip(paste0(input$name), file.path(input$name), flags = "-r9X", extras = "",zip = Sys.getenv("R_ZIPCMD", "zip"))
       return(zz)
       
     }
@@ -830,8 +826,6 @@ server <- function(input, output) {
     PrimersTable_ReadsExtraction <- write.table(primers_list_ReadsExtraction,file=paste0(primersDesign_wd,"/",input$name,"/","PrList_ReadsExtraction.txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
     
     return(whole_selected_list)
-    
-    # write.table(showWholelist()[s,c("amplicon.id","primer1.sequence","primer2.sequence")],file=paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers", ".txt"),quote = FALSE,col.names = TRUE,row.names=TRUE, sep = "\t")
     
   })
   
@@ -1311,47 +1305,14 @@ server <- function(input, output) {
   class = "display"
   )
   
-  # showSelectedpQC <- reactive({ if (!input$extractregions) {return(NULL)}
-  # s = input$pQC.results_rows_selected
-  # whole_selected_list <- primer_qc()[s,]
-  # write.table(whole_selected_list,file=paste0(primersDesign_wd,"/","ssssqw","/","SelectedPrimersQC", ".txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
-  
-  # short_selected_list <- primer_qc()[s,c("amplicon.id","primer1.sequence","primer2.sequence")]
-  # Fprimers <- write.table(sapply(1:nrow(short_selected_list),function(x){
-  # paste0(paste0(short_selected_list[x,"amplicon.id"]),paste0(short_selected_list[x,"primer1.sequence"]),'\n')
-  # }),file=paste0(primersDesign_wd,"/","ssssqw","/","qcFprimers.fasta"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
-  
-  # Rprimers <- write.table(sapply(1:nrow(short_selected_list),function(x){
-  # paste0(paste0(short_selected_list[x,"amplicon.id"]),paste0(short_selected_list[x,"primer2.sequence"]),'\n')
-  # }),file=paste0(primersDesign_wd,"/","ssssqw","/","qcRprimers.fasta"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
-  
-  # return(whole_selected_list)
-  
-  # write.table(showWholelist()[s,c("amplicon.id","primer1.sequence","primer2.sequence")],file=paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers", ".txt"),quote = FALSE,col.names = TRUE,row.names=TRUE, sep = "\t")
-  
-  # })
-  
-  # output$viewSelectedpQC <- DT::renderDataTable({
-  # if (!input$extractregions) {return(data.frame())}
-  
-  # return(showSelectedpQC())
-  # })
-  
-  
   ################ displaying overview of flowcell ########
   
   PackageInput <- eventReactive(input$update, {
-    
     read_table <- read.table(as.character(choices_info$path[input$flowcellPackage==choices_info$nameS]))
     indices<-colnames(read_table)[-1]
     keep<-rowSums(read_table[,indices] >=input$freq)>0
-    
-    #rest<- colSums(read_table[!keep,indices])
     filter_table <- read_table[keep,]
-    #final <- rbind(filter_table,rest)
     return(filter_table)
-    
-    
   }, ignoreNULL = FALSE)
   
   output$view <- DT::renderDataTable({
@@ -1377,40 +1338,9 @@ server <- function(input, output) {
     
   })
   
-  # Select All/ Deselect All option
-  
-  # observe({
-  #   indices_choices <- basename(list.dirs(paste0(mypath,"/",input$selectPackage),recursive = FALSE))
-  #   if(input$selectall == 0) return(NULL) 
-  #   else if (input$selectall%%2 == 0)
-  #   {
-  #     updateCheckboxGroupInput(session,"checkboxgroup","Select indices",choices=indices_choices)
-  #   }
-  #   else
-  #   {
-  #     updateCheckboxGroupInput(session,"checkboxgroup","Select indices",choices=indices_choices,selected=indices_choices)
-  #   }
-  # })
-  #other way for select all worked properly for example but not in the script 
-  # observe({
-  # indices_choices <- basename(list.dirs(paste0(mypath,"/",input$select1),recursive = FALSE))
-  # updateCheckboxGroupInput(session, 'checkboxgroup', choices = indices_choices,
-  # selected = if (input$bar) indices_choices)
-  # })
-  
   ###################start operations####################
   
   output$state1 <- eventReactive(input$excute,{
-    
-    # if (is.null(input$primers.file)){
-    # showModal(modalDialog(
-    # title = "No Primers file Uploaded!",
-    # paste0("Please upload your Primers file before running the tool "),
-    # easyClose = FALSE,
-    # footer = modalButton("Close")
-    # ))
-    # sprintf("No Primers file Uploaded!!")
-    # }
     
     if(input$merged.files==FALSE && input$separated.files==FALSE){ #dir.exists(paste(getwd(),"Data",input$name,sep="/") 
       
@@ -1420,7 +1350,6 @@ server <- function(input, output) {
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      #sprintf("User should decide either merged or separated or both!")
     }
     
     else if(file.exists(paste0(getwd(),"/",input$results.folderName,".zip"))){ #dir.exists(paste(getwd(),"Data",input$name,sep="/") 
@@ -1431,7 +1360,6 @@ server <- function(input, output) {
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      #sprintf("Results  %s already exists, please change the output folder name!", input$results.folderName)
     }else{
       
       #give values for merge/separate options
@@ -1467,9 +1395,6 @@ server <- function(input, output) {
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      
-      #create directory to store results and required files for procedure
-      #create_results_folder <- dir.create(paste0(primersDesign_wd,"/",input$results.folderName))
       print(getwd())
       
       
@@ -1511,7 +1436,6 @@ server <- function(input, output) {
       print(input$selectPackage)
       
       #we need other version of primers file without column and row names in the last string
-      #prepare_primerFile <- write.table(read_input[,1:3],file=paste0(mypath,"/",input$select1,"/", "primers.txt"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
       
       # splitting the file into separated files
       split_primers <- sapply(read_input[,1],function(x){
@@ -1527,8 +1451,6 @@ server <- function(input, output) {
       index_files[["read"]]<-ifelse(grepl("_R1_", index_files[["files"]]),"R1","R2")
       index_files[["sample"]]<-sapply(strsplit(as.character(index_files[["path"]]),"/"),function(x) x[grepl("samples",x)==TRUE])
       print(head(index_files))
-      
-      
       
       #listing paths for all tables of indices
       tables_path <-sapply(input$checkboxgroup, function(x){
@@ -1554,7 +1476,6 @@ server <- function(input, output) {
           sapply(read_input[["miniFprimer"]],function(y){
             mm <- isMatchingAt(y,as.character(x$R1),max.mismatch=input$mismatches)
             extract <- x$comb[mm==TRUE]
-            
             
           }) 
           
@@ -1616,7 +1537,6 @@ server <- function(input, output) {
       print(matching)
       
       allfiles_extracted <- 
-        # (if(length(input$checkboxgroup) > 1){ #with more than one index we will get multiple lists
         #of list with certain number of rows and columns
         
         sapply(1:ncol(matching),function(x){
@@ -1628,29 +1548,16 @@ server <- function(input, output) {
       colnames(allfiles_extracted) <- c(input$checkboxgroup)
       
       print(allfiles_extracted)
-      # else{ #with one index we will get only one list 
-      
-      # sapply(1:length(matching),function(x){
-      # ss <- paste0("REST,",sapply(matching[x],function(z) paste0(z ,collapse=",")),collapse=",")
-      
-      # })
-      # }
-      # )
-      
-      #setwd(primersDesign_wd)
       
       #preparing Concatenation Strings
-      
       concat_string_R1 <- sapply(1:ncol(allfiles_extracted),function(y) { #indices
         sapply(1:nrow(allfiles_extracted),function(x){ #primers
           read1 <- paste0("zcat ",mypath,"/",input$selectPackage,"/",colnames(allfiles_extracted)[y],"/","{",allfiles_extracted[x,y],"}","_R1_001.fastq.gz ","> ","primer",x,".files.", colnames(allfiles_extracted)[y],".R1_001.fastq")
-          #list(read1)
         }) })
       
       concat_string_R2 <- sapply(1:ncol(allfiles_extracted),function(y) { #indices
         sapply(1:nrow(allfiles_extracted),function(x){ #primers
           read1 <- paste0("zcat ",mypath,"/",input$selectPackage,"/",colnames(allfiles_extracted)[y],"/","{",allfiles_extracted[x,y],"}","_R2_001.fastq.gz ","> ","primer",x,".files.", colnames(allfiles_extracted)[y],".R2_001.fastq")
-          #list(read1)
         }) })
       
       colnames(concat_string_R1) <- c(input$checkboxgroup)
@@ -1686,7 +1593,6 @@ server <- function(input, output) {
       write_configure_file <- write.table(confiquration_file,file=paste0(primersDesign_wd,"/",input$results.folderName,".config"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
       
       #arguments of the script
-      
       configure_file <- paste0("-c ",input$results.folderName,".config")
       results_path <- paste0("-o ", primersDesign_wd)
       results_folder_name <- paste0("-n ",input$results.folderName)
@@ -1697,8 +1603,6 @@ server <- function(input, output) {
       main_string <- "bash orgIllumina_config.sh %s %s %s"
       final_string <- sprintf(main_string,configure_file,results_path,results_folder_name)
       print(final_string)
-      # run_concatenating_R1 <- system(concat_string_R1)
-      # run_concatenating_R1 <- system(concat_string_R2)
       run_script <- system(final_string)
       
       showModal(modalDialog(
@@ -1761,50 +1665,18 @@ server <- function(input, output) {
     else {
       
       print(input$i_reference.sequence.id)
-      
       print(input$reads.file)
       
-      # primerDesign_wd <- setwd(primersDesign_wd)
-      # print(primersDesign_wd)
-      
-      # if (is.null(input$file)){
-      # sprintf("No Input file Uploaded!!")
-      # }
-      
-      # else if(file.exists(paste(getwd(),input$name,sep="/"))){ #dir.exists(paste(getwd(),"Data",input$name,sep="/") 
-      # "Dataset already exists!"
-      # sprintf("Dataset %s already exists, please choose other ID!", input$name)
-      # }else{
-      
       showNotification("Comoutation started!!",duration = 15,type="message")
-      
       process <- pairwiseSequenceAlignment.biqFormat(sequences.path=ExReads(),
                                                      reference.path=ExReference(),
                                                      mode=input$alignment.mode,
                                                      alignment.type=input$i_alignemnt.type,
-                                                     # minimum.alignment.score=input$i_minimum.alignment.score,
-                                                     # minimum.percentage.identity=input$i_minimum.percentage.identity,
                                                      reference.sequence.id=input$i_reference.sequence.id,
                                                      sample.id=input$i_sample.id
                                                      
       )
-      
-      # tw <- getwd()
-      # print("got the directory")
-      # setwd(tw)
-      # print("switch to tw")
-      
-      # print("switch to tw")
       sprintf("Finished Computation!!")
-      
-      # ww <-showModal(modalDialog(
-      # title = "Alignment is READY!",
-      # sprintf(paste0("Check the results in the folder %s")),
-      # easyClose = FALSE,
-      # footer = modalButton("Close")
-      # ))
-      
-      # sprintf("Finished Computation!!")
       return(process)
     }
   })
