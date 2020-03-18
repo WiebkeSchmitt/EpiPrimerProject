@@ -1291,12 +1291,6 @@ server <- function(input, output) {
     
   }) 
   
-  output$installed <- eventReactive(input$InstallGenome, {
-    if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
-    BiocManager::install(tobeinstalled, version = "3.8")
-  })
-  
   output$pQC.results <- DT::renderDataTable({
     
     primerQC_table <- subset(primer_qc(),
