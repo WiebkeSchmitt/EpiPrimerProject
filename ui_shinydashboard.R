@@ -535,7 +535,7 @@ ui <- dashboardPage(skin = "yellow",
                   hr(),
                   textOutput("primer_qc")
               ),
-              actionButton("computePQC", "Primer Quality Control", icon("fas fa-flask"), 
+              actionButton("computePQC", label = "Primer Quality Control", icon("fas fa-flask"), 
                            style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
               ),
       tabItem(tabName = "PrimerQCAdvanced",
@@ -1282,23 +1282,21 @@ server <- function(input, output) {
       easyClose = FALSE,
       footer = modalButton("Close")))
     
-    #print(sub1)
-    return(sub1)
-    
+     return(sub1)
   }) 
   
   output$pQC.results <- DT::renderDataTable({
-    
+
     primerQC_table <- subset(primer_qc(),
                              F.bit_score>=input$FbitScore &
                                R.bit_score>=input$RbitScore  &
-                               F.e_value<=input$Evalue  & 
+                               F.e_value<=input$Evalue  &
                                R.e_value<=input$Evalue  &
                                F.mismatches <= input$FMismatches &
                                R.mismatches <= input$RMismatches
                               )
     return(primerQC_table)
-    
+
   },
   extensions = 'FixedHeader',
   options = list(fixedHeader = FALSE,
