@@ -49,6 +49,7 @@ ui <- dashboardPage(skin = "yellow",
       menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
       menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
       menuItem("Primer Quality Control", tabName = "PrimerQC", icon = icon("check-circle")),
+      menuItem("Advanced Primer QC Settings", tabName = "PrimerQCAdvanced", icon = icon("dashboard")),
       menuItem("Results of Quality Control", tabName = "PrimerQCResults", icon = icon("list-ol")),
       menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
     )
@@ -421,7 +422,7 @@ ui <- dashboardPage(skin = "yellow",
                     
                   )
               ),
-              box(title = h3("Add Adapters to my primers: "),
+              box(title = h3("Add Adapters: "),
                   width = 12,
                 checkboxInput("adapterF", label = h4("Add a specific sequence to the 5' end of the forward primer"), FALSE),
                 conditionalPanel(
@@ -517,8 +518,6 @@ ui <- dashboardPage(skin = "yellow",
                                style="margin-left:275px; margin-right:0px"),
                   bsTooltip("loadprimers", "Import primers you added to the Select List during Primer Design", "bottom", "hover"),
                   hr(),
-                  textOutput("primer_qc"),
-                  hr(),
                   helpText("Or Upload your own Primers (.fasta file format is needed)"),
                   fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), 
                   DT::dataTableOutput("forward.primers"),
@@ -531,6 +530,19 @@ ui <- dashboardPage(skin = "yellow",
                   width = 6,
                   selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
                   bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
+                  helpText(h5("Are the primers you uploaded bisulfite Primers?")),
+                  checkboxInput("is_bisulfite", "These are bisulfite primers!"),
+                  hr(),
+                  textOutput("primer_qc")
+              ),
+              actionButton("computePQC", "Primer Quality Control", icon("fas fa-flask"), 
+                           style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
+              ),
+      tabItem(tabName = "PrimerQCAdvanced",
+              box(title = h2("Advanced Settings for Primer Quality Control"),
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = 12,
                   sliderInput("gap", "Maximum Fragment Size:", min = 0, max = 50000, value = 2000),
                   helpText("Please set an E-value for your quality control. This value can be used to filter your results by only returning results, that are equal or better than the E-Value."),
                   sliderInput("Evalue", "E Value:", min = 0, max = 100, value = 10),
@@ -539,10 +551,8 @@ ui <- dashboardPage(skin = "yellow",
                   sliderInput("RMismatches", "Reverse Primers Mismatches", min = 0, max = 5, value = 3),
                   sliderInput("FbitScore", "Forward Primers Bit Score", min = 0, max = 100, value = 25),
                   sliderInput("RbitScore", "Reverse Primers Bit Score", min = 0, max = 100, value = 25)
-              ),
-              actionButton("computePQC", "Primer Quality Control", icon("fas fa-flask"), 
-                           style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
-              ),
+              )
+      ),
       tabItem(tabName = "PrimerQCResults",
               box(title = h2("Results of Primer Quality Control"),
                   status = "primary",
@@ -1149,16 +1159,13 @@ server <- function(input, output) {
   class = "display"
   )
   
-  comp_started <- observeEvent(input$computePQC,{
+  primer_qc <-  eventReactive(input$computePQC, {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
       title = "Computation of your virtual PCR has started!",
       paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the Primer Design Quality Control tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
-  })
-  
-  primer_qc <-  eventReactive(input$computePQC, {
     # get a new reference genome to the organism in question using the ReferenceGenome class
     refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
     
@@ -1275,7 +1282,7 @@ server <- function(input, output) {
       easyClose = FALSE,
       footer = modalButton("Close")))
     
-    print(sub1)
+    #print(sub1)
     return(sub1)
     
   }) 
@@ -1289,8 +1296,8 @@ server <- function(input, output) {
                                R.e_value<=input$Evalue  &
                                F.mismatches <= input$FMismatches &
                                R.mismatches <= input$RMismatches
-                             
-    )
+                              )
+    return(primerQC_table)
     
   },
   extensions = 'FixedHeader',

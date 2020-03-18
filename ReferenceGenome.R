@@ -51,12 +51,13 @@ setMethod("getBlastDB", "ReferenceGenome", function(z){
 
   #create a folder, if there is not yet one for this genome - this line throws a warning, if the dir exists already
   if(!dir.exists(paste(z@wd, fsep=.Platform$file.sep))){
-    dir.create(file.path(z@wd, fsep=.Platform$file.sep), recursive = TRUE)
+    dir.create(file.path(z@wd, "database", fsep=.Platform$file.sep), recursive = TRUE)
     #get the fasta file for the corresponding genome
-    fastafile <- export(getReferenceGenome(z), (file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), compress="no", compression_level=NA, verbose=TRUE)
+    fastafile <- export(getReferenceGenome(z), (file.path(z@wd, "database", paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), compress="no", compression_level=NA, verbose=TRUE)
   }
   
   #now check if makeblastdb is needed for this genome
+  print(file.exists(paste(z@wd, "/", z@name, ".fasta", sep="")))
   CTdb <- (
     if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
        || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
