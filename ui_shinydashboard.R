@@ -939,9 +939,6 @@ server <- function(input, output) {
   ############# display the primer design by sequence  ###########
   
   showPrimerdesigns.by.sequence <- reactive({ if (!input$primerdesigns.by.sequence) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
-    
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("primerdesigns.by.sequence",files[["results"]])])
@@ -969,8 +966,6 @@ server <- function(input, output) {
   ############# display the summary of the primer design ###########
   
   showSummary <- reactive({ if (!input$Summary) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("summary",files[["results"]])])
@@ -998,8 +993,6 @@ server <- function(input, output) {
   ############# display the settings of the primer design ###########
   
   showSettings <- reactive({ if (!input$settings) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("settings",files[["results"]])])
@@ -1160,7 +1153,7 @@ server <- function(input, output) {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
       title = "Computation of your virtual PCR has started!",
-      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You van find them in the Primer Design Quality Control tab when they are ready."),
+      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the Primer Design Quality Control tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
   })
@@ -1275,6 +1268,12 @@ server <- function(input, output) {
                     as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                     as.character(F.seqnames) == as.character(R.seqnames) & 
                     abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
+    
+    showModal(modalDialog(
+      title = "Computation of your virtual PCR has finished!",
+      paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
+      easyClose = FALSE,
+      footer = modalButton("Close")))
     
     print(sub1)
     return(sub1)
