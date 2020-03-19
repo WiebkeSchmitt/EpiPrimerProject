@@ -518,7 +518,7 @@ ui <- dashboardPage(skin = "yellow",
                                style="margin-left:275px; margin-right:0px"),
                   bsTooltip("loadprimers", "Import primers you added to the Select List during Primer Design", "bottom", "hover"),
                   hr(),
-                  helpText("Or Upload your own Primers (.fasta file format is needed)"),
+                  helpText("Or Upload your own Primers (.fasta file format is needed, we expect your primers to be in 5' to 3' orientation)"),
                   fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), 
                   DT::dataTableOutput("forward.primers"),
                   fileInput("Rprimers", "Upload Reverse Primers", multiple = TRUE, accept = ".fasta"), 
@@ -530,8 +530,7 @@ ui <- dashboardPage(skin = "yellow",
                   width = 6,
                   selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
                   bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
-                  helpText(h5("Are the primers you uploaded bisulfite Primers?")),
-                  checkboxInput("is_bisulfite", "These are bisulfite primers!"),
+                  checkboxInput("is_bisulfite", h5("These are bisulfite primers!")),
                   hr(),
                   textOutput("primer_qc")
               ),
@@ -623,6 +622,7 @@ server <- function(input, output) {
         footer = modalButton("Close")
       ))
       #showNotification("The computation of your primers has started!",duration = 25,type="message")
+      
       
       #get input values for Forward and Reverse adapters
       adaF <- input$adapterForward
