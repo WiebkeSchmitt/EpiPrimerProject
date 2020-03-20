@@ -530,9 +530,10 @@ ui <- dashboardPage(skin = "yellow",
                   width = 6,
                   selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
                   bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
-                  checkboxInput("is_bisulfite", h5("These are bisulfite primers!")),
+                  checkboxInput("is_bisulfite", h5("These are bisulfite primers!"), TRUE),
+                  helpText("Primer Quality Control is currently only available for Bisulfite Primers!"),
                   hr(),
-                  textOutput("primer_qc")
+                  textOutput("primer_qc_start")
               ),
               actionButton("computePQC", label = "Primer Quality Control", icon("fas fa-flask"), 
                            style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
@@ -558,8 +559,9 @@ ui <- dashboardPage(skin = "yellow",
                   solidHeader = TRUE,
                   width = 12,
                   helpText("Find here the alignment of your primers to the selected Reference genome: "),
-                  DT::dataTableOutput("pQC.results"),
-                  helpText("tbd.")
+                  actionButton("refreshPQC", "Quality Control", icon = icon("sync-alt")),
+                  hr(),
+                  DT::dataTableOutput("pQC.results")
               )
       ),
       tabItem(tabName = "Imprint",
@@ -1159,13 +1161,14 @@ server <- function(input, output) {
   class = "display"
   )
   
-  primer_qc <-  eventReactive(input$computePQC, {
+  primer_qc_start <- observeEvent(input$computePQC, {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
       title = "Computation of your virtual PCR has started!",
       paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the Primer Design Quality Control tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
+    
     # get a new reference genome to the organism in question using the ReferenceGenome class
     refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
     
@@ -1282,21 +1285,42 @@ server <- function(input, output) {
       easyClose = FALSE,
       footer = modalButton("Close")))
     
-     return(sub1)
-  }) 
+    # write a table instead of returning the results
+    if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
+      dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
+    }
+    write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
+                col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+  })
+  
+  preparePQC <- reactive({
+    if (!input$refreshPQC) {return(data.frame())}
+    wd <- primersDesign_wd
+    primer_QC_table <- read.delim(paste(wd, "/PrimerQC/primer_qc_table.txt", sep=""))
+    
+    primerQC_table_sub <- subset(primer_QC_table,
+                             F.bit_score>=input$FbitScore &
+                             R.bit_score>=input$RbitScore  &
+                             F.e_value<=input$Evalue  &
+                             R.e_value<=input$Evalue  &
+                             F.mismatches <= input$FMismatches &
+                             R.mismatches <= input$RMismatches
+                            )
+    if(length(primerQC_table_sub) == 0){
+      ww <-showModal(modalDialog(
+        title = "No PrimerQC Found!",
+        sprintf(paste0("Unfortunateley, we were unable to perform a Primer Quality Control for your input. Please check your job and settings and try again.")),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No PrimerQC found!")
+    }
+    return(primerQC_table_sub)
+  })
   
   output$pQC.results <- DT::renderDataTable({
-
-    primerQC_table <- subset(primer_qc(),
-                             F.bit_score>=input$FbitScore &
-                               R.bit_score>=input$RbitScore  &
-                               F.e_value<=input$Evalue  &
-                               R.e_value<=input$Evalue  &
-                               F.mismatches <= input$FMismatches &
-                               R.mismatches <= input$RMismatches
-                              )
-    return(primerQC_table)
-
+    if (!input$refreshPQC) {return(data.frame())}
+    preparePQC()
   },
   extensions = 'FixedHeader',
   options = list(fixedHeader = FALSE,

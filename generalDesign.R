@@ -2162,14 +2162,12 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
       log("Write whitelist...")
       white<-bed[paste(bed$sequenceID) %in% paste(toplist[,1]),]
       
-      if(!file.exists(paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""))){
+      if(file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""))){
+        white.old<-read.table(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""), header=TRUE, sep="\t",dec=".")
+        white<-rbind(white.old, white)
         write.table(white,file=paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),
                     col.names=TRUE,row.names=FALSE,sep="\t",dec=".") 
-      }
-      
-      if(file.exists(paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""))){
-        white.old<-read.table(paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),header=TRUE,sep="\t",dec=".")
-        white<-rbind(white.old,white)
+      } else {
         write.table(white,file=paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),
                     col.names=TRUE,row.names=FALSE,sep="\t",dec=".") 
       }
