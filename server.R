@@ -634,7 +634,7 @@ server <- function(input, output) {
     refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
     
     #building databases
-    dbList <- getBlastDB(refgen)
+    dbList <- getBlastDB(refgen, input$is_bisulfite)
     
     #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
     Fseq <- (if(is.null(input$Fprimers)) {
@@ -659,12 +659,12 @@ server <- function(input, output) {
     
     #blasting 
     blast_args <- "-task blastn -evalue %s"
-    costumized_BLAST_args <- sprintf(blast_args,input$Evalue)
+    costumized_BLAST_args <- sprintf(blast_args, input$Evalue)
     print(costumized_BLAST_args)
-    F_CTblast <- predict(dbList$CTdb, Fseq,BLAST_args=costumized_BLAST_args)
-    R_CTblast <- predict(dbList$CTdb, Rseq,BLAST_args=costumized_BLAST_args)
-    F_GAblast <- predict(dbList$GAdb, Fseq,BLAST_args=costumized_BLAST_args)
-    R_GAblast <- predict(dbList$GAdb, Rseq,BLAST_args=costumized_BLAST_args)
+    F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
+    R_CTblast <- predict(dbList$CTdb, Rseq, BLAST_args = costumized_BLAST_args)
+    F_GAblast <- predict(dbList$GAdb, Fseq, BLAST_args = costumized_BLAST_args)
+    R_GAblast <- predict(dbList$GAdb, Rseq, BLAST_args = costumized_BLAST_args)
     
     # finding genomic ranges for all hits 
     hits<- c(

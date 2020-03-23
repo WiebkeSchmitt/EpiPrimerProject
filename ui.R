@@ -531,7 +531,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
                                               bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                                               checkboxInput("is_bisulfite", h5("These are bisulfite primers!"), TRUE),
-                                              helpText("Primer Quality Control is currently only available for Bisulfite Primers!"),
+                                              helpText("Primer Quality Control is currently only available for bisulfite primers of the human genome and for genomic primers of Mouse, C. elegans and Human!"),
                                               hr(),
                                               textOutput("primer_qc_start")
                                           ),
@@ -575,5 +575,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                   )
                                   
                                 )
-)
-))
+                          )
+                      )
+                )
