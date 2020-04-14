@@ -417,6 +417,17 @@ if(hp.length.max < hp.length.min){
   log(paste("auto re-assigned hp.length.max to: ",hp.length.max,sep=""))
 }
 
+######################################Setting the input type##########################################
+
+if(c("chr") %in% colnames(table.in)){
+  input.type = "regions"
+  log(paste("identified input.type as regions!"))
+}
+
+if(c("sequence") %in% colnames(table.in)){
+  input.type = "sequences"
+  log(paste("identified input.type as sequences!"))
+}
 
 #################################################################################
 #################################################################################
@@ -831,6 +842,7 @@ if (input.type=="regions"){
       fileConn<-file(paste(path.warnings,"Warning.SNPcheck.data.error.txt",sep=""))
       writeLines(c("WARNING: To check for SNPs input type must be regions."), fileConn)
       close(fileConn)
+      hp.initial.input.type <- input.type
     }
     
     
@@ -849,19 +861,19 @@ if (input.type=="regions"){
 
         if(assem %in% supported.assemblies.snp){
 
-          snptrack<-switch(assem, 
-                           "hg18" = "snp130",
-                           "hg19" = "snp147Common",
-                           "hg38" = "snp150Common",
-                           "mm9"  = "snp128",
-                           "mm10" = "snp142Common")
-          
-          snptable<-switch(assem, 
-                           "hg18" = "snp130",
-                           "hg19" = "snp147Common",
-                           "hg38" = "snp150Common",
-                           "mm9"  = "snp128",
-                           "mm10" = "snp142Common")
+          # snptrack<-switch(assem, 
+          #                  "hg18" = "snp130",
+          #                  "hg19" = "snp147Common",
+          #                  "hg38" = "snp150Common",
+          #                  "mm9"  = "snp128",
+          #                  "mm10" = "snp142Common")
+          # 
+          # snptable<-switch(assem, 
+          #                  "hg18" = "snp130",
+          #                  "hg19" = "snp147Common",
+          #                  "hg38" = "snp150Common",
+          #                  "mm9"  = "snp128",
+          #                  "mm10" = "snp142Common")
           
           chrom<-paste(bedia[,"chr"])
           allstarts<-as.numeric(as.character(bedia[,"start"]))
@@ -882,6 +894,15 @@ if (input.type=="regions"){
           #my_snps$assembly<-assem
           
           #my_snps$SNP.db<-snptable
+          
+          if (is.null(allstarts) || is.null(allends) || is.null(assem) || is.null(chrom)){
+             my_snps<-NA
+          } else {
+          my_snps <- fetch.snp.info.rest(assembly = assem,
+                                           chr = chrom,
+                                           start = allstarts,
+                                           end = allends)
+          }
           
           if(iasem==1){
             all_my_snps<-my_snps
@@ -1014,7 +1035,7 @@ if (annotate.genes){
         allstarts<-as.numeric(as.character(bedia[,"start"]))
         allends<-as.numeric(as.character(bedia[,"end"]))
         
-        my_genes<-fetch.dna.sequence(assembly = assem,
+        my_genes<-fetch.gene.info.rest(assembly = assem,
                               chr = chrom,
                               start = allstarts,
                               end = allends)
@@ -1074,32 +1095,30 @@ if (annotate.genes){
       
       if(assem %in% supported.assemblies.snp){
         
-        cpgitrack<-switch(assem, 
-                          "hg18" = "cpgIslandExt",
-                          "hg19" = "cpgIslandExt",
-                          "hg38" = "cpgIslandExt",
-                          "mm9"  = "cpgIslandExt",
-                          "mm10" = "cpgIslandExt")
-        
-        cpgitable<-switch(assem, 
-                          "hg18" = "cpgIslandExt",
-                          "hg19" = "cpgIslandExt",
-                          "hg38" = "cpgIslandExt",
-                          "mm9"  = "cpgIslandExt",
-                          "mm10" = "cpgIslandExt")
+        # cpgitrack<-switch(assem, 
+        #                   "hg18" = "cpgIslandExt",
+        #                   "hg19" = "cpgIslandExt",
+        #                   "hg38" = "cpgIslandExt",
+        #                   "mm9"  = "cpgIslandExt",
+        #                   "mm10" = "cpgIslandExt")
+        # 
+        # cpgitable<-switch(assem, 
+        #                   "hg18" = "cpgIslandExt",
+        #                   "hg19" = "cpgIslandExt",
+        #                   "hg38" = "cpgIslandExt",
+        #                   "mm9"  = "cpgIslandExt",
+        #                   "mm10" = "cpgIslandExt")
         
         chrom<-paste(bedia[,"chr"])
         allstarts<-as.numeric(as.character(bedia[,"start"]))
         allends<-as.numeric(as.character(bedia[,"end"]))
         
-        my_cpgi<-ucsc.info(assembly = assem,
+        my_cpgi<-fetch.gene.info.rest(assembly = assem,
                             chr = chrom,
                             start = allstarts,
-                            end = allends,
-                            track = cpgitrack,
-                            table = cpgitable)
+                            end = allends)
         
-        if(nrow(my_cpgi)>0){
+        if(!is.null(nrow(my_cpgi)) && nrow(my_cpgi)>0){
         
         my_cpgi$assembly<-assem
         my_cpgi$cpgi.db<-cpgitable
@@ -1153,6 +1172,18 @@ if (input.type=="sequences"){
   log("Import Sequences from .txt File...")
   bed<-table.in #read.table(file=filename.in,sep="\t",dec=".",header=TRUE)
   #html.report(filenames =  filename.in,filename.out = paste(path.html,"bedfile_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
+  log("Done.")
+  
+  log("Start characterization of input sequences...")
+
+  seq.ana.all<-list()
+
+  for (iiii in 1:nrow(bed)){
+    seqanai<-sequence.characterization(paste(bed[iiii,"sequence"]))
+    write.table(seqanai,file=paste(path.sequences,"sequence.characterization_",bed[iiii,"sequenceID"],".txt",sep=""),
+                sep="\t",dec=".",col.names=T,row.names = FALSE,quote=F)
+    seq.ana.all[[paste(bed[iiii,"sequenceID"])]]<-seqanai
+  }
   log("Done.")
   
   if("sequenceID" %in% colnames(bed)){
@@ -1852,13 +1883,13 @@ if (check4snps){
       iseq.p2.start<-results2[iamplicons,"primer2.start"]
       iseq.p2.end<-results2[iamplicons,"primer2.end"]
       
-      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[as.character(all_my_snps$chr)==gsub("chr","",iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"source"])[1]
-      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,]) 
-      results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.amp.start & all_my_snps$start<=iseq.amp.end ,"rs_id"],collapse=",")
-      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,])
-      results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p1.start & all_my_snps$start<=iseq.p1.end ,"rs_id"],collapse=",")
-      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,]) 
-      results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & all_my_snps$start>=iseq.p2.start & all_my_snps$start<=iseq.p2.end ,"rs_id"],collapse=",")
+      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[as.character(all_my_snps$chr)==gsub("chr","",iseq.chr) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
+      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end, ]) 
+      results2[iamplicons,"amplicon.SNP.ids"]<-paste(levels(all_my_snps[(as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr))) & (as.numeric(as.character(all_my_snps$start))>=iseq.amp.start) & (as.numeric(as.character(all_my_snps$start))<=iseq.amp.end), "rs_id"]), collapse=",")
+      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.p1.start & as.numeric(as.character(all_my_snps$start))<=iseq.p1.end, ])
+      results2[iamplicons,"primer1.SNP.ids"]<-paste(levels(all_my_snps[(as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr))) & (as.numeric(as.character(all_my_snps$start))>=iseq.p1.start) & (as.numeric(as.character(all_my_snps$start))<=iseq.p1.end), "rs_id"]),collapse=",")
+      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.p2.start & as.numeric(as.character(all_my_snps$start))<=iseq.p2.end, ]) 
+      results2[iamplicons,"primer2.SNP.ids"]<-paste(levels(all_my_snps[(as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr))) & (as.numeric(as.character(all_my_snps$start))>=iseq.p2.start)& (as.numeric(as.character(all_my_snps$start))<=iseq.p2.end) ,"rs_id"]),collapse=",")
       
       }# iamplicons
       
@@ -1914,14 +1945,15 @@ if (check4repeats){
   
   if(exists(x = "all_my_repeats")){
     
-    results2$repeat.db<-"Repeatmasker"
-    results2$amplicon.n.repeats<-NA
-    results2$primer1.n.repeats<-NA
-    results2$primer2.n.repeats<-NA
+    #results2$repeat.db<-"Repeatmasker"
+    #results2$amplicon.n.repeats<-NA
+    #results2$primer1.n.repeats<-NA
+    #results2$primer2.n.repeats<-NA
     #results2$amplicon.repeat.ids<-NA
     #results2$primer1.repeat.ids<-NA
     #results2$primer2.repeat.ids<-NA
     
+    if(nrow(results2) >= 1){}
     for (iamplicons in 1:nrow(results2)){
       
       iseqid<-paste(results2[iamplicons,"sequence.id"])
@@ -1952,13 +1984,14 @@ if (check4repeats){
                                 (as.numeric(as.character(all_my_repeats$start))>=iseq.amp.start & as.numeric(as.character(all_my_repeats$start))<=iseq.amp.end),]
       
       results2[iamplicons,"amplicon.n.repeats"] <- nrow(amp.reps)
-      #results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
+      results2[iamplicons,"amplicon.repeat.ids"] <- paste(amp.reps[,"repClass"],collapse=",")
       results2[iamplicons,"primer1.n.repeats"] <- nrow(p1.reps)
-      #results2[iamplicons,"primer1.repeat.ids"] <- paste(p1.reps[,"repClass"],collapse=",")
+      results2[iamplicons,"primer1.repeat.ids"] <- paste(p1.reps[,"repClass"],collapse=",")
       results2[iamplicons,"primer2.n.repeats"] <- nrow(p2.reps)
-      #results2[iamplicons,"primer2.repeat.ids"] <- paste(p2.reps[,"repClass"],collapse=",")
+      results2[iamplicons,"primer2.repeat.ids"] <- paste(p2.reps[,"repClass"],collapse=",")
       
     }# iamplicons
+    }
     
     log("Done.")
     
@@ -2007,9 +2040,9 @@ if (check4repeats){
     results2$amplicon.n.repeats<-NA
     results2$primer1.n.repeats<-NA
     results2$primer2.n.repeats<-NA
-    #results2$amplicon.repeat.ids<-NA
-    #results2$primer1.repeat.ids<-NA
-    #results2$primer2.repeat.ids<-NA
+    results2$amplicon.repeat.ids<-NA
+    results2$primer1.repeat.ids<-NA
+    results2$primer2.repeat.ids<-NA
     
   }#if!exists
   
@@ -2023,7 +2056,7 @@ if (check4repeats){
     
     log("Assign gene information to designed amplicons...")
     
-    if(exists(x = "all_my_genes")){
+    if(exists(x = "all_my_genes") && is.data.frame(results2) && nrow(results2) > 0){
       
       results2$gene.db<-NA
       results2$amplicon.n.genes<-NA
@@ -2046,7 +2079,7 @@ if (check4repeats){
                                  (all_my_genes$txStart>=iseq.amp.start & all_my_genes$txStart<=iseq.amp.end),]
         
         results2[iamplicons,"amplicon.n.genes"] <- nrow(amp.genes)
-        results2[iamplicons,"amplicon.gene.ids"] <- paste(amp.genes[,"name2"],collapse=",")
+        results2[iamplicons,"amplicon.gene.ids"] <- paste(amp.genes[,"gene_name"],collapse=",")
         
       }# iamplicons
       
@@ -2395,7 +2428,7 @@ if(input.type=="regions"){
              file=ffn,add=TRUE)
   
   
-  if (create.toplist){ 
+  if (create.toplist && !(is.data.frame(toplist) && nrow(toplist)==0)){ 
   
     #for primer toplist.
     toplist$ucsc.color<-700
@@ -2475,10 +2508,12 @@ write.table(smry,file=paste(path.wd,"summary_",analysis.id,".txt",sep=""),col.na
 #html.report(filenames =  paste(path.html,"summary_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
 
 # primer designs by input sequence
-tbl<-data.frame(table(results2$sequence.id))
-colnames(tbl)<-c("sequence.id","amplicons[n]")
-write.table(tbl,file=paste(path.wd,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),col.names=TRUE,row.names=FALSE,sep="\t",dec=".")
-#html.report(filenames =  paste(path.html,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
+if(!is.na(results2$sequence.id)){
+  tbl<-data.frame(table(results2$sequence.id))
+  colnames(tbl)<-c("sequence.id","amplicons[n]")
+  write.table(tbl,file=paste(path.wd,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),col.names=TRUE,row.names=FALSE,sep="\t",dec=".")
+  #html.report(filenames =  paste(path.html,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
+}
 
 log("Done.")
 
@@ -2513,6 +2548,8 @@ if(create.graphics){
   
   log("Create graphics...")
   require(ggplot2)
+  
+  if(length(levels(factor(results2$sequence.id))) >= 1){
   
   for(ibp in 1:length(levels(factor(results2$sequence.id)))){
     
@@ -2562,6 +2599,8 @@ if(create.graphics){
     sels<-results2[as.character(results2$sequence.id)==ibps,]
     
     }# if(not hairpin)
+    
+    hp.initial.input.type <- input.type
     
     if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
        hp.initial.input.type == "regions"){
@@ -2774,8 +2813,8 @@ if(create.graphics){
       
       
       tolo<-all_my_snps[all_my_snps$chr==selchr & 
-                          all_my_snps$start >= bedstart & 
-                          all_my_snps$end <= bedend,]
+                          as.numeric(as.character(all_my_snps$start)) >= bedstart & 
+                          as.numeric(as.character(all_my_snps$end)) <= bedend,]
       
       tolo$start.relative=tolo$chromStart-bedstart+1
       tolo$end.relative=tolo$chromEnd-bedstart+1
@@ -2994,11 +3033,11 @@ if(create.graphics){
         
       }#if hp
       
-      if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0){
+      if(nrow(tolo[as.numeric(as.character(tolo$start.relative)) < 0,])>0 && !is.na(tolo[as.numeric(as.character(tolo$start.relative)) <0,"start.relative"])){
         tolo[as.numeric(as.character(tolo$start.relative)) < 0,"start.relative"]<-0
       }
       
-      if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0){
+      if(nrow(tolo[as.numeric(as.character(tolo$end.relative)) < 0,])>0 && !is.na(tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"])){
         tolo[as.numeric(as.character(tolo$end.relative)) > bed.length,"end.relative"]<-bed.length
       }
       
@@ -3247,6 +3286,8 @@ if(create.graphics){
      ggsave(filename=paste("amplicon.design_",ibps,".png",sep=""),
             plot = lopl,path = path.graphics,width = 4,height = 4)
     }#for 
+    
+  }  
   log("Done.")
 ##########add amplicon.design plots to html report
   # log("Add graphics to html report...")
@@ -6292,13 +6333,19 @@ fetch.snp.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=variation")
   
-  for (i in 1:length(ext)){
-    r <- GET(paste(server, ext[i], sep=""))
+  if(length(ext) != 0){
+    r <- GET(paste(server, ext[1], sep=""))
+    s <- content(r)
   }
   
-  stop_for_status(r)
-
-  s = content(r)
+  if(length(ext) >= 2){
+    for (i in 2:length(ext)){
+      r <- GET(paste(server, ext[i], sep=""))
+      stop_for_status(r)
+      s <- rbind(s, content(r))
+    }
+  }
+  
   s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
   s3 = sapply(1:length(s2), function(x) { s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end","strand","assembly_name","id","feature_type","consequence_type","source"),"c2"])})
   s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 9, byrow = TRUE))
@@ -6347,14 +6394,19 @@ fetch.repeat.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
   
   ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=repeat")
   
-  for (i in 1:length(ext)){
-    r <- GET(paste(server, ext[i], sep = ""))
+  if(length(ext) != 0){
+    r <- GET(paster(server, ext[1], sep=""))
+    s <- content(r)
   }
   
-  #r <- GET(paste(server, ext, sep = ""))
-  stop_for_status(r)
+  if(length(ext) >=2){
+    for(i in 2:length(ext)){
+      r <- GET(paste(server, ext[i], sep=""))
+      stop_for_status(r)
+      s <- rbind(s, content(r))
+    }
+  }
   
-  s = content(r)
   s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
   s3 = sapply(1:length(s2), function(x) { s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end","strand","assembly_name","feature_type","description"),"c2"])})
   s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 7, byrow = TRUE))
@@ -6400,14 +6452,21 @@ fetch.dna.sequence= function(assembly = NULL, #'hg19' or 'hg38'
   server <- "http://rest.ensembl.org"
   ext <- paste0("/sequence/region/",ispecies,"/",gsub("chr","",chr),":",start,"..",end,":1?;coord_system_version=",iassembly)
   
-  for (i in 1:length(ext)){
+  if(length(ext) != 0){
+    r <- GET(paste(server, ext[1], sep=""), content_type("text/plain"))
+    s <- content(r)
+    
+  }
+  
+  for (i in 2:length(ext)){
     r <- GET(paste(server, ext[i], sep = ""), content_type("text/plain"))
+    s <- rbind(s, content(r))
   }
   
   #r <- GET(paste(server, ext, sep = ""), content_type("text/plain"))
   
-  stop_for_status(r)
-  return(content(r))
+  #stop_for_status(r)
+  return(s)
   
 }
 
@@ -6417,3 +6476,81 @@ fetch.dna.sequence= function(assembly = NULL, #'hg19' or 'hg38'
 #                    chr="chr1",
 #                    start="100000000",
 #                    end="100001000")
+
+
+
+
+
+#get gene info for a genomic intervall 
+# will call ensembl rest API (http://mar2017.rest.ensembl.org/)
+#
+
+fetch.gene.info.rest = function(assembly = NULL, #'hg19' or 'hg38'
+                                chr = NULL, #'chr1' or '1'
+                                start = NULL, #'12345678'
+                                end = NULL,   #'12345679'
+                                ...){
+  require(httr)
+  require(jsonlite)
+  require(xml2)
+  
+  iassembly = switch(EXPR = assembly, 
+                     "hg19" = "GRCh37",
+                     "hg38" = "GRCh38",
+                     "mm10" = "GRCm38")
+  
+  ispecies = switch(EXPR = assembly, 
+                    "hg19" = "human",
+                    "hg38" = "human",
+                    "mm10" = "mus_musculus")
+  
+  server <- switch(EXPR = assembly, 
+                   "hg19" = "http://grch37.rest.ensembl.org",
+                   "hg38" = "http://rest.ensembl.org",
+                   "mm10" = "http://rest.ensembl.org")
+  
+  ext <- paste0("/overlap/region/",ispecies,"/",gsub("chr","",chr),":",start,"-",end,":1?content-type=text/plain;feature=gene")
+  if(length(ext) != 0){
+    r <- GET(paste(server, ext[1], sep=""))
+    s <- content(r)
+  }
+  
+  if(length(ext) >= 2){
+    for (i in 2:length(ext)){
+      r <- GET(paste(server, ext[i], sep=""))
+      stop_for_status(r)
+      s <- rbind(s, content(r))
+    }
+  }
+  
+  if(length(s)>0){
+    s2 = lapply(s,function(x) {tdf = data.frame(c1 = names(unlist(x)), c2 = unlist(x))})
+    s3 = sapply(1:length(s2), function(x) {s2[x][[1]] = as.data.frame(s2[x][[1]][c("seq_region_name","start","end",
+                                                                                   "strand","assembly_name","id",
+                                                                                   "external_name","feature_type",
+                                                                                   "biotype","version","description",
+                                                                                   "source"),"c2"])})
+    s4 = as.data.frame(matrix(unlist(s3),nrow = length(s3), ncol = 12, byrow = TRUE))
+    colnames(s4) = c("chr","start","end","strand","assembly","id","gene_name","feature_type","biotype",
+                     "version","description","source")
+  }
+  
+  if(length(s) == 0){
+    s4 = data.frame(chr=NULL, start= NULL, end=NULL, assembly=NULL, id=NULL, gene_name= NULL,
+                    feature_type=NULL, biotype=NULL, description=NULL, source=NULL)
+  }
+  
+  return(s4)
+  
+}
+
+##########
+
+##example
+#gene = fetch.gene.info.rest(assembly = "hg38",
+#                          chr = "chr7",
+#                          start = "140424943",
+#                          end = "140426943")
+
+##########
+
