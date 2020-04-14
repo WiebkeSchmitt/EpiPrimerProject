@@ -49,8 +49,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                   menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
                                   menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
                                   menuItem("Primer Blast", tabName = "PrimerQC", icon = icon("check-circle")),
-                                  menuItem("Advanced Primer QC Settings", tabName = "PrimerQCAdvanced", icon = icon("dashboard")),
-                                  menuItem("Results of Quality Control", tabName = "PrimerQCResults", icon = icon("list-ol")),
+                                  menuItem("Advanced Primer Blast Settings", tabName = "PrimerQCAdvanced", icon = icon("dashboard")),
+                                  menuItem("Results of Primer Blast", tabName = "PrimerQCResults", icon = icon("list-ol")),
                                   menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
                                 )
                               ),
