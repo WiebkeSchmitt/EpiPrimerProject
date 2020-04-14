@@ -114,7 +114,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
         blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
       }
     )
-    
+     
     GAdb <- (
       if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
          || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
