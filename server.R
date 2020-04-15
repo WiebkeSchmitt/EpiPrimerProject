@@ -113,7 +113,7 @@ server <- function(input, output) {
       }
       
       #call the primer design pipeline
-      primer.design.pipeline(Dataset(), 
+      primer.design.pipeline.refactored(Dataset(), 
                              path.out = paste(getwd(),input$name,sep="/"),
                              primer.type = input$i_primer_type,
                              low.complexity.primer.removal=TRUE,
