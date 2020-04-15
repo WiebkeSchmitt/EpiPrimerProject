@@ -128,6 +128,7 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
                                  min.C2T.primer1=3,   # minimum n of C to T conversions in primer1 (numeric)
                                  min.G2A.primer2=3,   # minimum n of G to A conversions in primer2  (numeric)
                                  check4snps=TRUE,     # check & annotate primers/amplicons for underlying SNPs (TRUE/FALSE)
+                                 min.MAF.snp=0.01,  #max allowed minor allele frequency for SNPs
                                  min.snps.amplicon=0, #minimum n of allowed SNPs undelying amplicons (set to 0 to disable) (numeric)
                                  max.snps.amplicon=20,#maximum n of allowed SNPs undelying amplicons (set to 0 to disable) (numeric)
                                  min.snps.primer1=0, #minimum n of allowed SNPs undelying primer1 (set to 0 to disable) (numeric)
@@ -632,6 +633,7 @@ settings<-data.frame(PARAMETERS=c("Date",
                                   paste("Minimum 'G' to 'A' conversions in primer 2",sep=""),
                                   "Primer Dimer BinSize",
                                   "Check for Primer SNPs",
+                                  "Minimum MAF of SNPs",
                                   "Minimum SNPs in amplicon",
                                   "Maximum SNPs in amplicon",
                                   "Minimum SNPs in primer1",
@@ -671,6 +673,7 @@ settings<-data.frame(PARAMETERS=c("Date",
                            paste(min.G2A.primer2),
                            paste(primer.align.binsize),
                            paste(check4snps),
+                           paste(min.MAF.snp),
                            paste(min.snps.amplicon),
                            paste(max.snps.amplicon),
                            paste(min.snps.primer1),
@@ -847,76 +850,32 @@ if (input.type=="regions"){
     
     
     if(input.type=="regions"){
-      assems<-paste(unique(bed[,"assembly"]))
-      for (iasem in 1:length(assems)){
+      fetched_snp = mapply(rtl.get.snp.info.by.region,
+                           paste0(bed$assembly),
+                           paste0(bed$chr),
+                           as.numeric(as.character(bed$start)),
+                           as.numeric(as.character(bed$end)))
         
-        assem<-assems[iasem]
-
-        bedia<-bed[as.character(bed$assembly)==assem,]
-
-        if(!assem %in% supported.assemblies.snp){
-          log(paste("...assembly [",assem, "] not supported for SNP analysis",sep=""))   
-          next()
+      for(isnp in 1:ncol(fetched_snp)){
+        if(isnp == 1){
+            all_my_snps = as.data.frame(fetched_snp[,isnp])
         }
+      
+        if(isnp > 1){
+          all_my_snps = rbind(all_my_snps,as.data.frame(fetched_snp[,isnp]))
+        }
+      }
+      
+      colnames(all_my_snps) = gsub("chrom","chr",
+                                   gsub("chromStart","start",
+                                        gsub("chromEnd","end",
+                                             gsub("submitters","source",
+                                                  gsub("name","rs_id",colnames(all_my_snps))))))
 
-        if(assem %in% supported.assemblies.snp){
-
-          # snptrack<-switch(assem, 
-          #                  "hg18" = "snp130",
-          #                  "hg19" = "snp147Common",
-          #                  "hg38" = "snp150Common",
-          #                  "mm9"  = "snp128",
-          #                  "mm10" = "snp142Common")
-          # 
-          # snptable<-switch(assem, 
-          #                  "hg18" = "snp130",
-          #                  "hg19" = "snp147Common",
-          #                  "hg38" = "snp150Common",
-          #                  "mm9"  = "snp128",
-          #                  "mm10" = "snp142Common")
-          
-          chrom<-paste(bedia[,"chr"])
-          allstarts<-as.numeric(as.character(bedia[,"start"]))
-          allends<-as.numeric(as.character(bedia[,"end"]))
-          
-          # my_snps<-ucsc.info(assembly = assem,
-          #                        chr = chrom,
-          #                        start = allstarts,
-          #                        end = allends,
-          #                        track = snptrack,
-          #                        table = snptable)
-          
-          my_snps <- fetch.snp.info.rest(assembly = assem,
-                                         chr = chrom,
-                                         start = allstarts,
-                                         end = allends)
-          
-          #my_snps$assembly<-assem
-          
-          #my_snps$SNP.db<-snptable
-          
-          if (is.null(allstarts) || is.null(allends) || is.null(assem) || is.null(chrom)){
-             my_snps<-NA
-          } else {
-          my_snps <- fetch.snp.info.rest(assembly = assem,
-                                           chr = chrom,
-                                           start = allstarts,
-                                           end = allends)
-          }
-          
-          if(iasem==1){
-            all_my_snps<-my_snps
-          }#if assem
-          
-          if(iasem>1){
-            all_my_snps<-rbind(all_my_snps,my_snps)
-          }#if >1
-          
-      }#if assem
-    }#for assem
-        
-        write.table(all_my_snps,file=paste(path.tracks,"#SNP.info.input.regions.txt",sep=""),
-                    sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+      write.table(all_my_snps,file=paste(path.tracks,"#SNP.info.input.regions.txt",sep=""),
+                  sep="\t",dec=".",col.names=T,row.names=F,quote=F)
+      
+      
   }#if regions
 }#check4snps
 
@@ -1329,6 +1288,11 @@ if(primer.type=="hp_bisulfite" | primer.type=="hp_NOME" | primer.type=="hp_genom
     hp$chr.hpreg.absolute<-NA
     hp$start.hpreg.absolute<-NA
     hp$end.hpreg.absolute<-NA
+    
+    if(!(exists("hp.initial.input.type"))){
+      log("Hairpinprimer input type must be a regions file!")
+      stop("Hairpinprimer input type must be a regions file!")
+    }
     
     if(hp.initial.input.type == "regions"){
       
@@ -1862,7 +1826,7 @@ if (check4snps){
   
   log("Assign SNP information to designed amplicons...")
   
-  if(exists(x = "all_my_snps")){
+  if(exists("x") && x == "all_my_snps"){
     
     results2$SNP.db<-NA
     results2$amplicon.nSNPs<-NA
@@ -1883,13 +1847,36 @@ if (check4snps){
       iseq.p2.start<-results2[iamplicons,"primer2.start"]
       iseq.p2.end<-results2[iamplicons,"primer2.end"]
       
-      results2[iamplicons,"SNP.db"] <- as.character(all_my_snps[as.character(all_my_snps$chr)==gsub("chr","",iseq.chr) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
-      results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==gsub("chr", "", iseq.chr) & as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & as.numeric(as.character(all_my_snps$start))<=iseq.amp.end, ]) 
-      results2[iamplicons,"amplicon.SNP.ids"]<-paste(levels(all_my_snps[(as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr))) & (as.numeric(as.character(all_my_snps$start))>=iseq.amp.start) & (as.numeric(as.character(all_my_snps$start))<=iseq.amp.end), "rs_id"]), collapse=",")
-      results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.p1.start & as.numeric(as.character(all_my_snps$start))<=iseq.p1.end, ])
-      results2[iamplicons,"primer1.SNP.ids"]<-paste(levels(all_my_snps[(as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr))) & (as.numeric(as.character(all_my_snps$start))>=iseq.p1.start) & (as.numeric(as.character(all_my_snps$start))<=iseq.p1.end), "rs_id"]),collapse=",")
-      results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr)) & as.numeric(as.character(all_my_snps$start))>=iseq.p2.start & as.numeric(as.character(all_my_snps$start))<=iseq.p2.end, ]) 
-      results2[iamplicons,"primer2.SNP.ids"]<-paste(levels(all_my_snps[(as.character(all_my_snps$chr)==as.character(gsub("chr", "", iseq.chr))) & (as.numeric(as.character(all_my_snps$start))>=iseq.p2.start)& (as.numeric(as.character(all_my_snps$start))<=iseq.p2.end) ,"rs_id"]),collapse=",")
+      if(exists("all_my_snps") && nrow(all_my_snps) != 0 && length(levels(all_my_snps) != 0) ){
+        results2[iamplicons,"SNP.db"] <- levels(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr","",iseq.chr)) & 
+                                                            as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & 
+                                                            as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,"source"])[1]
+      
+        results2[iamplicons,"amplicon.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==gsub("chr", "", iseq.chr) & 
+                                                                  as.numeric(as.character(all_my_snps$start))>=iseq.amp.start & 
+                                                                  as.numeric(as.character(all_my_snps$start))<=iseq.amp.end ,]) 
+      
+        results2[iamplicons,"amplicon.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
+                                                                   (as.numeric(as.character(all_my_snps$start))>=iseq.amp.start) & 
+                                                                   (as.numeric(as.character(all_my_snps$start))<=iseq.amp.end) ,"rs_id"],collapse=",")
+      
+      
+        results2[iamplicons,"primer1.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr)) & 
+                                                                 as.numeric(as.character(all_my_snps$start))>=iseq.p1.start & 
+                                                                 as.numeric(as.character(all_my_snps$start))<=iseq.p1.end ,])
+      
+        results2[iamplicons,"primer1.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
+                                                                  (as.numeric(as.character(all_my_snps$start))>=iseq.p1.start) & 
+                                                                  (as.numeric(as.character(all_my_snps$start))<=iseq.p1.end) ,"rs_id"],collapse=",")
+      
+        results2[iamplicons,"primer2.nSNPs"] <- nrow(all_my_snps[gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr)) & 
+                                                                 as.numeric(as.character(all_my_snps$start))>=iseq.p2.start & 
+                                                                 as.numeric(as.character(all_my_snps$start))<=iseq.p2.end,])
+      
+        results2[iamplicons,"primer2.SNP.ids"]<-paste(all_my_snps[(gsub("chr","",as.character(all_my_snps$chr))==as.character(gsub("chr", "", iseq.chr))) & 
+                                                                  (as.numeric(as.character(all_my_snps$start))>=iseq.p2.start) & 
+                                                                  (as.numeric(as.character(all_my_snps$start))<=iseq.p2.end) ,"rs_id"],collapse=",")
+        }
       
       }# iamplicons
       
@@ -2508,7 +2495,7 @@ write.table(smry,file=paste(path.wd,"summary_",analysis.id,".txt",sep=""),col.na
 #html.report(filenames =  paste(path.html,"summary_",analysis.id,".txt",sep=""),filename.out = paste(path.html,"summary_",analysis.id,".html",sep=""),txt.header = TRUE,txt.sep = "\t")
 
 # primer designs by input sequence
-if(!is.na(results2$sequence.id)){
+if(!(is.na(results2$sequence.id))){
   tbl<-data.frame(table(results2$sequence.id))
   colnames(tbl)<-c("sequence.id","amplicons[n]")
   write.table(tbl,file=paste(path.wd,"primerdesigns.by.sequence_",analysis.id,".txt",sep=""),col.names=TRUE,row.names=FALSE,sep="\t",dec=".")
@@ -2522,14 +2509,14 @@ log("Done.")
 log("Write whitelist...")
 white<-bed[paste(bed$sequenceID) %in% paste(toplist[,1]),]
 
-  if(!file.exists(paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""))){
-     write.table(white,file=paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),
+  if(!file.exists(paste(path.wd,"primer_", analysis.id, "_whitelist.txt", sep=""))){
+    white.old<-read.table(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""), header=TRUE, sep="\t",dec=".")
+    
+    
+    white<-rbind(white.old, white) 
+    write.table(white,file=paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),
                  col.names=TRUE,row.names=FALSE,sep="\t",dec=".") 
-  }
-
-  if(file.exists(paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""))){
-    white.old<-read.table(paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),header=TRUE,sep="\t",dec=".")
-    white<-rbind(white.old,white)
+  } else {
     write.table(white,file=paste(path.wd,"primer_",analysis.id,"_whitelist.txt",sep=""),
                 col.names=TRUE,row.names=FALSE,sep="\t",dec=".") 
   }
@@ -2600,9 +2587,9 @@ if(create.graphics){
     
     }# if(not hairpin)
     
-    hp.initial.input.type <- input.type
+    #hp.initial.input.type <- input.type
     
-    if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+    if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
        hp.initial.input.type == "regions"){
          
          #per sequence id primer design overview plot
@@ -2642,7 +2629,7 @@ if(create.graphics){
                                   rep("input.sequence [Genes]",2)),
                     feature=NA)
     
-    if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+    if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
        hp.initial.input.type == "regions"){
       
       lol<-rbind(lol,data.frame(relative.position=rep(c(1,nrow(sa)),2),
@@ -2715,7 +2702,7 @@ if(create.graphics){
                               amplicon.id="input.sequence [GpC]",
                               feature="GpC"))
     
-    if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+    if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
       hp.initial.input.type == "regions"){
       
     lol<-rbind(lol,data.frame(relative.position=NA,
@@ -2790,7 +2777,7 @@ if(create.graphics){
     
     if(check4snps & exists("all_my_snps")){
       
-      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
+      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &&
          input.type == "regions"){
         
       selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2800,7 +2787,7 @@ if(create.graphics){
       }#if not hp
       
       
-      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
       selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -2812,20 +2799,20 @@ if(create.graphics){
       }#if hp
       
       
-      tolo<-all_my_snps[all_my_snps$chr==selchr & 
+      tolo<-all_my_snps[gsub("chr","",all_my_snps$chr)==gsub("chr","",selchr) & 
                           as.numeric(as.character(all_my_snps$start)) >= bedstart & 
                           as.numeric(as.character(all_my_snps$end)) <= bedend,]
       
-      tolo$start.relative=tolo$chromStart-bedstart+1
-      tolo$end.relative=tolo$chromEnd-bedstart+1
+      tolo$start.relative=as.numeric(as.character(tolo$start))-bedstart+1
+      tolo$end.relative=as.numeric(as.character(tolo$end))-bedstart+1
       
       if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
          hp.initial.input.type == "regions"){
         
       #trick to also show SNPs on the second part of the hairpin
       tolo.temp<-tolo
-      tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-      tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+      tolo.temp$end.relative <- lnk.eim + as.numeric(as.character(tolo$start.relative)) - 1 
+      tolo.temp$start.relative <- lnk.eim + as.numeric(as.character(tolo$end.relative)) - 1
       tolo<-rbind(tolo,tolo.temp)
       
       }#if hp
@@ -2867,7 +2854,7 @@ if(create.graphics){
     
     if(check4repeats & exists("all_my_repeats")){
       
-      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &
+      if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &&
          input.type == "regions"){
         
         selchr<-paste(unique(sels[as.character(sels$sequence.id)==ibps,"amplicon.chr"]))  
@@ -2877,7 +2864,7 @@ if(create.graphics){
       }#if not hp
       
       
-      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
         selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -2893,8 +2880,8 @@ if(create.graphics){
                           #all_my_repeats$genoStart >= bedstart & 
                           #all_my_repeats$genoEnd <= bedend
       
-      tolo$start.relative=tolo$start-bedstart+1
-      tolo$end.relative=tolo$end-bedstart+1
+      tolo$start.relative=as.numeric(as.character(tolo$start))-bedstart+1
+      tolo$end.relative=as.numeric(as.character(tolo$end))-bedstart+1
       
       #tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
       #             ((tolo$start.relative<0 & tolo$end.relative<=bed.length) & tolo$end.relative>=0) |
@@ -2902,16 +2889,16 @@ if(create.graphics){
       #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
       
       
-      tolo<-tolo[(!tolo$end.relative<0) &
-                  (!tolo$start.relative>=bed.length),]
+      tolo<-tolo[(!as.numeric(as.character(tolo$end.relative))<0) &
+                  (!as.numeric(as.character(tolo$start.relative))>=bed.length),]
       
-        if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+        if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
         #trick to also show SNPs on the second part of the hairpin
         tolo.temp<-tolo
-        tolo.temp$end.relative <- lnk.eim + tolo$start.relative - 1 
-        tolo.temp$start.relative <- lnk.eim + tolo$end.relative - 1
+        tolo.temp$end.relative <- lnk.eim + as.numeric(as.character(tolo$start.relative)) - 1 
+        tolo.temp$start.relative <- lnk.eim + as.numeric(as.character(tolo$end.relative)) - 1
         tolo<-rbind(tolo,tolo.temp)
         
       }#if hp
@@ -2974,7 +2961,7 @@ if(create.graphics){
       }#if not hp
       
       
-      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
         selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -3001,16 +2988,16 @@ if(create.graphics){
         tolo$exon.start=all.exons.start
         tolo$exon.end=all.exons.end
         
-        tolo$start.relative=tolo$exon.start-bedstart+1
-        tolo$end.relative=tolo$exon.end-bedstart+1
+        tolo$start.relative=as.numeric(as.character(tolo$exon.start))-bedstart+1
+        tolo$end.relative=as.numeric(as.character(tolo$exon.end))-bedstart+1
         
        # tolo<-tolo[(tolo$start.relative>=0 & tolo$end.relative<=bed.length) |
       #             (tolo$start.relative<0 & tolo$end.relative<=bed.length & tolo$end.relative>=0) |
       #             (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
       #             (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
         
-        tolo<-tolo[(!tolo$end.relative<0) &
-                     (!tolo$start.relative>=bed.length),]
+        tolo<-tolo[(!as.numeric(as.character(tolo$end.relative))<0) &
+                     (!as.numeric(as.character(tolo$start.relative))>=bed.length),]
         
       }#if(length(all.exons.start) == length(all.exons.end)){
       
@@ -3022,7 +3009,7 @@ if(create.graphics){
       }#if(length(all.exons.start) != length(all.exons.end)){
       
       
-      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
         #trick to also show SNPs on the second part of the hairpin
@@ -3088,7 +3075,7 @@ if(create.graphics){
       }#if not hp
       
       
-      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
         selchr<-paste(unique(hpf2[as.character(hpf2$sequenceID)==ibps,"chr.absolute"]))  
@@ -3111,10 +3098,10 @@ if(create.graphics){
     #               (tolo$start.relative>=0 & tolo$start.relative<=bed.length) |
     #               (tolo$end.relative>=0 & tolo$end.relative<=bed.length),]
       
-      tolo<-tolo[(!tolo$end.relative<0) &
-                   (!tolo$start.relative>=bed.length),]
+      tolo<-tolo[(!as.numeric(as.character(tolo$end.relative))<0) &
+                   (!as.numeric(as.character(tolo$start.relative))>=bed.length),]
       
-      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &
+      if((primer.type == "hp_bisulfite" | primer.type == "hp_NOME" | primer.type == "hp_genomic" | primer.type == "hp_CLEVER") &&
          hp.initial.input.type == "regions"){
         
         #trick to also show SNPs on the second part of the hairpin
