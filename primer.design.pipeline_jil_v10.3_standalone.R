@@ -104,7 +104,8 @@
 ###################################################################################################
 ###################################################################################################
 
-primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to the file with i) regions (.bed format) or ii) sequences (filepath) (character)
+primer.design.pipeline<-function(table.in,
+                                 #filename.in = NULL, # direct path to the file with i) regions (.bed format) or ii) sequences (filepath) (character)
                                  input.type="regions",#"regions" (for a file with regions in .bed format) or "sequences" (for a ".txt" file with sequences) (fixed vocabulary) (character)
                                  path.out = NULL, # directory where results will be stored (directory) (character)
                                  analysis.id="PrimerAnalysis",# Do not use'SonderZeichen'
@@ -159,7 +160,6 @@ primer.design.pipeline<-function(table.in,#filename.in = NULL, # direct path to 
     
   } 
   
-
 scriptID<-"10.3standalone"
 mydate<-paste(Sys.time())
 start.wd<-getwd()
@@ -719,14 +719,19 @@ log("Module: Data Import.")
 if (input.type=="regions"){
   log("Fetch sequences from UCSC...")
   
-  #iregs <- filetable.in #iregs<-read.table(filename.in,header=T,sep="\t",dec=".")
-  iregs<- table.in
+  #iregs <- filetable.in 
+  iregs<-read.table(table.in,header=T,sep="\t",dec=".")
+  #iregs<- table.in
   print(iregs)
   
   def.cols<-c("chr","start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")
   print(def.cols)
   nregs<-nrow(iregs)#number of input regions
   print(nregs)
+  print("iregs")
+  print(iregs)
+  print(iregs$chr)
+  print(as.numeric(iregs$chr))
   
   
   if("sequenceID" %in% colnames(iregs)){
@@ -755,13 +760,13 @@ if (input.type=="regions"){
     
   }
   
-  iregchr<-as.character(iregs$chr)
+  iregchr<-as.numeric(as.character(iregs$chr))
   print(iregchr)
   bed<-data.frame(chr=rep(NA,nregs),start=rep(NA,nregs),end=rep(NA,nregs),
                   assembly=rep(NA,nregs),
                   sequenceID=rep(NA,nregs),sequence.length=rep(NA,nregs),
                   sequence.adress=rep(NA,nregs),sequence=rep(NA,nregs))
-				  print(bed)
+	print(bed)
   bed$chr<-as.character(bed$chr)
   bed$chr<-iregchr
   print(bed$chr)
