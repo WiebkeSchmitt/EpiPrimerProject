@@ -760,14 +760,13 @@ if (input.type=="regions"){
     
   }
   
-  iregchr<-as.numeric(as.character(iregs$chr))
-  print(iregchr)
+  iregchr<-as.character(iregs$chr)
+
   bed<-data.frame(chr=rep(NA,nregs),start=rep(NA,nregs),end=rep(NA,nregs),
                   assembly=rep(NA,nregs),
                   sequenceID=rep(NA,nregs),sequence.length=rep(NA,nregs),
                   sequence.adress=rep(NA,nregs),sequence=rep(NA,nregs))
-	print(bed)
-  bed$chr<-as.character(bed$chr)
+  
   bed$chr<-iregchr
   print(bed$chr)
   bed$start<-as.numeric(bed$start)
@@ -2514,7 +2513,7 @@ log("Done.")
 log("Write whitelist...")
 white<-bed[paste(bed$sequenceID) %in% paste(toplist[,1]),]
 
-  if(!file.exists(paste(path.wd,"primer_", analysis.id, "_whitelist.txt", sep=""))){
+  if(file.exists(paste(path.wd,"primer_", analysis.id, "_whitelist.txt", sep=""))){
     white.old<-read.table(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""), header=TRUE, sep="\t",dec=".")
     
     
