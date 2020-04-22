@@ -726,13 +726,7 @@ if (input.type=="regions"){
   
   def.cols<-c("chr","start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")
   print(def.cols)
-  nregs<-nrow(iregs)#number of input regions
-  print(nregs)
-  print("iregs")
-  print(iregs)
-  print(iregs$chr)
-  print(as.numeric(iregs$chr))
-  
+  nregs<-as.numeric(nrow(iregs))#number of input regions
   
   if("sequenceID" %in% colnames(iregs)){
     
@@ -5817,7 +5811,16 @@ CLEVER.primer.design<-function(sequence,
   tmg$primer.start.starts<-1
   tmg$primer.start.ends<-tmg$fragment.length-min.length.primer
   tmg<-tmg[tmg$primer.start.ends>0,]
+  print("here error for clever_hp primer design")
+  print(tmg)
+  print(typeof(tmg))
+  print(min.length.primer)
+  print(typeof(min.length.primer))
+  if(nrow(tmg) == 0){
+    return(out)
+  }
   tmg$primer.end.starts<-1+min.length.primer-1
+
   
   subfrags<-names(tm.good)[names(tm.good) %in% tmg$fragment.id]
   
@@ -6187,6 +6190,12 @@ CLEVER.primer.design<-function(sequence,
   print("Done.")
   
   #####################################################################################
+  
+  if(nrow(selection)==0){
+    print("No Primers survived filtering.")
+    return(out)
+    
+  }
   
   #calculate some additional properties.
   #calculations are only possible, if the selection list contains more than just the names of the variables

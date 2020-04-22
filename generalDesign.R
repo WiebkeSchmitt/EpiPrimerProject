@@ -1354,6 +1354,8 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
       }
       
       if(primer.type=="hp_CLEVER"){
+        print("call from hp_CLEVER")
+        
         np<-CLEVER.primer.design(sequence=sequence,
                                  sequence.id=sequence.id,
                                  min.Tm.primer=min.Tm.primer,
@@ -1373,6 +1375,12 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
                                  max.length.amplicon=max.length.amplicon,
                                  strand=istrand,
                                  mode=mode)
+        
+        if(is.na(np[1,1])){
+          log(paste("No primer pair found for: ", sequence.id,sep=""))
+          next()
+        }
+        
         colnames(np)<-gsub("NOME","CLEVER",colnames(np))
       }
       
@@ -2162,6 +2170,9 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
       log("Write whitelist...")
       white<-bed[paste(bed$sequenceID) %in% paste(toplist[,1]),]
       
+      print("debug")
+      print(file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep="")))
+      print(!file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep="")))
       if(file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""))){
         white.old<-read.table(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""), header=TRUE, sep="\t",dec=".")
         white<-rbind(white.old, white)

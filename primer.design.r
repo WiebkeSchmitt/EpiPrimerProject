@@ -32,7 +32,10 @@ generalDesign<-function(seq,
   
   ##### primer length ranges to build start and end points for subfragments... #####
   plr<-max.length.primer-min.length.primer
-  pr.starts<-1: (max(tmg$fragment.length)-min.length.primer+1)
+  if (tmg$fragment.length < 4503599627370496) { # this is the size for R_XLEN_T_MAX, no vectors above this size are possible
+    pr.starts<-1: (max(tmg$fragment.length)-min.length.primer+1)
+  }
+  
   
   #
   if(mode=="exact"){
@@ -906,39 +909,52 @@ CLEVER.primer.design<-function(sequence,
   
   #establish primers and organize them
   print("Generate & analyze individual primer sequences for each subfragment...")
-  
   tmg<-data.frame(fragment.sequence=as.character(tm.good),fragment.id=names(tm.good))
   tmg$fragment.sequence<-as.character(tmg$fragment.sequence)
   tmg$fragment.length<-nchar(tmg$fragment.sequence)
   tmg$primer.start.starts<-1
   tmg$primer.start.ends<-tmg$fragment.length-min.length.primer
+  print("debug a")
+  print(tmg)
   tmg<-tmg[tmg$primer.start.ends>0,]
-  tmg$primer.end.starts<-1+min.length.primer-1
+  print("debug b")
+  print(tmg)
+  print(nrow(tmg))
+  print(length(tmg))
+  print(typeof(tmg))
+  print(typeof(tmg$primer.start.starts))
+  print(nrow(tmg) == 0)
+  print(typeof(nrow(tmg)==0))
+  if((nrow(tmg) == 0)){
+    print("No primer design possible.")
+    return(out)
+  } else {
+    tmg$primer.end.starts<-min.length.primer
+    subfrags<-names(tm.good)[names(tm.good) %in% tmg$fragment.id]
+  }
+    return(generalDesign(seq,
+                         seq.id,
+                         nome,
+                         tmg,
+                         subfrags,
+                         min.length.primer, 
+                         max.length.primer, 
+                         min.Tm.primer,
+                         max.Tm.primer, 
+                         max.Tm.difference.primer, 
+                         low.complexity.primer.removal, 
+                         max.bins.low.complexity,
+                         remove.primers.with.n,
+                         min.C2T.primer1,
+                         min.G2A.primer2,
+                         min.length.amplicon,
+                         max.length.amplicon, 
+                         min.number.gc.amplicon, 
+                         min.number.cg.amplicon,
+                         primer.align.binsize,
+                         strand,
+                         mode))
   
-  subfrags<-names(tm.good)[names(tm.good) %in% tmg$fragment.id]
-  
-  return(generalDesign(seq,
-                       seq.id,
-                       nome,
-                       tmg,
-                       subfrags,
-                       min.length.primer, 
-                       max.length.primer, 
-                       min.Tm.primer,
-                       max.Tm.primer, 
-                       max.Tm.difference.primer, 
-                       low.complexity.primer.removal, 
-                       max.bins.low.complexity,
-                       remove.primers.with.n,
-                       min.C2T.primer1,
-                       min.G2A.primer2,
-                       min.length.amplicon,
-                       max.length.amplicon, 
-                       min.number.gc.amplicon, 
-                       min.number.cg.amplicon,
-                       primer.align.binsize,
-                       strand,
-                       mode))
 }#CLEVER.primer.design
 
 
