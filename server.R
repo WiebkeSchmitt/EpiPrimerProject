@@ -124,6 +124,7 @@ server <- function(input, output) {
                              allow.repeats.in.amplicon=input$i_allow.repeats.in.amplicon,
                              annotate.genes=FALSE,
                              annotate.cpg.islands=FALSE,
+                             create.toplist = TRUE,
                              max.bins.low.complexity=input$i_max.bins.low.complexity,
                              primer.align.binsize=input$i_primer.align.binsize,
                              min.snps.amplicon=0,
