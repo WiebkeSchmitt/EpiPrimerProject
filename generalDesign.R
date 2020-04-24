@@ -2170,9 +2170,6 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
       log("Write whitelist...")
       white<-bed[paste(bed$sequenceID) %in% paste(toplist[,1]),]
       
-      print("debug")
-      print(file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep="")))
-      print(!file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep="")))
       if(file.exists(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""))){
         white.old<-read.table(paste(path.wd, "primer_", analysis.id, "_whitelist.txt", sep=""), header=TRUE, sep="\t",dec=".")
         white<-rbind(white.old, white)
