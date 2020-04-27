@@ -90,6 +90,8 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     
   } else {
     
+    #normal primer blast 
+    
     print("non-bisulfite primer quality control")
     #create a folder, if there is not yet one for this genome - this line throws a warning, if the dir exists already
     if(!dir.exists(paste(z@wd, fsep=.Platform$file.sep))){

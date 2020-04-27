@@ -662,6 +662,9 @@ server <- function(input, output) {
     blast_args <- "-task blastn -evalue %s"
     costumized_BLAST_args <- sprintf(blast_args, input$Evalue)
     print(costumized_BLAST_args)
+    
+    #TODO: adjust these calculations for differentiating between Primer Blast for Bisulfite and normal Primerpairs!
+    
     F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
     R_CTblast <- predict(dbList$CTdb, Rseq, BLAST_args = costumized_BLAST_args)
     F_GAblast <- predict(dbList$GAdb, Fseq, BLAST_args = costumized_BLAST_args)
