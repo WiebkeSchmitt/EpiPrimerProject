@@ -92,7 +92,8 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     
     #normal primer blast 
     
-    print("non-bisulfite primer quality control")
+    print("non-bisulfite primer reference genome is created")
+    
     #create a folder, if there is not yet one for this genome - this line throws a warning, if the dir exists already
     if(!dir.exists(paste(z@wd, fsep=.Platform$file.sep))){
       dir.create(file.path(z@wd, "database", fsep=.Platform$file.sep), recursive = TRUE)
@@ -102,22 +103,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     
     #now check if makeblastdb is needed for this genome
     print(file.exists(paste(z@wd, "/", z@name, ".fasta", sep="")))
-    CTdb <- (
-      if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
-         || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
-         || !file.exists(paste(z@wd, "/", z@name, ".fasta.nsq", sep=""))
-      ){
-        # build the database and index for ref genome
-        makeblastdb(file=(file.path(z@wd, paste( z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), dbtype = "nucl")
-        blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
-      }
-      else{
-        #files already exist so no need to build the database again
-        blast(file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep))
-      }
-    )
-     
-    GAdb <- (
+    genomeDB <- (
       if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
          || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
          || !file.exists(paste(z@wd, "/", z@name, ".fasta.nsq", sep=""))
@@ -133,7 +119,8 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     )
     
     #return CTdb and GAdb for further calculations in server.R as a list of CTdb and GAdb
-    dbList <- list("CTdb"= CTdb, "GAdb"= GAdb)
+    dbList <- list("genomeDB"= genomeDB)
+    print("finished computation of non-bisulfite reference genome")
     return (dbList)
   }
   

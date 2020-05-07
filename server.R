@@ -623,139 +623,182 @@ server <- function(input, output) {
   class = "display"
   )
   
-  primer_qc_start <- observeEvent(input$computePQC, {
+  output$primer_qc_start <- eventReactive(input$computePQC, {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
       title = "Computation of your virtual PCR has started!",
-      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the Primer Design Quality Control tab when they are ready."),
+      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the 'Results of Primer Blast' tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
     
-    # get a new reference genome to the organism in question using the ReferenceGenome class
-    refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
-    
-    #building databases
-    dbList <- getBlastDB(refgen, input$is_bisulfite)
-    
-    #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
-    Fseq <- (if(is.null(input$Fprimers)) {
-      vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
+    #check if this is a bisulfite blast
+    is_bis = input$is_bisulfite
+    if (is_bis){
+      print ("Starting bisulfite primer BLAST")
       
-    }
-    else{
-      vF <- readDNAStringSet(input$Fprimers$datapath)
-    } )
-    
-    Rseq <- (if(is.null(input$Rprimers)) {
-      vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
+      #first see if the user has uploaded primers
+      # check if upload field is empty
+      exists_upload = !is.null(input$Fprimers) && !is.null(input$Rprimers)
+      # was there was a previous primer design job?
+      exists_previous_job = file.exists(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")) && file.exists(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
       
-    }
-    else{
-      vR <- readDNAStringSet(input$Rprimers$datapath)
-    } )
-    
-    #output of the used primers
-    print(Fseq)
-    print(Rseq)
-    
-    #blasting 
-    blast_args <- "-task blastn -evalue %s"
-    costumized_BLAST_args <- sprintf(blast_args, input$Evalue)
-    print(costumized_BLAST_args)
-    
-    #TODO: adjust these calculations for differentiating between Primer Blast for Bisulfite and normal Primerpairs!
-    
-    F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
-    R_CTblast <- predict(dbList$CTdb, Rseq, BLAST_args = costumized_BLAST_args)
-    F_GAblast <- predict(dbList$GAdb, Fseq, BLAST_args = costumized_BLAST_args)
-    R_GAblast <- predict(dbList$GAdb, Rseq, BLAST_args = costumized_BLAST_args)
-    
-    # finding genomic ranges for all hits 
-    hits<- c(
-      GRanges(
-        Source="F_CT", 
-        AmpliconID = F_CTblast[["QueryID"]],
-        seqnames = F_CTblast[["SubjectID"]],
-        ranges = IRanges(
-          start=pmin(F_CTblast[["S.start"]], F_CTblast[["S.end"]]),
-          end = pmax(F_CTblast[["S.start"]], F_CTblast[["S.end"]])
-        ), 
-        strand=ifelse(F_CTblast[["S.start"]]>F_CTblast[["S.end"]],"-","+"), 
-        length=F_CTblast[["Alignment.Length"]], 
-        mismatches=F_CTblast[["Mismatches"]], 
-        bit_score=F_CTblast[["Bits"]], 
-        e_value=F_CTblast[["E"]]
-      ),
-      GRanges(
-        Source="F_GA",
-        AmpliconID = F_GAblast[["QueryID"]],
-        seqnames = F_GAblast[["SubjectID"]],
-        ranges = IRanges(
-          start=pmin(F_GAblast[["S.start"]], F_GAblast[["S.end"]]),
-          end=pmax(F_GAblast[["S.start"]], F_GAblast[["S.end"]])
+      if(!xor(exists_upload, exists_previous_job)){
+        # no file was uploaded, inform the user
+        print("No file uploaded!")
+        #this did not work
+        #return(paste("<span style=\"color:red\">No file was uploaded, please provide primers as input!</span>"))
+        return (sprintf("No file was uploaded, please provide primers as input!"))
+      }
+      
+      # get a new reference genome to the organism in question using the ReferenceGenome class
+      refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
+      
+      #building databases
+      dbList <- getBlastDB(refgen, input$is_bisulfite)
+      
+      #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
+      Fseq <- (if(is.null(input$Fprimers)) {
+        vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
+        
+      }
+      else{
+        #validate(need(readDNAStringSet(input$Fprimers$datapath)), "no upload")
+        vF <- readDNAStringSet(input$Fprimers$datapath)
+      } )
+      
+      Rseq <- (if(is.null(input$Rprimers)) {
+        vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
+        
+      }
+      else{
+        vR <- readDNAStringSet(input$Rprimers$datapath)
+      } )
+      
+      #output of the used primers
+      print(Fseq)
+      print(Rseq)
+      
+      #blasting 
+      blast_args <- "-task blastn -evalue %s"
+      #costumized_BLAST_args <- sprintf(blast_args, input$Evalue)
+      costumized_BLAST_args <- sprintf(blast_args, 10)
+      print(costumized_BLAST_args)
+      
+      #blast forward and reverse primer against CT and GA converted genome
+      F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
+      R_CTblast <- predict(dbList$CTdb, Rseq, BLAST_args = costumized_BLAST_args)
+      F_GAblast <- predict(dbList$GAdb, Fseq, BLAST_args = costumized_BLAST_args)
+      R_GAblast <- predict(dbList$GAdb, Rseq, BLAST_args = costumized_BLAST_args)
+      
+      # finding genomic ranges for all hits 
+      hits<- c(
+        GRanges(
+          Source="F_CT", 
+          AmpliconID = F_CTblast[["QueryID"]],
+          seqnames = F_CTblast[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(F_CTblast[["S.start"]], F_CTblast[["S.end"]]),
+            end = pmax(F_CTblast[["S.start"]], F_CTblast[["S.end"]])
+          ), 
+          strand=ifelse(F_CTblast[["S.start"]]>F_CTblast[["S.end"]],"-","+"), 
+          length=F_CTblast[["Alignment.Length"]], 
+          mismatches=F_CTblast[["Mismatches"]], 
+          bit_score=F_CTblast[["Bits"]], 
+          e_value=F_CTblast[["E"]]
         ),
-        strand=ifelse(F_GAblast[["S.start"]]>F_GAblast[["S.end"]],"+","-"), 
-        length=F_GAblast[["Alignment.Length"]], 
-        mismatches=F_GAblast[["Mismatches"]],
-        bit_score=F_GAblast[["Bits"]],
-        e_value=F_GAblast[["E"]]
-      ),
-      GRanges(
-        Source="R_CT",
-        AmpliconID = R_CTblast[["QueryID"]],
-        seqnames = R_CTblast[["SubjectID"]],
-        ranges = IRanges(
-          start=pmin(R_CTblast[["S.start"]], R_CTblast[["S.end"]]),
-          end = pmax(R_CTblast[["S.start"]], R_CTblast[["S.end"]])
+        GRanges(
+          Source="F_GA",
+          AmpliconID = F_GAblast[["QueryID"]],
+          seqnames = F_GAblast[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(F_GAblast[["S.start"]], F_GAblast[["S.end"]]),
+            end=pmax(F_GAblast[["S.start"]], F_GAblast[["S.end"]])
+          ),
+          strand=ifelse(F_GAblast[["S.start"]]>F_GAblast[["S.end"]],"+","-"), 
+          length=F_GAblast[["Alignment.Length"]], 
+          mismatches=F_GAblast[["Mismatches"]],
+          bit_score=F_GAblast[["Bits"]],
+          e_value=F_GAblast[["E"]]
         ),
-        strand=ifelse(R_CTblast[["S.start"]]>R_CTblast[["S.end"]],"-","+"),
-        length=R_CTblast[["Alignment.Length"]],
-        mismatches=R_CTblast[["Mismatches"]],
-        bit_score=R_CTblast[["Bits"]],
-        e_value=R_CTblast[["E"]]
-      ),
-      GRanges(
-        Source="R_GA",
-        AmpliconID = R_GAblast[["QueryID"]],
-        seqnames = R_GAblast[["SubjectID"]],
-        ranges = IRanges(
-          start=pmin(R_GAblast[["S.start"]], R_GAblast[["S.end"]]),
-          end = pmax(R_GAblast[["S.start"]], R_GAblast[["S.end"]])
+        GRanges(
+          Source="R_CT",
+          AmpliconID = R_CTblast[["QueryID"]],
+          seqnames = R_CTblast[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(R_CTblast[["S.start"]], R_CTblast[["S.end"]]),
+            end = pmax(R_CTblast[["S.start"]], R_CTblast[["S.end"]])
+          ),
+          strand=ifelse(R_CTblast[["S.start"]]>R_CTblast[["S.end"]],"-","+"),
+          length=R_CTblast[["Alignment.Length"]],
+          mismatches=R_CTblast[["Mismatches"]],
+          bit_score=R_CTblast[["Bits"]],
+          e_value=R_CTblast[["E"]]
         ),
-        strand=ifelse(R_GAblast[["S.start"]]>R_GAblast[["S.end"]],"+","-"),
-        length=R_GAblast[["Alignment.Length"]], 
-        mismatches=R_GAblast[["Mismatches"]],
-        bit_score=R_GAblast[["Bits"]], 
-        e_value=R_GAblast[["E"]]
+        GRanges(
+          Source="R_GA",
+          AmpliconID = R_GAblast[["QueryID"]],
+          seqnames = R_GAblast[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(R_GAblast[["S.start"]], R_GAblast[["S.end"]]),
+            end = pmax(R_GAblast[["S.start"]], R_GAblast[["S.end"]])
+          ),
+          strand=ifelse(R_GAblast[["S.start"]]>R_GAblast[["S.end"]],"+","-"),
+          length=R_GAblast[["Alignment.Length"]], 
+          mismatches=R_GAblast[["Mismatches"]],
+          bit_score=R_GAblast[["Bits"]], 
+          e_value=R_GAblast[["E"]]
+        )
       )
-    )
-    
-    #overlapping between genomic ranges 
-    overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
-    
-    df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
-    
-    colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
-    
-    sub1 <-subset(df1,
-                  F.strand == "+" &
-                    R.strand == "-" &
-                    as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
-                    as.character(F.seqnames) == as.character(R.seqnames) & 
-                    abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
-    
-    showModal(modalDialog(
-      title = "Computation of your virtual PCR has finished!",
-      paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
-      easyClose = FALSE,
-      footer = modalButton("Close")))
-    
-    # write a table instead of returning the results
-    if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
-      dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
+      
+      #overlapping between genomic ranges 
+      overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
+      
+      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
+      
+      colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
+      
+      sub1 <-subset(df1,
+                    F.strand == "+" &
+                      R.strand == "-" &
+                      as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
+                      as.character(F.seqnames) == as.character(R.seqnames) & 
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
+      
+      showModal(modalDialog(
+        title = "Computation of your virtual PCR has finished!",
+        paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
+        easyClose = FALSE,
+        footer = modalButton("Close")))
+      
+      # write a table instead of returning the results
+      if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
+        dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
+      }
+      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
+                  col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+      
+      return (paste0("Finished virtual PCR for Bisulfite Primers!"))
+      
+    } else {
+      print("Starting non-bisulfite primer BLAST")
+      
+      #first see if the user has uploaded primers
+      # check if upload field is empty
+      exists_upload = !is.null(input$Fprimers) && !is.null(input$Rprimers)
+      # was there was a previous primer design job?
+      exists_previous_job = file.exists(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")) && file.exists(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
+      
+      if(!xor(exists_upload, exists_previous_job)){
+        # no file was uploaded, inform the user
+        print("No file uploaded!")
+        return (sprintf("No file was uploaded, please provide primers as input!"))
+      }
+      
+      
+      
+      print("to be implemented.")
+      
     }
-    write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
-                col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
   })
   
   preparePQC <- reactive({
@@ -764,12 +807,14 @@ server <- function(input, output) {
     primer_QC_table <- read.delim(paste(wd, "/PrimerQC/primer_qc_table.txt", sep=""))
     
     primerQC_table_sub <- subset(primer_QC_table,
-                                 F.bit_score>=input$FbitScore &
-                                   R.bit_score>=input$RbitScore  &
-                                   F.e_value<=input$Evalue  &
-                                   R.e_value<=input$Evalue  &
-                                   F.mismatches <= input$FMismatches &
-                                   R.mismatches <= input$RMismatches
+                                 F.bit_score>=25 &
+                                   R.bit_score>=25  &
+                                   #F.e_value<=input$Evalue  &
+                                   F.e_value<=10 &
+                                   #R.e_value<=input$Evalue  &
+                                   R.e_value<=10 &
+                                   F.mismatches <= input$partial_match &
+                                   R.mismatches <= input$partial_match
     )
     if(length(primerQC_table_sub) == 0){
       ww <-showModal(modalDialog(

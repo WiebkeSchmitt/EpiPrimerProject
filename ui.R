@@ -49,7 +49,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                   menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
                                   menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
                                   menuItem("Primer Blast", tabName = "PrimerQC", icon = icon("check-circle")),
-                                  menuItem("Advanced Primer Blast Settings", tabName = "PrimerQCAdvanced", icon = icon("dashboard")),
                                   menuItem("Results of Primer Blast", tabName = "PrimerQCResults", icon = icon("list-ol")),
                                   menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
                                 )
@@ -513,12 +512,12 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               status = "primary", 
                                               solidHeader = TRUE,
                                               width = 6,
-                                              helpText("Upload your own Primers for Quality Control or import them from the Selected List you created during Primer Design"),
+                                              helpText("Import primers from Primer Design, that were added to my Selected List"),
                                               actionButton("loadprimers", "Import Primers", icon = icon("file-import"),
                                                            style="margin-left:275px; margin-right:0px"),
-                                              bsTooltip("loadprimers", "Import primers you added to the Select List during Primer Design", "bottom", "hover"),
+                                              bsTooltip("loadprimers", "Import primers you added to the Selected List during Primer Design", "bottom", "hover"),
                                               hr(),
-                                              helpText("Or Upload your own Primers (.fasta file format is needed, we expect your primers to be in 5' to 3' orientation)"),
+                                              helpText("Upload my own Primers (.fasta file format is required, we expect your primers to be in 5' to 3' orientation)"),
                                               fileInput("Fprimers", "Upload Forward Primers", multiple = TRUE ,accept = ".fasta"), 
                                               DT::dataTableOutput("forward.primers"),
                                               fileInput("Rprimers", "Upload Reverse Primers", multiple = TRUE, accept = ".fasta"), 
@@ -531,27 +530,22 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
                                               bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                                               checkboxInput("is_bisulfite", h5("These are bisulfite primers!"), FALSE),
-                                              helpText("Primer Blast is currently only available for bisulfite primers of the human genome and for genomic primers of Mouse, C. elegans and Human!"),
+                                              sliderInput("gap", "Maximum size of reported product", min = 0, max =10000, value = 2000),
+                                              sliderInput("partial_match", "3' primer portion to report partial matches", min=0, max=25, value=16),
+                                              helpText("Primer Blast is currently under active development and can unfortunately not yet be used!"),
                                               hr(),
-                                              textOutput("primer_qc_start")
+                                              textOutput("primer_qc_start"),
+                                              tags$head(tags$style("#state{color: red;
+                                                                     font-size: 30px;
+                                                                   font-style: italic;
+                                                                   }"
+                                                        )
+                                              ),
+                                              hr()
                                           ),
                                           actionButton("computePQC", label = "Primer Blast", icon("fas fa-flask"), 
                                                        style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
-                                  ),
-                                  tabItem(tabName = "PrimerQCAdvanced",
-                                          box(title = h2("Advanced Settings for Primer Blast"),
-                                              status = "primary",
-                                              solidHeader = TRUE,
-                                              width = 12,
-                                              sliderInput("gap", "Maximum Fragment Size:", min = 0, max = 50000, value = 2000),
-                                              helpText("Please set an E-value for your quality control. This value can be used to filter your results by only returning results, that are equal or better than the E-Value."),
-                                              sliderInput("Evalue", "E Value:", min = 0, max = 100, value = 10),
-                                              h3("Parameters to filter Results"),
-                                              sliderInput("FMismatches", "Forward Primers Mismatches", min = 0, max = 5, value = 3),
-                                              sliderInput("RMismatches", "Reverse Primers Mismatches", min = 0, max = 5, value = 3),
-                                              sliderInput("FbitScore", "Forward Primers Bit Score", min = 0, max = 100, value = 25),
-                                              sliderInput("RbitScore", "Reverse Primers Bit Score", min = 0, max = 100, value = 25)
-                                          )
+                                  
                                   ),
                                   tabItem(tabName = "PrimerQCResults",
                                           box(title = h2("Results of Primer Blast"),
