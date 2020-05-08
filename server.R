@@ -867,31 +867,31 @@ server <- function(input, output) {
       hits<- c(
         GRanges(
           Source="ForwardPrimerBlast", #name of used ReferenceGenome
-          AmpliconID = primer1_blast[["QueryID"]],
-          seqnames = primer1_blast[["SubjectID"]],
+          AmpliconID = perfect_matches_primer1[["QueryID"]],
+          seqnames = perfect_matches_primer1[["SubjectID"]],
           ranges = IRanges(
-            start=pmin(primer1_blast[["S.start"]], primer1_blast[["S.end"]]),
-            end = pmax(primer1_blast[["S.start"]], primer1_blast[["S.end"]])
+            start=pmin(perfect_matches_primer1[["S.start"]], perfect_matches_primer1[["S.end"]]),
+            end = pmax(perfect_matches_primer1[["S.start"]], perfect_matches_primer1[["S.end"]])
           ), 
-          strand=ifelse(primer1_blast[["S.start"]]>primer1_blast[["S.end"]],"-","+"), 
-          length=primer1_blast[["Alignment.Length"]], 
-          mismatches=primer1_blast[["Mismatches"]], 
-          bit_score=primer1_blast[["Bits"]], 
-          e_value=primer1_blast[["E"]]
+          strand=ifelse(perfect_matches_primer1[["S.start"]]>perfect_matches_primer1[["S.end"]],"-","+"), 
+          length=perfect_matches_primer1[["Alignment.Length"]], 
+          mismatches=perfect_matches_primer1[["Mismatches"]], 
+          bit_score=perfect_matches_primer1[["Bits"]], 
+          e_value=perfect_matches_primer1[["E"]]
         ),
         GRanges(
           Source="ReversePrimerBlast",
-          AmpliconID = primer2_blast[["QueryID"]],
-          seqnames = primer2_blast[["SubjectID"]],
+          AmpliconID = perfect_matches_primer2[["QueryID"]],
+          seqnames = perfect_matches_primer2[["SubjectID"]],
           ranges = IRanges(
-            start=pmin(primer2_blast[["S.start"]], primer2_blast[["S.end"]]),
-            end = pmax(primer2_blast[["S.start"]], primer2_blast[["S.end"]])
+            start=pmin(perfect_matches_primer2[["S.start"]], perfect_matches_primer2[["S.end"]]),
+            end = pmax(perfect_matches_primer2[["S.start"]], perfect_matches_primer2[["S.end"]])
           ),
-          strand=ifelse(primer2_blast[["S.start"]]>primer2_blast[["S.end"]],"-","+"),
-          length=primer2_blast[["Alignment.Length"]],
-          mismatches=primer2_blast[["Mismatches"]],
-          bit_score=primer2_blast[["Bits"]],
-          e_value=primer2_blast[["E"]]
+          strand=ifelse(perfect_matches_primer2[["S.start"]]>perfect_matches_primer2[["S.end"]],"-","+"),
+          length=perfect_matches_primer2[["Alignment.Length"]],
+          mismatches=perfect_matches_primer2[["Mismatches"]],
+          bit_score=perfect_matches_primer2[["Bits"]],
+          e_value=perfect_matches_primer2[["E"]]
         )
       )
       
@@ -923,8 +923,6 @@ server <- function(input, output) {
                   col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
       return (paste0("Finished virtual PCR for Genomic Primers!"))
-      
-      print("finished.")
       
     }
   })
