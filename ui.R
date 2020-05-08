@@ -527,6 +527,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               status = "primary", 
                                               solidHeader = TRUE,
                                               width = 6,
+                                              textInput("blast_id","Name your Primerblast:", paste0("MyBlast")),
                                               selectInput("genome", "Genome for Quality Control",choices=c(installed.genomes())),
                                               bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                                               checkboxInput("is_bisulfite", h5("These are bisulfite primers!"), FALSE),
@@ -535,7 +536,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               helpText("Primer Blast is currently under active development and can unfortunately not yet be used!"),
                                               hr(),
                                               textOutput("primer_qc_start"),
-                                              tags$head(tags$style("#state{color: red;
+                                              tags$head(tags$style("#primer_qc_start{color: red;
                                                                      font-size: 30px;
                                                                    font-style: italic;
                                                                    }"

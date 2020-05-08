@@ -794,9 +794,137 @@ server <- function(input, output) {
         return (sprintf("No file was uploaded, please provide primers as input!"))
       }
       
+      # get a new reference genome to the organism in question using the ReferenceGenome class
+      refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
       
+      #building databases
+      dbList <- getBlastDB(refgen, input$is_bisulfite)
       
-      print("to be implemented.")
+      #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
+      Fseq <- (if(is.null(input$Fprimers)) {
+        vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
+        
+      }
+      else{
+        #validate(need(readDNAStringSet(input$Fprimers$datapath)), "no upload")
+        vF <- readDNAStringSet(input$Fprimers$datapath)
+      } )
+      
+      Rseq <- (if(is.null(input$Rprimers)) {
+        vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
+        
+      }
+      else{
+        vR <- readDNAStringSet(input$Rprimers$datapath)
+      } )
+      
+      #output of the used primers
+      #TODO: remove this later 
+      print(Fseq)
+      print(names(Fseq))
+      print(Rseq)
+      print(length(Rseq))
+      
+      #blasting 
+      blast_args <- "-task blastn -evalue %s"
+      costumized_BLAST_args <- sprintf(blast_args, 10)
+      print(costumized_BLAST_args)
+      
+      primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
+      primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
+      
+      # write this to table
+      # todo: adjust this to relative path
+      result_folder <- file.path("C:", "Users", "Wiebk", "Desktop", "epiprimer", "PrimerQC", input$blast_id)
+      # result_folder <- file.path(paste(getwd(), "PrimerQC", input$blast_id), fsep = .Platform$path.sep)
+      #print(result_folder)
+      
+      dir.create(result_folder)
+      #write blast results for both primers to table
+      write.table(primer1_blast, paste0(result_folder, "\\Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(primer2_blast, paste(result_folder, "\\Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      
+      #calculate number of perfect and imperfect matches
+      perfect_matches_primer1 = primer1_blast[primer1_blast$Perc.Ident == 100, ]
+      perfect_matches_primer2 = primer2_blast[primer2_blast$Perc.Ident == 100, ]
+      imperfect_matches_primer1 = primer1_blast[primer1_blast$Perc.Ident != 100, ]
+      imperfect_matches_primer2 = primer2_blast[primer2_blast$Perc.Ident != 100, ]
+      
+      num_perfect_matches_primer1 = nrow(perfect_matches_primer1)
+      num_perfect_matches_primer2 = nrow(perfect_matches_primer2)
+      num_imperfect_matches_primer1 = nrow(imperfect_matches_primer1)
+      num_imperfect_matches_primer2 = nrow(imperfect_matches_primer2)
+      
+      print(num_perfect_matches_primer1)
+      print(num_perfect_matches_primer2)
+      print(num_imperfect_matches_primer1)
+      print(num_imperfect_matches_primer2)
+      
+      #to check for close regions, always choose the same id and the same chromosome
+      #to be able to do this, create GRanges Object from the perfect hits
+      
+      # finding genomic ranges for all hits 
+      hits<- c(
+        GRanges(
+          Source="ForwardPrimerBlast", #name of used ReferenceGenome
+          AmpliconID = primer1_blast[["QueryID"]],
+          seqnames = primer1_blast[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(primer1_blast[["S.start"]], primer1_blast[["S.end"]]),
+            end = pmax(primer1_blast[["S.start"]], primer1_blast[["S.end"]])
+          ), 
+          strand=ifelse(primer1_blast[["S.start"]]>primer1_blast[["S.end"]],"-","+"), 
+          length=primer1_blast[["Alignment.Length"]], 
+          mismatches=primer1_blast[["Mismatches"]], 
+          bit_score=primer1_blast[["Bits"]], 
+          e_value=primer1_blast[["E"]]
+        ),
+        GRanges(
+          Source="ReversePrimerBlast",
+          AmpliconID = primer2_blast[["QueryID"]],
+          seqnames = primer2_blast[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(primer2_blast[["S.start"]], primer2_blast[["S.end"]]),
+            end = pmax(primer2_blast[["S.start"]], primer2_blast[["S.end"]])
+          ),
+          strand=ifelse(primer2_blast[["S.start"]]>primer2_blast[["S.end"]],"-","+"),
+          length=primer2_blast[["Alignment.Length"]],
+          mismatches=primer2_blast[["Mismatches"]],
+          bit_score=primer2_blast[["Bits"]],
+          e_value=primer2_blast[["E"]]
+        )
+      )
+      
+      #overlapping between genomic ranges 
+      overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
+      
+      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
+      
+      colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
+      
+      sub1 <-subset(df1,
+                    F.strand == "+" &
+                      R.strand == "-" &
+                      as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
+                      as.character(F.seqnames) == as.character(R.seqnames) & 
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
+      
+      showModal(modalDialog(
+        title = "Computation of your virtual PCR has finished!",
+        paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
+        easyClose = FALSE,
+        footer = modalButton("Close")))
+      
+      # write a table instead of returning the results
+      if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
+        dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
+      }
+      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
+                  col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+      
+      return (paste0("Finished virtual PCR for Genomic Primers!"))
+      
+      print("finished.")
       
     }
   })
