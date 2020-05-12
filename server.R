@@ -762,7 +762,7 @@ server <- function(input, output) {
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
       
       showModal(modalDialog(
         title = "Computation of your virtual PCR has finished!",
@@ -901,13 +901,34 @@ server <- function(input, output) {
       df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
       
       colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
+
+      # TODO: add column containing the overlap_hit sequence
+      # also add ReferenceGenome used
+      df1$assembly <- refgen@name
       
+      # TODO: This should work for any BS genome object
+      # TODO: Does this work?
+      #lib <- library(BSgenome.Hsapiens.NCBI.GRCh19)
+      
+      df1$diff <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start, 0)
+      df1$bool <- df1$F.start <= df1$R.end
+      print(subset(df1, select = c(F.seqnames, F.start, R.seqnames, R.end, diff, bool)))
+      
+      #df1[df1$bool, "PCRProduct"] <- getSeq(Hsapiens, df1$F.seqnames, df1$F.start, df1$R.end)
+      #df1[!df1$bool, "PCRProduct"] <- getSeq(Hsapiens, df1$F.seqnames, df1$R.end, df1$F.start)
+      
+      
+      df1$PCRProduct <- ifelse(!df1$bool, 0, getSeq(Hsapiens, df1$F.seqnames, df1$F.start, df1$R.end))
+      
+      print("ifelse success")
+      print(df1)
+            
       sub1 <-subset(df1,
                     F.strand == "+" &
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end))<input$gap)
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
       
       showModal(modalDialog(
         title = "Computation of your virtual PCR has finished!",
@@ -932,7 +953,8 @@ server <- function(input, output) {
     wd <- primersDesign_wd
     primer_QC_table <- read.delim(paste(wd, "/PrimerQC/primer_qc_table.txt", sep=""))
     
-    primerQC_table_sub <- subset(primer_QC_table,
+    # filter here for the requirements from input
+    primerQC_table <- subset(primer_QC_table,
                                  F.bit_score>=25 &
                                    R.bit_score>=25  &
                                    #F.e_value<=input$Evalue  &
@@ -942,6 +964,10 @@ server <- function(input, output) {
                                    F.mismatches <= input$partial_match &
                                    R.mismatches <= input$partial_match
     )
+    
+    # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
+    primerQC_table_sub <- subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value))
+    
     if(length(primerQC_table_sub) == 0){
       ww <-showModal(modalDialog(
         title = "No PrimerQC Found!",
