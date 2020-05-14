@@ -37,6 +37,12 @@ wrapper_file <- file.path(primersDesign_wd, "wrapper.r", fsep=.Platform$file.sep
 source(wrapper_file)
 library(seqinr)
 
+## for ePCR ##
+require(httr)
+require(jsonlite)
+require(xml2)
+require(XML)
+
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 
 server <- function(input, output) {
@@ -627,14 +633,16 @@ server <- function(input, output) {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
       title = "Computation of your virtual PCR has started!",
-      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the 'Results of Primer Blast' tab when they are ready."),
+      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few minutes. You can find them in the 'Results of ePCR' tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
+    
+    start = Sys.time()
     
     #check if this is a bisulfite blast
     is_bis = input$is_bisulfite
     if (is_bis){
-      print ("Starting bisulfite primer BLAST")
+      print ("Starting bisulfite ePCR")
       
       #first see if the user has uploaded primers
       # check if upload field is empty
@@ -780,7 +788,7 @@ server <- function(input, output) {
       return (paste0("Finished virtual PCR for Bisulfite Primers!"))
       
     } else {
-      print("Starting non-bisulfite primer BLAST")
+      print("Starting non-bisulfite ePCR")
       
       #first see if the user has uploaded primers
       # check if upload field is empty
@@ -902,25 +910,39 @@ server <- function(input, output) {
       
       colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
 
-      # TODO: add column containing the overlap_hit sequence
-      # also add ReferenceGenome used
+      # add used ReferenceGenome
       df1$assembly <- refgen@name
       
       # TODO: This should work for any BS genome object
-      # TODO: Does this work?
-      #lib <- library(BSgenome.Hsapiens.NCBI.GRCh19)
+      df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start, df1$F.start-df1$R.end)
       
-      df1$diff <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start, 0)
-      df1$bool <- df1$F.start <= df1$R.end
-      print(subset(df1, select = c(F.seqnames, F.start, R.seqnames, R.end, diff, bool)))
+      #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
+      chr <- df1$F.seqnames
+      start <- ifelse(df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
+      end <- ifelse(!df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
       
-      #df1[df1$bool, "PCRProduct"] <- getSeq(Hsapiens, df1$F.seqnames, df1$F.start, df1$R.end)
-      #df1[!df1$bool, "PCRProduct"] <- getSeq(Hsapiens, df1$F.seqnames, df1$R.end, df1$F.start)
+      #TODO: this must work for all assemblies!
+      assembly <- "hg19"
+      url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
+      if(length(url.full) != 0){
+        r <- GET(url.full[1])
+        s <- content(r)
+        seq <- xml_find_all(s, ".//DNA")
+        process_s <- strsplit(as.character(seq), "\n")
+        sequences <- c(process_s[[1]][2])
+      }
       
-      df1$PCRProduct <- ifelse(!df1$bool, 0, getSeq(Hsapiens, df1$F.seqnames, df1$F.start, df1$R.end))
+      for (i in 2:length(url.full)){
+        r <- GET(url.full[i])
+        s <- content(r)
+        seq <- xml_find_all(s, ".//DNA")
+        process_s_loop <- strsplit(as.character(seq), "\n")
+        sequences <- append(sequences, process_s_loop[[1]][2], i-1)
+      }
       
-      print("ifelse success")
+      df1$PCRProduct <- sequences
+
       print(df1)
             
       sub1 <-subset(df1,
@@ -943,7 +965,11 @@ server <- function(input, output) {
       write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
                   col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
-      return (paste0("Finished virtual PCR for Genomic Primers!"))
+      end = Sys.time()
+      runtime = end - start
+      
+      return ("Finished virtual PCR for genomic Primers!")
+      #return (paste0("Finished virtual PCR for Genomic Primers in ", runtime, " seconds!"))
       
     }
   })
@@ -961,12 +987,12 @@ server <- function(input, output) {
                                    F.e_value<=10 &
                                    #R.e_value<=input$Evalue  &
                                    R.e_value<=10 &
-                                   F.mismatches <= input$partial_match &
-                                   R.mismatches <= input$partial_match
+                                   F.mismatches <= input$primer_mismatches &
+                                   R.mismatches <= input$primer_mismatches
     )
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
-    primerQC_table_sub <- subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value))
+    primerQC_table_sub <- subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
     if(length(primerQC_table_sub) == 0){
       ww <-showModal(modalDialog(
