@@ -38,10 +38,9 @@ source(wrapper_file)
 library(seqinr)
 
 ## for ePCR ##
-require(httr)
-require(jsonlite)
-require(xml2)
-require(XML)
+library(xml2)
+library(httr)
+library(httr)
 
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 
@@ -778,11 +777,11 @@ server <- function(input, output) {
         easyClose = FALSE,
         footer = modalButton("Close")))
       
-      # write a table instead of returning the results
+      # write a table
       if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
         dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
       }
-      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
+      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
                   col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
       return (paste0("Finished virtual PCR for Bisulfite Primers!"))
@@ -826,12 +825,7 @@ server <- function(input, output) {
         vR <- readDNAStringSet(input$Rprimers$datapath)
       } )
       
-      #output of the used primers
-      #TODO: remove this later 
-      print(Fseq)
-      print(names(Fseq))
-      print(Rseq)
-      print(length(Rseq))
+      
       
       #blasting 
       blast_args <- "-task blastn -evalue %s"
@@ -843,14 +837,20 @@ server <- function(input, output) {
       
       # write this to table
       # todo: adjust this to relative path
-      result_folder <- file.path("C:", "Users", "Wiebk", "Desktop", "epiprimer", "PrimerQC", input$blast_id)
-      # result_folder <- file.path(paste(getwd(), "PrimerQC", input$blast_id), fsep = .Platform$path.sep)
-      #print(result_folder)
+      result_folder <- paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep="")
+      print(result_folder)
       
       dir.create(result_folder)
       #write blast results for both primers to table
       write.table(primer1_blast, paste0(result_folder, "\\Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(primer2_blast, paste(result_folder, "\\Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      
+      #initialize summary file
+      summary_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Summary.txt", sep="")
+      file.create(summary_file_path)
+      summary_file <- file(summary_file_path, open="wt")
+      writeLines(paste("PARAMETERS \t SETTINGS \n"), summary_file)
+      writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
       
       #calculate number of perfect and imperfect matches
       perfect_matches_primer1 = primer1_blast[primer1_blast$Perc.Ident == 100, ]
@@ -863,10 +863,12 @@ server <- function(input, output) {
       num_imperfect_matches_primer1 = nrow(imperfect_matches_primer1)
       num_imperfect_matches_primer2 = nrow(imperfect_matches_primer2)
       
-      print(num_perfect_matches_primer1)
-      print(num_perfect_matches_primer2)
-      print(num_imperfect_matches_primer1)
-      print(num_imperfect_matches_primer2)
+      # write to summary
+      writeLines(paste("Number of Primerpairs \t", length(Fseq), "\n"), summary_file)
+      writeLines(paste("Number perfect matches forward primer \t", num_perfect_matches_primer1, "\n"), summary_file)
+      writeLines(paste("Number perfect matches reverse primer \t", num_perfect_matches_primer2, "\n"), summary_file)
+      writeLines(paste("Number imperfect matches forward primer \t", num_imperfect_matches_primer1, "\n"), summary_file)
+      writeLines(paste("Number imperfect matches reverse primer \t", num_imperfect_matches_primer2, "\n"), summary_file)
       
       #to check for close regions, always choose the same id and the same chromosome
       #to be able to do this, create GRanges Object from the perfect hits
@@ -903,17 +905,13 @@ server <- function(input, output) {
         )
       )
       
-      #overlapping between genomic ranges 
+      #overlapping between genomic ranges and processing results
       overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
-      
       df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
-      
       colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
 
-      # add used ReferenceGenome
-      df1$assembly <- refgen@name
-      
-      # TODO: This should work for any BS genome object
+      # add used ReferenceGenome and PCR Productsize
+      df1$assembly <- getAssemblyName(refgen)
       df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start, df1$F.start-df1$R.end)
       
       #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
@@ -921,8 +919,7 @@ server <- function(input, output) {
       start <- ifelse(df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
       end <- ifelse(!df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
       
-      #TODO: this must work for all assemblies!
-      assembly <- "hg19"
+      assembly <- getAssemblyName(refgen)
       url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
       if(length(url.full) != 0){
@@ -942,8 +939,6 @@ server <- function(input, output) {
       }
       
       df1$PCRProduct <- sequences
-
-      print(df1)
             
       sub1 <-subset(df1,
                     F.strand == "+" &
@@ -952,6 +947,9 @@ server <- function(input, output) {
                       as.character(F.seqnames) == as.character(R.seqnames) & 
                       abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
       
+      writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
+      close(summary_file)
+      
       showModal(modalDialog(
         title = "Computation of your virtual PCR has finished!",
         paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
@@ -959,10 +957,10 @@ server <- function(input, output) {
         footer = modalButton("Close")))
       
       # write a table instead of returning the results
-      if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
-        dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
+      if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))){
+        dir.create(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))
       }
-      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", "primer_qc_table.txt", sep=""),
+      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
                   col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
       end = Sys.time()
@@ -977,7 +975,7 @@ server <- function(input, output) {
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
     wd <- primersDesign_wd
-    primer_QC_table <- read.delim(paste(wd, "/PrimerQC/primer_qc_table.txt", sep=""))
+    primer_QC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
     
     # filter here for the requirements from input
     primerQC_table <- subset(primer_QC_table,
@@ -1016,6 +1014,34 @@ server <- function(input, output) {
   fillContainer = TRUE,
   class = "display"
   )
+  
+  ############# display the summary of the ePCR ###########
+  
+  showSummaryePCR <- reactive({ if (!input$summaryePCR) {return(NULL)}
+    files <- data.frame(results=list.files(paste(getwd(), "PrimerQC", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    print(files)
+    file_path <- as.character(files[["results"]][grep("Summary",files[["results"]])])
+    print(file_path)
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Summary Found For ePCR!",
+        sprintf(paste0("Unfortunateley, we could not find any Summary for your ePCR Job."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Summary found!")
+    }
+    print(file_path)
+    read_file <- read.delim(file_path)
+    
+    print(read_file)
+    return(read_file)
+  })
+  
+  output$pQC.summary <- DT::renderDataTable({
+    if (!input$summaryePCR) {return(data.frame())}
+    showSummaryePCR()
+  })
   
   ################ displaying overview of flowcell ########
   
@@ -1136,26 +1162,13 @@ server <- function(input, output) {
       read_input[["miniRprimer"]] <-  paste(substr(read_input[["Rprimer"]],1,5))
       read_input[["minicomb"]] <- paste(substr(read_input[["Fprimer"]],1,5),substr(read_input[["Rprimer"]],1,5),sep="_")
       
-      print(input$primers.file)
-      print(input$linker.file)
-      print(input$results.format)
-      print(input$results.folderName)
-      print(input$min.seq)
-      print(input$error.rate)
-      print(input$merged.files)
-      print(input$separated.files)
-      print(input$selection.mode)
-      print(input$selectPackage)
-      
-      #we need other version of primers file without column and row names in the last string
-      
       # splitting the file into separated files
       split_primers <- sapply(read_input[,1],function(x){
         write.table(read_input[x,1:3],file=paste0(primersDesign_wd,"/",read_input[x,1], ".txt"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
       })
       print(read_input[,1:3])
       
-      # what to do in multiple indices????
+      # what to do in multiple indices?
       get_index_files <- sapply(input$checkboxgroup , function(x) data.frame(indexList=list.files(paste0(mypath,"/",input$selectPackage,"/",x),full.names=TRUE, pattern =".fastq.gz")))
       index_files <- data.frame(path=unlist(get_index_files,use.names = FALSE))
       index_files[["files"]]<-sapply(as.character(index_files[["path"]]),function(x) basename(x))
@@ -1168,7 +1181,7 @@ server <- function(input, output) {
       tables_path <-sapply(input$checkboxgroup, function(x){
         paths <-data.frame(tables=list.files(paste0(mypath,"/",input$selectPackage,"/",x),full.names=TRUE, pattern ="counts.csv"))
       })
-      print(tables_path)
+      #print(tables_path)
       
       #building dataframe for information of all indices 
       df_indices <- data.frame(path=unlist(tables_path,use.names = FALSE))

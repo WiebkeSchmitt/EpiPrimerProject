@@ -48,7 +48,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                   menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dashboard")),
                                   menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
                                   menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
-                                  menuItem("ePCR", tabName = "PrimerQC", icon = icon("check-circle")),
+                                  menuItem("ePCR Start", tabName = "PrimerQC", icon = icon("check-circle")),
                                   menuItem("Results of ePCR", tabName = "PrimerQCResults", icon = icon("list-ol")),
                                   menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
                                 )
@@ -550,14 +550,23 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                   
                                   ),
                                   tabItem(tabName = "PrimerQCResults",
-                                          box(title = h2("Results of ePCR"),
-                                              status = "primary",
-                                              solidHeader = TRUE,
-                                              width = 12,
-                                              helpText("Find here the alignment of your primers to the selected Reference genome: "),
-                                              actionButton("refreshPQC", "ePCR results", icon = icon("sync-alt")),
-                                              hr(),
-                                              DT::dataTableOutput("pQC.results")
+                                          fluidRow(
+                                            tabBox(title = "",
+                                                   id = "PQCTabbox",
+                                                   width = 12,
+                                                   #height = "25x",
+                                                   #width="1x",
+                                                   tabPanel("Results",
+                                                            actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
+                                                            hr(),
+                                                            DT::dataTableOutput("pQC.results")
+                                                   ),
+                                                   tabPanel("Summary",
+                                                            actionButton("summaryePCR", label = "Summary", icon = icon("sync-alt")),
+                                                            hr(),
+                                                            DT::dataTableOutput("pQC.summary")
+                                                   )
+                                            )
                                           )
                                   ),
                                   tabItem(tabName = "Imprint",

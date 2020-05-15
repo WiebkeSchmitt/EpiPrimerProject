@@ -102,7 +102,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     }
     
     #now check if makeblastdb is needed for this genome
-    print(file.exists(paste(z@wd, "/", z@name, ".fasta", sep="")))
+    #print(file.exists(paste(z@wd, "/", z@name, ".fasta", sep="")))
     genomeDB <- (
       if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
          || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))
@@ -124,4 +124,27 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     return (dbList)
   }
   
+})
+
+setGeneric(
+  "getAssemblyName",
+  function(x){
+    standardGeneric("getAssemblyName")
+  }
+)
+
+setMethod("getAssemblyName", "ReferenceGenome", function(x){
+  if (x@name == "BSgenome.Hsapiens.UCSC.hg19"){
+    return ("hg19")
+  }
+  if (x@name == "BSgenome.Hsapiens.UCSC.hg38"){
+    return ("hg38")
+  }
+  if (x@name == "BSgenome.Mmusculus.UCSC.mm10"){
+    return ("mm10")
+  }
+  if (x@name == "BSgenome.Mmusculus.UCSC.mm9"){
+    return ("mm9")
+  }  
+  return ("The genme assembly you choose is invalid!")  
 })
