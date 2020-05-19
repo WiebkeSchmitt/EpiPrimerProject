@@ -825,8 +825,6 @@ server <- function(input, output) {
         vR <- readDNAStringSet(input$Rprimers$datapath)
       } )
       
-      
-      
       #blasting 
       blast_args <- "-task blastn -evalue %s"
       costumized_BLAST_args <- sprintf(blast_args, 10)
@@ -836,10 +834,8 @@ server <- function(input, output) {
       primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
       
       # write this to table
-      # todo: adjust this to relative path
       result_folder <- paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep="")
       print(result_folder)
-      
       dir.create(result_folder)
       #write blast results for both primers to table
       write.table(primer1_blast, paste0(result_folder, "\\Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
@@ -851,6 +847,7 @@ server <- function(input, output) {
       summary_file <- file(summary_file_path, open="wt")
       writeLines(paste("PARAMETERS \t SETTINGS \n"), summary_file)
       writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
+      writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
       
       #calculate number of perfect and imperfect matches
       perfect_matches_primer1 = primer1_blast[primer1_blast$Perc.Ident == 100, ]
@@ -939,13 +936,128 @@ server <- function(input, output) {
       }
       
       df1$PCRProduct <- sequences
-            
+      
+      # TODO: is this filtering step correct? Maybe we need to adjust this.      
       sub1 <-subset(df1,
                     F.strand == "+" &
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
                       abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
+      
+      ##############################################################################################################################################
+      # continue with processing imperfect blast matches
+      print("starting calculation of imperfect primer matches... ")
+      
+      # first step: get 3' Primer Portion according to user input
+      primer_portion = input$partial_match
+      
+      Fseq_portion = BStringSet(Fseq, start=1, end=primer_portion)
+      Rseq_portion = BStringSet(Rseq, start=1, end=primer_portion)
+      
+      # blast Primerportions again, Reference Genome stays the same
+      costumized_BLAST_args <- sprintf(blast_args, 25)
+      primer1_portion_blast <- predict(dbList$genomeDB, Fseq_portion, BLAST_args = costumized_BLAST_args)
+      primer2_portion_blast <- predict(dbList$genomeDB, Rseq_portion, BLAST_args = costumized_BLAST_args)
+      
+      #write blast results of primer portions for both primers to table
+      write.table(primer1_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(primer2_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      
+      #calculate number of perfect and imperfect matches for primer portions
+      perfect_matches_primer1_portion = primer1_portion_blast[primer1_portion_blast$Perc.Ident == 100, ]
+      perfect_matches_primer2_portion = primer2_portion_blast[primer2_portion_blast$Perc.Ident == 100, ]
+      
+      num_perfect_partial_matches_primer1 = nrow(perfect_matches_primer1_portion)
+      num_perfect_partial_matches_primer2 = nrow(perfect_matches_primer2_portion)
+      
+      # TODO: write these values to summary
+      print(num_perfect_partial_matches_primer1)
+      print(num_perfect_partial_matches_primer2)
+      
+      # calculate overlaps for partial hits
+      # finding genomic ranges for all partial hits 
+      hits_imperfect <- c(
+        GRanges(
+          Source="PartialForwardPrimerBlast", #name of used ReferenceGenome
+          AmpliconID = perfect_matches_primer1_portion[["QueryID"]],
+          seqnames = perfect_matches_primer1_portion[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]]),
+            end = pmax(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]])
+          ), 
+          strand=ifelse(perfect_matches_primer1_portion[["S.start"]]>perfect_matches_primer1_portion[["S.end"]],"-","+"), 
+          length=perfect_matches_primer1_portion[["Alignment.Length"]], 
+          mismatches=perfect_matches_primer1_portion[["Mismatches"]], 
+          bit_score=perfect_matches_primer1_portion[["Bits"]], 
+          e_value=perfect_matches_primer1_portion[["E"]]
+        ),
+        GRanges(
+          Source="PartialReversePrimerBlast",
+          AmpliconID = perfect_matches_primer2_portion[["QueryID"]],
+          seqnames = perfect_matches_primer2_portion[["SubjectID"]],
+          ranges = IRanges(
+            start=pmin(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]]),
+            end = pmax(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]])
+          ),
+          strand=ifelse(perfect_matches_primer2_portion[["S.start"]]>perfect_matches_primer2_portion[["S.end"]],"-","+"),
+          length=perfect_matches_primer2_portion[["Alignment.Length"]],
+          mismatches=perfect_matches_primer2_portion[["Mismatches"]],
+          bit_score=perfect_matches_primer2_portion[["Bits"]],
+          e_value=perfect_matches_primer2_portion[["E"]]
+        )
+      )
+      
+      #overlapping between genomic ranges and processing results
+      overlap_hits_imperfect <- findOverlaps(hits_imperfect, hits_imperfect, maxgap=input$gap, ignore.strand=TRUE)
+      df_imperfect <-cbind(as.data.frame(hits_imperfect[overlap_hits_imperfect@from,]),as.data.frame(hits_imperfect[overlap_hits_imperfect@to,]))
+      colnames(df_imperfect)<-paste(rep(c("F","R"),each=11), colnames(df_imperfect), sep=".")
+      
+      # add used ReferenceGenome and PCR Productsize and 3' Primerportion
+      df_imperfect$assembly <- getAssemblyName(refgen)
+      df_imperfect$Productsize <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$R.end-df_imperfect$F.start, df_imperfect$F.start-df_imperfect$R.end)
+      
+      #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
+      chr <- df_imperfect$F.seqnames
+      start <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
+      end <- ifelse(!df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
+      
+      assembly <- getAssemblyName(refgen)
+      url.full_imp <- paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
+      
+      if(length(url.full_imp) != 0){
+        r <- GET(url.full_imp[1])
+        s <- content(r)
+        seq <- xml_find_all(s, ".//DNA")
+        process_s <- strsplit(as.character(seq), "\n")
+        sequences <- c(process_s[[1]][2])
+      }
+      
+      print(url.full_imp)
+      for (i in 2:length(url.full_imp)){
+        r <- GET(url.full_imp[i])
+        print(url.full_imp[i])
+        s <- content(r)
+        seq <- xml_find_all(s, ".//DNA")
+        process_s_loop <- strsplit(as.character(seq), "\n")
+        sequences <- append(sequences, process_s_loop[[1]][2], i-1)
+      }
+      
+      df_imperfect$PCRProduct <- sequences
+      
+      # TODO: is this filtering step correct? Maybe we need to adjust this.      
+      sub_imperfect <-subset(df_imperfect,
+                    F.strand == "+" &
+                      R.strand == "-" &
+                      as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
+                      as.character(F.seqnames) == as.character(R.seqnames) & 
+                      abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
+      
+      # write df_imperfect to file
+      write.table(sub_imperfect, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_imperfect.txt", sep=""),
+                  col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+      
+      #####################################################################################################################################  
       
       writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
       close(summary_file)
@@ -967,7 +1079,6 @@ server <- function(input, output) {
       runtime = end - start
       
       return ("Finished virtual PCR for genomic Primers!")
-      #return (paste0("Finished virtual PCR for Genomic Primers in ", runtime, " seconds!"))
       
     }
   })
