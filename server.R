@@ -901,11 +901,11 @@ server <- function(input, output) {
           e_value=perfect_matches_primer2[["E"]]
         )
       )
-      
+
       #overlapping between genomic ranges and processing results
-      overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
-      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
-      colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
+      overlap_hits <- findOverlaps(hits, hits, maxgap=input$gap, ignore.strand=TRUE)
+      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]), as.data.frame(hits[overlap_hits@to,]))
+      colnames(df1) <- paste(rep(c("F", "R"), each=11), colnames(df1), sep=".")
 
       # add used ReferenceGenome and PCR Productsize
       df1$assembly <- getAssemblyName(refgen)
@@ -923,27 +923,31 @@ server <- function(input, output) {
         r <- GET(url.full[1])
         s <- content(r)
         seq <- xml_find_all(s, ".//DNA")
-        process_s <- strsplit(as.character(seq), "\n")
-        sequences <- c(process_s[[1]][2])
+        split1 <- strsplit(as.character(seq), ">")[[1]][2]
+        split2 <- strsplit(as.character(split1), "<")[[1]][1]
+        sequences <- c(as.character(gsub("[\r\n]", "", split2)))
       }
       
       for (i in 2:length(url.full)){
-        r <- GET(url.full[i])
+        r <- GET(url.full[i]) 
         s <- content(r)
         seq <- xml_find_all(s, ".//DNA")
-        process_s_loop <- strsplit(as.character(seq), "\n")
-        sequences <- append(sequences, process_s_loop[[1]][2], i-1)
+        split1 <- strsplit(as.character(seq), ">")[[1]][2]
+        split2 <- strsplit(as.character(split1), "<")[[1]][1]
+        print(split2)
+        print(as.character(gsub("[\r\n]", "", split2)))
+        sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
       }
       
       df1$PCRProduct <- sequences
       
       # TODO: is this filtering step correct? Maybe we need to adjust this.      
-      sub1 <-subset(df1,
-                    F.strand == "+" &
-                      R.strand == "-" &
-                      as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
-                      as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
+      # sub1 <-subset(df1,
+      #               F.strand == "+" &
+      #                 R.strand == "-" &
+      #                 as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
+      #                 as.character(F.seqnames) == as.character(R.seqnames) & 
+      #                 abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
       
       ##############################################################################################################################################
       # continue with processing imperfect blast matches
@@ -952,11 +956,19 @@ server <- function(input, output) {
       # first step: get 3' Primer Portion according to user input
       primer_portion = input$partial_match
       
-      Fseq_portion = BStringSet(Fseq, start=1, end=primer_portion)
-      Rseq_portion = BStringSet(Rseq, start=1, end=primer_portion)
+      # make sure, to get the correct reference genome before blasting
+      # TODO: is this needed? 
+      # dbList <- getBlastDB(refgen, input$is_bisulfite)
+      
+      Fseq_portion = Biostrings::BStringSet(Fseq, start=width(Fseq)-primer_portion, end=width(Fseq))
+      Rseq_portion = Biostrings::BStringSet(Rseq, start=width(Rseq)-primer_portion, end=width(Rseq))
+      # TODO: this should be an XStringSet
+      # this is an s4 object print(typeof(Fseq_portion))
       
       # blast Primerportions again, Reference Genome stays the same
-      costumized_BLAST_args <- sprintf(blast_args, 25)
+      costumized_BLAST_args <- sprintf(blast_args, 50)
+      print(Fseq)
+      print(Fseq_portion)
       primer1_portion_blast <- predict(dbList$genomeDB, Fseq_portion, BLAST_args = costumized_BLAST_args)
       primer2_portion_blast <- predict(dbList$genomeDB, Rseq_portion, BLAST_args = costumized_BLAST_args)
       
@@ -1029,32 +1041,34 @@ server <- function(input, output) {
         r <- GET(url.full_imp[1])
         s <- content(r)
         seq <- xml_find_all(s, ".//DNA")
-        process_s <- strsplit(as.character(seq), "\n")
-        sequences <- c(process_s[[1]][2])
+        split1 <- strsplit(as.character(seq), ">")[[1]][2]
+        split2 <- strsplit(as.character(split1), "<")[[1]][1]
+        sequences <- c(as.character(gsub("[\r\n]", "", split2)))
       }
       
-      print(url.full_imp)
       for (i in 2:length(url.full_imp)){
-        r <- GET(url.full_imp[i])
-        print(url.full_imp[i])
+        r <- GET(url.full_imp[i]) 
         s <- content(r)
         seq <- xml_find_all(s, ".//DNA")
-        process_s_loop <- strsplit(as.character(seq), "\n")
-        sequences <- append(sequences, process_s_loop[[1]][2], i-1)
+        split1 <- strsplit(as.character(seq), ">")[[1]][2]
+        split2 <- strsplit(as.character(split1), "<")[[1]][1]
+        print(split2)
+        print(as.character(gsub("[\r\n]", "", split2)))
+        sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
       }
       
       df_imperfect$PCRProduct <- sequences
       
       # TODO: is this filtering step correct? Maybe we need to adjust this.      
-      sub_imperfect <-subset(df_imperfect,
-                    F.strand == "+" &
-                      R.strand == "-" &
-                      as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
-                      as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
+      # sub_imperfect <-subset(df_imperfect,
+      #               F.strand == "+" &
+      #                 R.strand == "-" &
+      #                 as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
+      #                 as.character(F.seqnames) == as.character(R.seqnames) & 
+      #                 abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
       
       # write df_imperfect to file
-      write.table(sub_imperfect, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_imperfect.txt", sep=""),
+      write.table(df_imperfect, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_imperfect.txt", sep=""),
                   col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
       #####################################################################################################################################  
@@ -1072,7 +1086,7 @@ server <- function(input, output) {
       if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))){
         dir.create(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))
       }
-      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
+      write.table(df1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
                   col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
       end = Sys.time()
