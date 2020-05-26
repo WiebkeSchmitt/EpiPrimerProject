@@ -1671,13 +1671,13 @@ server <- function(input, output) {
     # chop.size= input$i_chop.size
     
     switch(input$i_primer_type,
-           "genomic" = return(c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA, NA, NA, NA, 18, 25, 50, 60, 3, 200, 500, 0, 0, NA, NA, 30)),
-           "bisulfite" = return(c()),
-           "NOME" = return(c()),
-           "CLEVER" = return(c()),
-           "hp_bisulfite" = return(c()),
-           "hp_NOME" = return(c()),
-           "hp_CLEVER" = return(c()),
+           "genomic" = return(      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3, 200, 500, 0, 0, NA, NA, 30)),
+           "bisulfite" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 20, 32, 48, 60, 5, 200, 400, 0, 5,  3,  3, NA)),
+           "NOME" = return(         c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 20, 32, 48, 60, 6, 200, 400, 5, 5,  3,  3, NA)),
+           "CLEVER" = return(       c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 18, 25, 50, 60, 3, 200, 500, 0, 5,  3,  3, NA)),
+           "hp_bisulfite" = return( c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 5, 200, 400, 0, 1,  3,  3, NA)),
+           "hp_NOME" = return(      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 6, 200, 400, 1, 1,  3,  3, NA)),
+           "hp_CLEVER" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 5, 200, 400, 0, 1,  3,  3, NA)),
            "CrispRCas9PCR" = return(c()))
   }
   
