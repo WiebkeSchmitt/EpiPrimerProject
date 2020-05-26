@@ -172,20 +172,26 @@ server <- function(input, output) {
   
   output$downloadSequenceFile <- downloadHandler(
     filename = function() {
-      paste(input$name, "txt", sep=".")
+      paste("ExampleSequenceFile", "txt", sep=".")
     },
     content = function(file){
-      file.copy("input_sequences.txt", file)
-    }
+      # here we need a full path
+      file_path <- file.path(primersDesign_wd, "input_sequences.txt", fsep=.Platform$file.sep)
+      #file.copy(file_to_be_copied, destination_folder)
+      file.copy(file_path, file)
+    },
+    contentType = "txt"
   )
   
   output$downloadRegionsFile <- downloadHandler(
     filename = function() {
-      paste("input", "txt", sep=".")
+      paste("ExampleRegionsFile", "txt", sep=".")
     },
     content = function(file){
-      file.copy("input.txt", file)
-    }
+      file_path <- file.path(primersDesign_wd, "input.txt", fsep=.Platform$file.sep)
+      file.copy(file_path, file)
+    },
+    contentType = "txt"
   )
   
   ################ download the results of Primers Design ####################
@@ -572,8 +578,11 @@ server <- function(input, output) {
       # User has not uploaded a file yet
       return(data.frame())
     }
-    read_Fprimers_file <- read.table(input$Fprimers$datapath)
-    return(read_Fprimers_file)
+    # use BioStrings package to display .fasta file properly
+    read_Fprimers_file <- readDNAStringSet(as.character(input$Fprimers$datapath))
+    Primer.Name = names(read_Fprimers_file)
+    Sequence = paste(read_Fprimers_file)
+    return(data.frame(Primer.Name, Sequence))
   })
   
   RP <- reactive({
@@ -581,21 +590,38 @@ server <- function(input, output) {
       # User has not uploaded a file yet
       return(data.frame())
     }
-    read_Rprimers_file <- read.table(input$Rprimers$datapath)
-    return(read_Rprimers_file)
+    #read_Rprimers_file <- read.table(input$Rprimers$datapath)
+    # use BioStrings package to display .fasta file properly
+    read_Rprimers_file <- readDNAStringSet(as.character(input$Rprimers$datapath))
+    Primer.Name = names(read_Rprimers_file)
+    Sequence = paste(read_Rprimers_file)
+    return(data.frame(Primer.Name, Sequence))
   })
   
   import_Fprimers <- eventReactive(input$loadprimers, {
-    vF <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
-    print(vF)
-    return(vF)
+    # vF <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
+    # print(vF)
+    # return(vF)
+    
+    # do this also using BioStrings, to display table nicely
+    file_path_previous_run <- paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")
+    read_primer_file <- readDNAStringSet(as.character(file_path_previous_run))
+    FPrimer.Name = names(read_primer_file)
+    Sequence = paste(read_primer_file)
+    return(data.frame(FPrimer.Name, Sequence))
   })
   
   #user can import primers from previous step to display them
   import_Rprimers <- eventReactive(input$loadprimers, {
-    vR <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
-    print(vR)
-    return(vR)
+    # vR <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
+    # print(vR)
+    # return(vR)
+    # do this also using BioStrings, to display table nicely
+    file_path_previous_run <- paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta")
+    read_primer_file <- readDNAStringSet(as.character(file_path_previous_run))
+    RPrimer.Name = names(read_primer_file)
+    Sequence = paste(read_primer_file)
+    return(data.frame(RPrimer.Name, Sequence))
   })
   
   output$forward.primers <- DT::renderDataTable({
@@ -827,11 +853,17 @@ server <- function(input, output) {
       
       #blasting 
       blast_args <- "-task blastn -evalue %s"
-      costumized_BLAST_args <- sprintf(blast_args, 10)
+      costumized_BLAST_args <- sprintf(blast_args, 50)
       print(costumized_BLAST_args)
       
       primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
       primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
+      
+      # filter out hits with too many mismatches
+      primer1_blast <- subset(primer1_blast, 
+                              Mismatches <= input$primer_mismatches)
+      primer2_blast <- subset(primer2_blast, 
+                              Mismatches <= input$primer_mismatches)
       
       # write this to table
       result_folder <- paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep="")
@@ -874,31 +906,31 @@ server <- function(input, output) {
       hits<- c(
         GRanges(
           Source="ForwardPrimerBlast", #name of used ReferenceGenome
-          AmpliconID = perfect_matches_primer1[["QueryID"]],
-          seqnames = perfect_matches_primer1[["SubjectID"]],
+          AmpliconID = primer1_blast[["QueryID"]],
+          seqnames = primer1_blast[["SubjectID"]],
           ranges = IRanges(
-            start=pmin(perfect_matches_primer1[["S.start"]], perfect_matches_primer1[["S.end"]]),
-            end = pmax(perfect_matches_primer1[["S.start"]], perfect_matches_primer1[["S.end"]])
+            start=pmin(primer1_blast[["S.start"]], primer1_blast[["S.end"]]),
+            end = pmax(primer1_blast[["S.start"]], primer1_blast[["S.end"]])
           ), 
-          strand=ifelse(perfect_matches_primer1[["S.start"]]>perfect_matches_primer1[["S.end"]],"-","+"), 
-          length=perfect_matches_primer1[["Alignment.Length"]], 
-          mismatches=perfect_matches_primer1[["Mismatches"]], 
-          bit_score=perfect_matches_primer1[["Bits"]], 
-          e_value=perfect_matches_primer1[["E"]]
+          strand=ifelse(primer1_blast[["S.start"]]>primer1_blast[["S.end"]],"-","+"), 
+          length=primer1_blast[["Alignment.Length"]], 
+          mismatches=primer1_blast[["Mismatches"]], 
+          bit_score=primer1_blast[["Bits"]], 
+          e_value=primer1_blast[["E"]]
         ),
         GRanges(
           Source="ReversePrimerBlast",
-          AmpliconID = perfect_matches_primer2[["QueryID"]],
-          seqnames = perfect_matches_primer2[["SubjectID"]],
+          AmpliconID = primer2_blast[["QueryID"]],
+          seqnames = primer2_blast[["SubjectID"]],
           ranges = IRanges(
-            start=pmin(perfect_matches_primer2[["S.start"]], perfect_matches_primer2[["S.end"]]),
-            end = pmax(perfect_matches_primer2[["S.start"]], perfect_matches_primer2[["S.end"]])
+            start=pmin(primer2_blast[["S.start"]], primer2_blast[["S.end"]]),
+            end = pmax(primer2_blast[["S.start"]], primer2_blast[["S.end"]])
           ),
-          strand=ifelse(perfect_matches_primer2[["S.start"]]>perfect_matches_primer2[["S.end"]],"-","+"),
-          length=perfect_matches_primer2[["Alignment.Length"]],
-          mismatches=perfect_matches_primer2[["Mismatches"]],
-          bit_score=perfect_matches_primer2[["Bits"]],
-          e_value=perfect_matches_primer2[["E"]]
+          strand=ifelse(primer2_blast[["S.start"]]>primer2_blast[["S.end"]],"-","+"),
+          length=primer2_blast[["Alignment.Length"]],
+          mismatches=primer2_blast[["Mismatches"]],
+          bit_score=primer2_blast[["Bits"]],
+          e_value=primer2_blast[["E"]]
         )
       )
 
@@ -909,7 +941,11 @@ server <- function(input, output) {
 
       # add used ReferenceGenome and PCR Productsize
       df1$assembly <- getAssemblyName(refgen)
-      df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start, df1$F.start-df1$R.end)
+      df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start+1, df1$F.start-df1$R.end+1)
+      
+      # calculate sequeces only for fragments longer than 50 bp 
+      df1 <- subset(df1,
+                    Productsize >= 50)
       
       #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
       chr <- df1$F.seqnames
@@ -934,14 +970,11 @@ server <- function(input, output) {
         seq <- xml_find_all(s, ".//DNA")
         split1 <- strsplit(as.character(seq), ">")[[1]][2]
         split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        print(split2)
-        print(as.character(gsub("[\r\n]", "", split2)))
         sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
       }
       
-      df1$PCRProduct <- sequences
+      df1$Productsequence <- sequences
       
-      # TODO: is this filtering step correct? Maybe we need to adjust this.      
       # sub1 <-subset(df1,
       #               F.strand == "+" &
       #                 R.strand == "-" &
@@ -951,125 +984,111 @@ server <- function(input, output) {
       
       ##############################################################################################################################################
       # continue with processing imperfect blast matches
-      print("starting calculation of imperfect primer matches... ")
+      #print("starting calculation of imperfect primer matches... ")
       
       # first step: get 3' Primer Portion according to user input
-      primer_portion = input$partial_match
+      #primer_portion = input$partial_match
       
-      # make sure, to get the correct reference genome before blasting
-      # TODO: is this needed? 
-      # dbList <- getBlastDB(refgen, input$is_bisulfite)
-      
-      Fseq_portion = Biostrings::BStringSet(Fseq, start=width(Fseq)-primer_portion, end=width(Fseq))
-      Rseq_portion = Biostrings::BStringSet(Rseq, start=width(Rseq)-primer_portion, end=width(Rseq))
-      # TODO: this should be an XStringSet
-      # this is an s4 object print(typeof(Fseq_portion))
-      
+      #Fseq_portion = Biostrings::BStringSet(Fseq, start=width(Fseq)-primer_portion, end=width(Fseq))
+      #Rseq_portion = Biostrings::BStringSet(Rseq, start=width(Rseq)-primer_portion, end=width(Rseq))
+
       # blast Primerportions again, Reference Genome stays the same
-      costumized_BLAST_args <- sprintf(blast_args, 50)
-      print(Fseq)
-      print(Fseq_portion)
-      primer1_portion_blast <- predict(dbList$genomeDB, Fseq_portion, BLAST_args = costumized_BLAST_args)
-      primer2_portion_blast <- predict(dbList$genomeDB, Rseq_portion, BLAST_args = costumized_BLAST_args)
+      #costumized_BLAST_args <- sprintf(blast_args, 50)
+      #print(Fseq)
+      #print(Fseq_portion)
+      #primer1_portion_blast <- predict(dbList$genomeDB, Fseq_portion, BLAST_args = costumized_BLAST_args)
+      #primer2_portion_blast <- predict(dbList$genomeDB, Rseq_portion, BLAST_args = costumized_BLAST_args)
       
       #write blast results of primer portions for both primers to table
-      write.table(primer1_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      write.table(primer2_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      #write.table(primer1_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      #write.table(primer2_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       
       #calculate number of perfect and imperfect matches for primer portions
-      perfect_matches_primer1_portion = primer1_portion_blast[primer1_portion_blast$Perc.Ident == 100, ]
-      perfect_matches_primer2_portion = primer2_portion_blast[primer2_portion_blast$Perc.Ident == 100, ]
+      #perfect_matches_primer1_portion = primer1_portion_blast[primer1_portion_blast$Perc.Ident == 100, ]
+      #perfect_matches_primer2_portion = primer2_portion_blast[primer2_portion_blast$Perc.Ident == 100, ]
       
-      num_perfect_partial_matches_primer1 = nrow(perfect_matches_primer1_portion)
-      num_perfect_partial_matches_primer2 = nrow(perfect_matches_primer2_portion)
+      #num_perfect_partial_matches_primer1 = nrow(perfect_matches_primer1_portion)
+      #num_perfect_partial_matches_primer2 = nrow(perfect_matches_primer2_portion)
       
-      # TODO: write these values to summary
-      print(num_perfect_partial_matches_primer1)
-      print(num_perfect_partial_matches_primer2)
+      # write these values to summary
+      #print(num_perfect_partial_matches_primer1)
+      #print(num_perfect_partial_matches_primer2)
+      #writeLines(paste("Number perfect matches partial forward primer \t", num_perfect_partial_matches_primer1, "\n"), summary_file)
+      #writeLines(paste("Number perfect matches partial reverse primer \t", num_perfect_partial_matches_primer2, "\n"), summary_file)
       
       # calculate overlaps for partial hits
       # finding genomic ranges for all partial hits 
-      hits_imperfect <- c(
-        GRanges(
-          Source="PartialForwardPrimerBlast", #name of used ReferenceGenome
-          AmpliconID = perfect_matches_primer1_portion[["QueryID"]],
-          seqnames = perfect_matches_primer1_portion[["SubjectID"]],
-          ranges = IRanges(
-            start=pmin(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]]),
-            end = pmax(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]])
-          ), 
-          strand=ifelse(perfect_matches_primer1_portion[["S.start"]]>perfect_matches_primer1_portion[["S.end"]],"-","+"), 
-          length=perfect_matches_primer1_portion[["Alignment.Length"]], 
-          mismatches=perfect_matches_primer1_portion[["Mismatches"]], 
-          bit_score=perfect_matches_primer1_portion[["Bits"]], 
-          e_value=perfect_matches_primer1_portion[["E"]]
-        ),
-        GRanges(
-          Source="PartialReversePrimerBlast",
-          AmpliconID = perfect_matches_primer2_portion[["QueryID"]],
-          seqnames = perfect_matches_primer2_portion[["SubjectID"]],
-          ranges = IRanges(
-            start=pmin(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]]),
-            end = pmax(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]])
-          ),
-          strand=ifelse(perfect_matches_primer2_portion[["S.start"]]>perfect_matches_primer2_portion[["S.end"]],"-","+"),
-          length=perfect_matches_primer2_portion[["Alignment.Length"]],
-          mismatches=perfect_matches_primer2_portion[["Mismatches"]],
-          bit_score=perfect_matches_primer2_portion[["Bits"]],
-          e_value=perfect_matches_primer2_portion[["E"]]
-        )
-      )
-      
-      #overlapping between genomic ranges and processing results
-      overlap_hits_imperfect <- findOverlaps(hits_imperfect, hits_imperfect, maxgap=input$gap, ignore.strand=TRUE)
-      df_imperfect <-cbind(as.data.frame(hits_imperfect[overlap_hits_imperfect@from,]),as.data.frame(hits_imperfect[overlap_hits_imperfect@to,]))
-      colnames(df_imperfect)<-paste(rep(c("F","R"),each=11), colnames(df_imperfect), sep=".")
-      
-      # add used ReferenceGenome and PCR Productsize and 3' Primerportion
-      df_imperfect$assembly <- getAssemblyName(refgen)
-      df_imperfect$Productsize <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$R.end-df_imperfect$F.start, df_imperfect$F.start-df_imperfect$R.end)
-      
-      #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
-      chr <- df_imperfect$F.seqnames
-      start <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
-      end <- ifelse(!df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
-      
-      assembly <- getAssemblyName(refgen)
-      url.full_imp <- paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
-      
-      if(length(url.full_imp) != 0){
-        r <- GET(url.full_imp[1])
-        s <- content(r)
-        seq <- xml_find_all(s, ".//DNA")
-        split1 <- strsplit(as.character(seq), ">")[[1]][2]
-        split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        sequences <- c(as.character(gsub("[\r\n]", "", split2)))
-      }
-      
-      for (i in 2:length(url.full_imp)){
-        r <- GET(url.full_imp[i]) 
-        s <- content(r)
-        seq <- xml_find_all(s, ".//DNA")
-        split1 <- strsplit(as.character(seq), ">")[[1]][2]
-        split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        print(split2)
-        print(as.character(gsub("[\r\n]", "", split2)))
-        sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
-      }
-      
-      df_imperfect$PCRProduct <- sequences
-      
-      # TODO: is this filtering step correct? Maybe we need to adjust this.      
-      # sub_imperfect <-subset(df_imperfect,
-      #               F.strand == "+" &
-      #                 R.strand == "-" &
-      #                 as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
-      #                 as.character(F.seqnames) == as.character(R.seqnames) & 
-      #                 abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
-      
-      # write df_imperfect to file
-      write.table(df_imperfect, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_imperfect.txt", sep=""),
-                  col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+      # hits_imperfect <- c(
+      #   GRanges(
+      #     Source="PartialForwardPrimerBlast", #name of used ReferenceGenome
+      #     AmpliconID = perfect_matches_primer1_portion[["QueryID"]],
+      #     seqnames = perfect_matches_primer1_portion[["SubjectID"]],
+      #     ranges = IRanges(
+      #       start=pmin(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]]),
+      #       end = pmax(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]])
+      #     ), 
+      #     strand=ifelse(perfect_matches_primer1_portion[["S.start"]]>perfect_matches_primer1_portion[["S.end"]],"-","+"), 
+      #     length=perfect_matches_primer1_portion[["Alignment.Length"]], 
+      #     mismatches=perfect_matches_primer1_portion[["Mismatches"]], 
+      #     bit_score=perfect_matches_primer1_portion[["Bits"]], 
+      #     e_value=perfect_matches_primer1_portion[["E"]]
+      #   ),
+      #   GRanges(
+      #     Source="PartialReversePrimerBlast",
+      #     AmpliconID = perfect_matches_primer2_portion[["QueryID"]],
+      #     seqnames = perfect_matches_primer2_portion[["SubjectID"]],
+      #     ranges = IRanges(
+      #       start=pmin(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]]),
+      #       end = pmax(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]])
+      #     ),
+      #     strand=ifelse(perfect_matches_primer2_portion[["S.start"]]>perfect_matches_primer2_portion[["S.end"]],"-","+"),
+      #     length=perfect_matches_primer2_portion[["Alignment.Length"]],
+      #     mismatches=perfect_matches_primer2_portion[["Mismatches"]],
+      #     bit_score=perfect_matches_primer2_portion[["Bits"]],
+      #     e_value=perfect_matches_primer2_portion[["E"]]
+      #   )
+      # )
+      # 
+      # #overlapping between genomic ranges and processing results
+      # overlap_hits_imperfect <- findOverlaps(hits_imperfect, hits_imperfect, maxgap=input$gap, ignore.strand=TRUE)
+      # df_imperfect <-cbind(as.data.frame(hits_imperfect[overlap_hits_imperfect@from,]),as.data.frame(hits_imperfect[overlap_hits_imperfect@to,]))
+      # colnames(df_imperfect)<-paste(rep(c("F","R"),each=11), colnames(df_imperfect), sep=".")
+      # 
+      # # add used ReferenceGenome and PCR Productsize and 3' Primerportion
+      # df_imperfect$assembly <- getAssemblyName(refgen)
+      # df_imperfect$Productsize <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$R.end-df_imperfect$F.start+1, df_imperfect$F.start-df_imperfect$R.end+1)
+      # 
+      # #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
+      # chr <- df_imperfect$F.seqnames
+      # start <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
+      # end <- ifelse(!df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
+      # 
+      # assembly <- getAssemblyName(refgen)
+      # url.full_imp <- paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
+      # 
+      # if(length(url.full_imp) != 0){
+      #   r <- GET(url.full_imp[1])
+      #   s <- content(r)
+      #   seq <- xml_find_all(s, ".//DNA")
+      #   split1 <- strsplit(as.character(seq), ">")[[1]][2]
+      #   split2 <- strsplit(as.character(split1), "<")[[1]][1]
+      #   sequences <- c(as.character(gsub("[\r\n]", "", split2)))
+      # }
+      # 
+      # for (i in 2:length(url.full_imp)){
+      #   r <- GET(url.full_imp[i]) 
+      #   s <- content(r)
+      #   seq <- xml_find_all(s, ".//DNA")
+      #   split1 <- strsplit(as.character(seq), ">")[[1]][2]
+      #   split2 <- strsplit(as.character(split1), "<")[[1]][1]
+      #   sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
+      # }
+      # 
+      # df_imperfect$Productsequence <- sequences
+      # 
+      # # write df_imperfect to file
+      # write.table(df_imperfect, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_imperfect.txt", sep=""),
+      #             col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
       
       #####################################################################################################################################  
       
@@ -1100,19 +1119,20 @@ server <- function(input, output) {
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
     wd <- primersDesign_wd
-    primer_QC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
+    primerQC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
     
     # filter here for the requirements from input
-    primerQC_table <- subset(primer_QC_table,
-                                 F.bit_score>=25 &
-                                   R.bit_score>=25  &
-                                   #F.e_value<=input$Evalue  &
-                                   F.e_value<=10 &
-                                   #R.e_value<=input$Evalue  &
-                                   R.e_value<=10 &
-                                   F.mismatches <= input$primer_mismatches &
-                                   R.mismatches <= input$primer_mismatches
-    )
+    # primerQC_table <- subset(primer_QC_table,
+    #                              F.bit_score>=25 &
+    #                                R.bit_score>=25  &
+    #                                #F.e_value<=input$Evalue  &
+    #                                F.e_value<=10 &
+    #                                #R.e_value<=input$Evalue  &
+    #                                R.e_value<=10 &
+    #                                F.mismatches <= input$primer_mismatches &
+    #                                R.mismatches <= input$primer_mismatches &
+    #                                Productsize >= 50
+    # )
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
     primerQC_table_sub <- subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
