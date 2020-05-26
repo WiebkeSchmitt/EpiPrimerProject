@@ -558,6 +558,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    #width="1x",
                                                    tabPanel("Results",
                                                             actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
+                                                            #selectInput("jobs", "Jobs", choices = forward.primers$FPrimer.Name),
                                                             hr(),
                                                             DT::dataTableOutput("pQC.results")
                                                    ),
