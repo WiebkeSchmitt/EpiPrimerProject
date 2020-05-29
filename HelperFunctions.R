@@ -193,16 +193,21 @@ gcCon<-function(sequence,strand="top"){
 #this function calculates primer melting temperatures in °C.
 
 calculate.Tm<-function(sequence){
+  if(is.na(sequence)){
+    return (0)
+  }
+  
   #formula used: Tm= 62.9 +41*(yG+zC-16.4)/(wA+xT+yG+zC) #if seq longer than 13 nucleotides
   #formula used: (wA+xT) * 2 + (yG+zC) * 4  #if seq shorter than 14 nucleotides
   seq<-toupper(sequence)
+  num_seq <- nchar(seq)
   
   nA<-nchar(x = gsub("[C|G|T]","",seq))
   nC<-nchar(x = gsub("[A|G|T]","",seq))
   nG<-nchar(x = gsub("[C|A|T]","",seq))
   nT<-nchar(x = gsub("[C|A|G]","",seq))
   
-  if (nchar(seq)>13){
+  if (num_seq >= 12){
     tm<-62.9 + 41*(nG+nC-16.4) / (nA+nT+nG+nC)
   }
   else{

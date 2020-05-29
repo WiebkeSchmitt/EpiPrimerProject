@@ -132,42 +132,42 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                         min = 0, max = 80, value = 0),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 5)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 7)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 7)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 5)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 7)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 7)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 5)
                                             ),
                                             conditionalPanel(
                                               condition = "input.i_primer_type == 'CrispRCas9PCR'",
-                                              sliderInput("i_max.bins.low.complexity", label = h4("Maximum length of monomeric base stretches"),
+                                              sliderInput("i_max.bins", label = h4("Maximum length of monomeric base stretches"),
                                                           min = 0, max = 10, value = 5)
                                             ),
                                             sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),

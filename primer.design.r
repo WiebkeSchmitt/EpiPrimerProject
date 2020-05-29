@@ -31,9 +31,9 @@ generalDesign<-function(seq,
   #these can be removed in a later step easily.
   
   ##### primer length ranges to build start and end points for subfragments... #####
-  plr<-max.length.primer-min.length.primer
-  if (tmg$fragment.length < 4503599627370496) { # this is the size for R_XLEN_T_MAX, no vectors above this size are possible
-    pr.starts<-1: (max(tmg$fragment.length)-min.length.primer+1)
+  plr<-as.numeric(max.length.primer) - as.numeric(min.length.primer)
+  if (tmg$fragment.length < rep(4503599627370496, length(tmg$fragment.length))) { # this is the size for R_XLEN_T_MAX, no vectors above this size are possible
+    pr.starts<-1:(max(tmg$fragment.length)-as.numeric(min.length.primer)+1)
   }
   
   
@@ -49,7 +49,7 @@ generalDesign<-function(seq,
     st<-rep(pr.starts,each=3)
     pr.dist<-c(min.length.primer,ceiling(mean(c(min.length.primer,max.length.primer),na.rm=TRUE)),max.length.primer)
     distrep<- rep(pr.dist,plr+1)
-    en<- st+distrep-1
+    en<- as.numeric(st)+as.numeric(distrep)-1
   }
   
   ############very powerfull!!!!
@@ -110,7 +110,7 @@ generalDesign<-function(seq,
   ######## keep only if enough features are present between the two subfragments.... #####
   print ("Remove primer combinations with too few sites of interest...")
   pr.pairs<-pr.pairs[as.numeric(gsub("fragment","",pr.pairs$fragment2.id))-
-                       as.numeric(gsub("fragment","",pr.pairs$fragment1.id))>= min.number.gc.amplicon+min.number.cg.amplicon,]
+                       as.numeric(gsub("fragment","",pr.pairs$fragment1.id))>= as.numeric(min.number.gc.amplicon) + as.numeric(min.number.cg.amplicon),]
   print("Done.")
   
   if(nrow(pr.pairs)<1){
@@ -283,8 +283,8 @@ generalDesign<-function(seq,
   
   #check primer1 self-alignments    
   #make all bins for each individual primer
-  starts<-1:(max(nchar(amp.sel4$primer1.sequence))-primer.align.binsize+1)
-  ends<-starts+primer.align.binsize
+  starts<-1:(max(nchar(amp.sel4$primer1.sequence)) - as.numeric(primer.align.binsize) + 1)
+  ends<-as.numeric(starts) + as.numeric(primer.align.binsize)
   allbins<-as.data.frame(mapply(FUN=substr,start=starts, stop=ends, 
                                 MoreArgs=list(x=amp.sel4$primer1.sequence)))
   allbins<-apply(allbins,2,as.character)
@@ -309,8 +309,8 @@ generalDesign<-function(seq,
   
   #check primer2 self-alignments    
   #make all bins for each individual primer
-  starts<-1:(max(nchar(amp.sel4$primer2.sequence))-primer.align.binsize+1)
-  ends<-starts+primer.align.binsize
+  starts<-1:(max(nchar(amp.sel4$primer2.sequence))-as.numeric(primer.align.binsize)+1)
+  ends<-as.numeric(starts) + as.numeric(primer.align.binsize)
   allbins<-as.data.frame(mapply(FUN=substr,start=starts, stop=ends, 
                                 MoreArgs=list(x=amp.sel4$primer2.sequence)))
   allbins<-apply(allbins,2,as.character)
@@ -335,8 +335,8 @@ generalDesign<-function(seq,
   
   #check primer1:primer2 alignments    
   #make all bins for each individual primer2
-  starts<-1:(max(nchar(amp.sel4$primer2.sequence))-primer.align.binsize+1)
-  ends<-starts+primer.align.binsize
+  starts<-1:(max(nchar(amp.sel4$primer2.sequence))-as.numeric(primer.align.binsize)+1)
+  ends<-as.numeric(starts)+as.numeric(primer.align.binsize)
   allbins<-as.data.frame(mapply(FUN=substr,start=starts, stop=ends, 
                                 MoreArgs=list(x=amp.sel4$primer2.sequence)))
   allbins<-apply(allbins,2,as.character)
@@ -668,9 +668,10 @@ bisulfite.primer.design<-function(sequence,
   tmg$fragment.sequence<-as.character(tmg$fragment.sequence)
   tmg$fragment.length<-nchar(tmg$fragment.sequence)
   tmg$primer.start.starts<-1
-  tmg$primer.start.ends<-tmg$fragment.length-min.length.primer
+  tmg$primer.start.ends <- as.numeric(tmg$fragment.length) - as.numeric(rep(min.length.primer, length(tmg$fragment.length)))
   tmg<-tmg[tmg$primer.start.ends>0,]
-  tmg$primer.end.starts<-1+min.length.primer-1
+  print(min.length.primer)
+  tmg$primer.end.starts<-1+as.numeric(min.length.primer)-1
   
   subfrags<-names(tm.good)[names(tm.good) %in% tmg$fragment.id]
   
@@ -1235,19 +1236,20 @@ crispR.Cas9.amp.primer.design<-function(sequence,
   
   #Match relative position of individual primers
   print("Calculate relative primer Positions...")
-  len.1<-unlist(sapply(X = pr.pairs2$primer1.sequence,regexpr,nome,useBytes=TRUE,fixed=TRUE))
-  len.2<-unlist(sapply(X = pr.pairs2$primer2.sequence,regexpr,nome,useBytes=TRUE,fixed=TRUE))
-  
-  
-  len.1e<-len.1+nchar(names(len.1))+3
-  
-  len.2e<-len.2+nchar(names(len.2))-1
-  len<-len.2e-len.1e #v1.7: ~7 sec
-  
-  pr.pairs2$amplicon.length<-as.numeric(len)
-  pr.pairs2$amplicon.start.relative<-len.1e
-  pr.pairs2$amplicon.end.relative<-len.2e
-  print("Done.")
+  print(is.na(pr.pairs2$primer1.sequence))
+  if(!anyNA(pr.pairs2$primer1.sequence)){
+    len.1<-unlist(sapply(X = pr.pairs2$primer1.sequence,regexpr,nome,useBytes=TRUE,fixed=TRUE))
+    len.2<-unlist(sapply(X = pr.pairs2$primer2.sequence,regexpr,nome,useBytes=TRUE,fixed=TRUE))
+    len.1e<-len.1+nchar(names(len.1))+3
+    
+    len.2e<-len.2+nchar(names(len.2))-1
+    len<-len.2e-len.1e #v1.7: ~7 sec
+    
+    pr.pairs2$amplicon.length<-as.numeric(len)
+    pr.pairs2$amplicon.start.relative<-len.1e
+    pr.pairs2$amplicon.end.relative<-len.2e
+    print("Done.")
+  }
   
   #########################################################
   

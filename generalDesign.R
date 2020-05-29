@@ -134,12 +134,12 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
   log("Logfile initiated.",add=FALSE)
   ##########################################Checking primer parameters#######################################
 
-  if(min.length.primer<0){
+  if(!is.na(min.length.primer) && min.length.primer < 0){
     min.length.primer=13
     log(paste("auto re-assigned min.length.primer to: ",min.length.primer,sep=""))
   }
   
-  if(max.length.primer<0){
+  if(!is.na(max.length.primer) && max.length.primer < 0){
     max.length.primer=min.length.primer+1
     log(paste("auto re-assigned max.length.primer to: ",max.length.primer,sep=""))
   }
@@ -154,12 +154,12 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     log(paste("auto re-assigned max.length.amplicon to: ",max.length.ampliconsep=""))
   }
   
-  if(min.Tm.primer<0){
+  if(!is.na(min.Tm.primer) && min.Tm.primer < 0){
     min.Tm.primer=40
     log(paste("auto re-assigned min.Tm.primer to: ",min.Tm.primer,sep=""))
   }
   
-  if(max.Tm.primer<0){
+  if(!is.na(max.Tm.primer) && max.Tm.primer < 0){
     max.Tm.primer=min.Tm.primer+1
     log(paste("auto re-assigned max.Tm.primer to: ",max.Tm.primer,sep=""))
   }
@@ -173,7 +173,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     log(paste("auto re-assigned min.number.cg.amplicon to: ",min.number.cg.amplicon,sep=""))
   }
   
-  if(max.Tm.difference.primer<0){
+  if(!is.na(max.Tm.difference.primer) && max.Tm.difference.primer < 0){
     max.Tm.difference.primer=1
     log(paste("auto re-assigned max.Tm.difference.primer to: ",max.Tm.difference.primer,sep=""))
   }
@@ -188,12 +188,12 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     log(paste("auto re-assigned primer.align.binsize to: ",primer.align.binsize,sep=""))
   }
   
-  if(min.C2T.primer1<0){
+  if(!is.na(min.C2T.primer1) && min.C2T.primer1<0){
     min.C2T.primer1=3
     log(paste("auto re-assigned min.C2T.primer1 to: ",min.C2T.primer1,sep=""))
   }
   
-  if(min.G2A.primer2<0){
+  if(!is.na(min.G2A.primer2) && min.G2A.primer2<0){
     min.G2A.primer2=3
     log(paste("auto re-assigned min.G2A.primer2 to: ",min.G2A.primer2,sep=""))
   }
@@ -228,22 +228,22 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     log(paste("auto re-assigned max.snps.primer2 to: ",max.snps.primer2,sep=""))
   }
   
-  if(hp.length.min<0){
+  if(!is.na(hp.length.min) && hp.length.min<0){
     hp.length.min=50
     log(paste("auto re-assigned hp.length.min to: ",hp.length.min,sep=""))
   }
   
-  if(hp.length.max<0){
+  if(!is.na(hp.length.max) && hp.length.max<0){
     hp.length.max=0
     log(paste("auto re-assigned hp.length.max to: ",hp.length.max,sep=""))
   }
   
-  if(max.length.primer < min.length.primer){
+  if(!is.na(max.length.primer) && !is.na(min.length.primer) && max.length.primer < min.length.primer){
     max.length.primer <- min.length.primer+1
     log(paste("auto re-assigned max.length.primer to: ",max.length.primer,sep=""))
   }
   
-  if(min.length.primer > max.length.primer){
+  if(!is.na(max.length.primer) && !is.na(min.length.primer) && min.length.primer > max.length.primer){
     min.length.primer <- max.length.primer-1
     log(paste("auto re-assigned min.length.primer to: ",min.length.primer,sep=""))
   }
@@ -258,12 +258,12 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     log(paste("auto re-assigned min.length.amplicon to: ",min.length.amplicon,sep=""))
   }
   
-  if(max.Tm.primer < min.Tm.primer){
+  if(!is.na(max.Tm.primer) && !is.na(min.Tm.primer) && max.Tm.primer < min.Tm.primer){
     max.Tm.primer <- min.Tm.primer+1
     log(paste("auto re-assigned max.Tm.primer to: ",max.Tm.primer,sep=""))
   }
   
-  if(min.Tm.primer > max.Tm.primer){
+  if(!is.na(max.Tm.primer) && !is.na(min.Tm.primer) && min.Tm.primer > max.Tm.primer){
     min.Tm.primer <- max.Tm.primer-1
     log(paste("auto re-assigned min.Tm.primer to: ",min.Tm.primer,sep=""))
   }
@@ -298,12 +298,12 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     log(paste("auto re-assigned max.snps.primer2 to: ",max.snps.primer2,sep=""))
   }
   
-  if(hp.length.min > hp.length.max){
+  if(!is.na(hp.length.max) && !is.na(hp.length.min) && hp.length.min > hp.length.max){
     hp.length.min <- hp.length.max-1
     log(paste("auto re-assigned hp.length.min to: ",hp.length.min,sep=""))
   }
   
-  if(hp.length.max < hp.length.min){
+  if(!is.na(hp.length.max) && !is.na(hp.length.min) && hp.length.max < hp.length.min){
     hp.length.max <- mhp.length.min+1
     log(paste("auto re-assigned hp.length.max to: ",hp.length.max,sep=""))
   }
@@ -2078,8 +2078,11 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
         write.text(apply(X = results2[,c("amplicon.chr","amplicon.start","amplicon.end","primer.pair.id","ucsc.color","nl")],1,paste,sep="\t"),
                    file=ffn,add=TRUE)
         
+        print("WBS")
+        print(create.toplist)
+        print(as.logical(create.toplist))
         
-        if (create.toplist && !(is.data.frame(toplist) && nrow(toplist)==0)){ 
+        if (as.logical(create.toplist) && !(is.data.frame(toplist) && nrow(toplist)==0)){ 
           
           #for primer toplist.
           toplist$ucsc.color<-700
@@ -2431,7 +2434,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
                                         amplicon.id=sels$amplicon.id,
                                         feature=NA))
               
-              if(check4snps & exists("all_my_snps")){
+              if(as.logical(check4snps) & exists("all_my_snps")){
                 
                 if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &&
                    input.type == "regions"){
@@ -2509,7 +2512,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
               
               #############################################################################################################
               
-              if(check4repeats & exists("all_my_repeats")){
+              if(as.logical(check4repeats) & exists("all_my_repeats")){
                 
                 if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &&
                    input.type == "regions"){
@@ -2607,7 +2610,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
               
               ########################################################################################################    
               
-              if(annotate.genes & exists("all_my_genes")){
+              if(as.logical(annotate.genes) & exists("all_my_genes")){
                 
                 if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER") &&
                    input.type == "regions"){
@@ -2721,7 +2724,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
               
               ##############################################################################################################
               
-              if(annotate.cpg.islands & exists("all_my_cpgis")){
+              if(as.logical(annotate.cpg.islands) & exists("all_my_cpgis")){
                 
                 if((primer.type == "bisulfite" | primer.type == "NOME" | primer.type == "genomic" | primer.type == "CLEVER" | primer.type=="CrispRCas9PCR") &&
                    input.type == "regions"){
@@ -2829,19 +2832,19 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
                 lol<-lol[lol$amplicon.id != "input.sequence [GpC]",]
               }
               
-              if(check4snps == FALSE){
+              if(as.logical(check4snps) == FALSE){
                 lol<-lol[lol$amplicon.id != "input.sequence [SNP]",]
               }
               
-              if(check4repeats == FALSE){
+              if(as.logical(check4repeats) == FALSE){
                 lol<-lol[lol$amplicon.id != "input.sequence [Repeats]",]
               } 
               
-              if(annotate.genes == FALSE){
+              if(as.logical(annotate.genes) == FALSE){
                 lol<-lol[lol$amplicon.id != "input.sequence [Genes]",]
               }
               
-              if(annotate.cpg.islands ==FALSE){
+              if(as.logical(annotate.cpg.islands) == FALSE){
                 lol<-lol[lol$amplicon.id != "input.sequence [CpG Island]",]
               }
               
@@ -2854,21 +2857,21 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
               lopl<-ggplot(lol,aes(relative.position,amplicon.id))+
                 geom_line(colour="black",size=0.7)
               
-              if(check4repeats){
+              if(as.logical(check4repeats)){
                 if(nrow(lol[!is.na(lol$repeat.start) & !is.na(lol$repeat.end),])>0){
                   lopl<-lopl+geom_segment(colour="black",size=3,
                                           aes(x=repeat.start,xend=repeat.end,y=amplicon.id,yend=amplicon.id))#repeats
                 }
               }
               
-              if(annotate.genes){
+              if(as.logical(annotate.genes)){
                 if(nrow(lol[!is.na(lol$gene.start) & !is.na(lol$gene.end),])>0){
                   lopl<-lopl+geom_segment(colour="orange",size=3,
                                           aes(x=gene.start,xend=gene.end,y=amplicon.id,yend=amplicon.id))#genes
                 }
               }
               
-              if(annotate.cpg.islands){
+              if(as.logical(annotate.cpg.islands)){
                 if(nrow(lol[!is.na(lol$cpgi.start) & !is.na(lol$cpgi.end),])>0){
                   lopl<-lopl+geom_segment(colour="darkgreen",size=3,
                                           aes(x=cpgi.start,xend=cpgi.end,y=amplicon.id,yend=amplicon.id))#cpg islands
@@ -2912,7 +2915,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
                 
               }
               
-              if(check4snps & exists("all_my_snps")){  
+              if(as.logical(check4snps) & exists("all_my_snps")){  
                 if(nrow(lol[!is.na(lol$snp_start) & !is.na(lol$snp_end),])>0){
                   lopl<-lopl+geom_segment(colour="black",size=6,
                                           aes(x=snp_start,xend=snp_end,y=amplicon.id,yend=amplicon.id))#SNPs

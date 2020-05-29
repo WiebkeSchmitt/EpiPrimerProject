@@ -43,8 +43,12 @@ library(httr)
 library(httr)
 
 dbHeader <- dashboardHeader(title = "EpiPrimer")
+#def_settings <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
 
 server <- function(input, output) {
+  ### global variable for Primersettings
+  def_settings <<- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
+  
   ### Data import:
   Dataset <- reactive({
     if (is.null(input$file)) {
@@ -98,11 +102,11 @@ server <- function(input, output) {
       
       #check, if adapters should be used, if not, remove default adapters
       if (!input$adapterF){
-        adaF <- NULL
+        adaF <- NA
       }
       
       if (!input$adapterR){
-        adaR <- NULL
+        adaR <- NA
       }
       
       if (input$i_allow.repeats.in.primers || input$i_allow.repeats.in.amplicon){
@@ -118,45 +122,62 @@ server <- function(input, output) {
       }
       
       #call the primer design pipeline
-      print(primerSettings())
+      # get settings for calling the primer design pipeline
+      settings_for_pipeline <- def_settings
+      
+      # now set checks for snps and repeats
+      settings_for_pipeline[3] = check_snps
+      settings_for_pipeline[4] = FALSE #check_repeats
+      
+      # now set adapters, only if checkboxes were activated
+      settings_for_pipeline[20] = adaF
+      settings_for_pipeline[21] = adaR
+      
+      #print(settings_for_pipeline)
+      # primer.design.pipeline.refactored(Dataset(), 
+      #                                   path.out = paste(getwd(), input$name, sep="/"),
+      #                                   settings_for_pipeline)
+      
+      print(settings_for_pipeline)
+      
       #TODO: call this with the appropriate default settings!
-      primer.design.pipeline.refactored(Dataset(), 
+      primer.design.pipeline.refactored(Dataset(),
                              path.out = paste(getwd(),input$name,sep="/"),
                              primer.type = input$i_primer_type,
-                             low.complexity.primer.removal=TRUE,
-                             remove.primers.with.n=input$i_remove.primers.with.n,
-                             check4snps=check_snps,
-                             check4repeats=check_repeats,
-                             allow.repeats.in.primers=input$i_allow.repeats.in.primers,
-                             allow.repeats.in.amplicon=input$i_allow.repeats.in.amplicon,
-                             annotate.genes=FALSE,
-                             annotate.cpg.islands=FALSE,
-                             create.toplist = TRUE,
-                             max.bins.low.complexity=input$i_max.bins.low.complexity,
-                             primer.align.binsize=input$i_primer.align.binsize,
-                             min.snps.amplicon=0,
-                             max.snps.amplicon=input$i_snps.amplicon,
-                             min.snps.primer1=0,
-                             max.snps.primer1=input$i_snps.primer1,
-                             min.snps.primer2=0,
-                             max.snps.primer2=input$i_snps.primer2,
-                             hp.length.min=input$i_hp.length[1],
-                             hp.length.max=input$i_hp.length[2],
-                             add.ngs.adaptor.f=adaF,
-                             add.ngs.adaptor.r=adaR,
-                             strand=input$i_strand,
-                             min.length.primer = input$i_primerlength[1],
-                             max.length.primer = input$i_primerlength[2],
-                             min.Tm.primer = input$i_primertemp[1],
-                             max.Tm.primer = input$i_primertemp[2],
-                             max.Tm.difference.primer = input$i_meltdiff,
-                             min.length.amplicon = input$i_lengthAmp[1],
-                             max.length.amplicon = input$i_lengthAmp[2],
-                             min.number.gc.amplicon = input$i_minGC,
-                             min.number.cg.amplicon = input$i_minCG,
-                             min.C2T.primer1 = input$i_minC2T,
-                             min.G2A.primer2 = input$i_minG2A,
-                             chop.size= input$i_chop.size
+                             low.complexity.primer.removal = as.logical(settings_for_pipeline[1]),
+                             remove.primers.with.n = as.logical(settings_for_pipeline[2]),
+                             check4snps = as.logical(settings_for_pipeline[3]),
+                             check4repeats = as.logical(settings_for_pipeline[4]),
+                             allow.repeats.in.primers = as.logical(settings_for_pipeline[5]),
+                             allow.repeats.in.amplicon = as.logical(settings_for_pipeline[6]),
+                             annotate.genes = as.logical(settings_for_pipeline[7]),
+                             annotate.cpg.islands = as.logical(settings_for_pipeline[8]),
+                             create.toplist = as.logical(settings_for_pipeline[9]),
+                             max.bins.low.complexity = as.numeric(settings_for_pipeline[10]),
+                             primer.align.binsize = as.numeric(settings_for_pipeline[11]),
+                             min.snps.amplicon = as.numeric(settings_for_pipeline[12]),
+                             max.snps.amplicon = as.numeric(settings_for_pipeline[13]),
+                             min.snps.primer1 = as.numeric(settings_for_pipeline[14]),
+                             max.snps.primer1 = as.numeric(settings_for_pipeline[15]),
+                             min.snps.primer2 = as.numeric(settings_for_pipeline[16]),
+                             max.snps.primer2 = as.numeric(settings_for_pipeline[17]),
+                             hp.length.min = as.numeric(settings_for_pipeline[18]),
+                             hp.length.max = as.numeric(settings_for_pipeline[19]),
+                             add.ngs.adaptor.f = settings_for_pipeline[20],
+                             add.ngs.adaptor.r = settings_for_pipeline[21],
+                             strand = settings_for_pipeline[22],
+                             min.length.primer = as.numeric(settings_for_pipeline[23]),
+                             max.length.primer = as.numeric(settings_for_pipeline[24]),
+                             min.Tm.primer = as.numeric(settings_for_pipeline[25]),
+                             max.Tm.primer = as.numeric(settings_for_pipeline[26]),
+                             max.Tm.difference.primer = as.numeric(settings_for_pipeline[27]),
+                             min.length.amplicon = as.numeric(settings_for_pipeline[28]),
+                             max.length.amplicon = as.numeric(settings_for_pipeline[29]),
+                             min.number.gc.amplicon = as.numeric(settings_for_pipeline[30]),
+                             min.number.cg.amplicon = as.numeric(settings_for_pipeline[31]),
+                             min.C2T.primer1 = as.numeric(settings_for_pipeline[32]),
+                             min.G2A.primer2 = as.numeric(settings_for_pipeline[33]),
+                             chop.size = as.numeric(settings_for_pipeline[34])
       )
       
       sprintf("Finished Computation!!")
@@ -1582,59 +1603,328 @@ server <- function(input, output) {
   
   # this function reacts by changing settings according to user input
   # change only affected settings, for the rest use default from default function below
-  primerSettings <- reactive({
-    print(input$i_primer_type)
-    # TODO: get these values from sliders or use default!
-    def_settings <- defaultPrimerSettings(input)
-    switch(input$i_primer_type,
-           "genomic" = return(def_settings),
-           "bisulfite" = return(c(input$i_remove.primers.with.n, input$i_meltdiff)),
-           "NOME" = return(c()),
-           "CLEVER" = return(c()),
-           "hp_bisulfite" = return(c()),
-           "hp_NOME" = return(c()),
-           "hp_CLEVER" = return(c()),
-           "CrispRCas9PCR" = return(c()))
-                                      # low.complexity.primer.removal=TRUE,
-                                      # remove.primers.with.n=input$i_remove.primers.with.n,
-                                      # check4snps=check_snps,
-                                      # check4repeats=check_repeats,
-                                      # allow.repeats.in.primers=input$i_allow.repeats.in.primers,
-                                      # allow.repeats.in.amplicon=input$i_allow.repeats.in.amplicon,
-                                      # annotate.genes=FALSE,
-                                      # annotate.cpg.islands=FALSE,
-                                      # create.toplist = TRUE,
-                                      # max.bins.low.complexity=input$i_max.bins.low.complexity,
-                                      # primer.align.binsize=input$i_primer.align.binsize,
-                                      # min.snps.amplicon=0,
-                                      # max.snps.amplicon=input$i_snps.amplicon,
-                                      # min.snps.primer1=0,
-                                      # max.snps.primer1=input$i_snps.primer1,
-                                      # min.snps.primer2=0,
-                                      # max.snps.primer2=input$i_snps.primer2,
-                                      # hp.length.min=input$i_hp.length[1],
-                                      # hp.length.max=input$i_hp.length[2],
-                                      # add.ngs.adaptor.f=adaF,
-                                      # add.ngs.adaptor.r=adaR,
-                                      # strand=input$i_strand,
-                                      # min.length.primer = input$i_primerlength[1],
-                                      # max.length.primer = input$i_primerlength[2],
-                                      # min.Tm.primer = input$i_primertemp[1],
-                                      # max.Tm.primer = input$i_primertemp[2],
-                                      # max.Tm.difference.primer = input$i_meltdiff,
-                                      # min.length.amplicon = input$i_lengthAmp[1],
-                                      # max.length.amplicon = input$i_lengthAmp[2],
-                                      # min.number.gc.amplicon = input$i_minGC,
-                                      # min.number.cg.amplicon = input$i_minCG,
-                                      # min.C2T.primer1 = input$i_minC2T,
-                                      # min.G2A.primer2 = input$i_minG2A,
-                                      # chop.size= input$i_chop.size
-    
-    
+  # primerSettings <- observeEvent(c(input$i_primer_type, 
+  #                                   input$i_remove.primers.with.n, 
+  #                                   input$i_allow.repeats.in.amplicon, 
+  #                                   input$i_allow.repeats.in.primers, 
+  #                                   input$i_max.bins,
+  #                                   input$i_primer.align.binsize,
+  #                                   input$i_snps.amplicon,
+  #                                   input$i_snps.primer1, 
+  #                                   input$i_snps.primer2,
+  #                                   input$i_hp.length,
+  #                                   input$i_strand,
+  #                                   input$i_primerlength[1],
+  #                                   input$i_primerlength[2],
+  #                                   input$i_primertemp,
+  #                                   input$i_meltdiff,
+  #                                   input$i_lengthAmp, 
+  #                                   input$i_minGC,
+  #                                   input$i_minCG,
+  #                                   input$i_minC2T,
+  #                                   input$i_minG2A,
+  #                                   input$i_chop.size), {
+  #   # TODO: get these values from sliders or use default!
+  #   # todo: on change event for all variables, change corresponding position of default value vector
+  #                                     
+  #   # this happens only once, or when the primertype is changed.                                  
+  #   #def_settings <- defaultPrimerSettings(input$i_primer_type)
+  #   # did the primertype change? 
+  #                                     
+  #   print("event reactive!")      
+  #   if(as.character(def_settings[35]) != as.character(input$i_primer_type)){
+  #     # new primer type, we need to get new default settings.
+  #     
+  #     #TODO: Only refresh changed slider values! --> need to have 1 observe event for every slider! Changing the primer type will only affect default settings.
+  #     
+  #     # refresh all the sliders to the new default values and then grab current values.
+  #     def_settings <<- defaultPrimerSettings(input)
+  #     # def_settings[1]: default value remains, we always remove primers of low complexity
+  #     def_settings[2] = input$i_remove.primers.with.n
+  #     
+  #     # check4snps and check4repeats is calculated in the function calling the primer design pipeline
+  #     
+  #     def_settings[5] = input$i_allow.repeats.in.primers
+  #     def_settings[6] = input$i_allow.repeats.in.amplicon
+  #     
+  #     # these parameters are hardcoded and will stay the same as in the default settings of all primertypes: 
+  #     # annotate.genes = false 
+  #     # annotate.cpg.islands = false 
+  #     # create.toplist = true
+  #     
+  #     def_settings[10] = input$i_max.bins
+  #     def_settings[11] = input$i_primer.align.binsize
+  #     #def_settings[12] = 0 TODO: Do we need a twosided slider? 
+  #     def_settings[13] = input$i_snps.amplicon
+  #     #def_settings[14] = 0
+  #     def_settings[15] = input$i_snps.primer1
+  #     #def_settings[16] = 0
+  #     def_settings[17] = input$i_snps.primer2
+  #     
+  #     # only update these values, if a hairprin primer design is required
+  #     if(input$i_primer_type == "hp_NOME" ||input$i_primer_type == "hp_CLEVER" || input$i_primer_type == "hp_bisulfite") {
+  #       def_settings[18] = input$i_hp.length[1]
+  #       def_settings[19] = input$i_hp.length[2]
+  #     }
+  #     
+  #     # the adapters are calculated in the function calling the primer design pipeline.
+  #     #def_settings[20] = input$adapterForward
+  #     #def_settings[21] = input$adapterReverse
+  #     
+  #     def_settings[22] = input$i_strand
+  #     
+  #     # do not update for CrispRCas9PCR primertype
+  #     if (input$i_primer_type != "CrispRCas9PCR"){
+  #       print("Wiebke")
+  #       print(input$i_primerlength[1])
+  #       print(input$i_primerlength[2])
+  #       def_settings[23] = input$i_primerlength[1]
+  #       def_settings[24] = input$i_primerlength[2]
+  #       def_settings[25] = input$i_primertemp[1]
+  #       def_settings[26] = input$i_primertemp[2]
+  #     }
+  #     
+  #     # only update this value for all primer types except CrispRCas9
+  #     if (input$i_primer_type != "CrispRCas9PCR"){
+  #       def_settings[27] = input$i_meltdiff
+  #     }
+  #     
+  #     def_settings[28] = input$i_lengthAmp[1]
+  #     def_settings[29] = input$i_lengthAmp[2]
+  #     def_settings[30] = input$i_minGC
+  #     def_settings[31] = input$i_minCG
+  #     
+  #     # do not update for genomic or CrispRCas9
+  #     if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
+  #       def_settings[32] = input$i_minC2T
+  #       def_settings[33] = input$i_minG2A
+  #     }
+  #     
+  #     # only update this value for genomic primers
+  #     if (input$i_primer_type == "genomic"){
+  #       def_settings[34] = input$i_chop.size
+  #     }
+  #     print(def_settings)
+  #     return (def_settings)
+  #     
+  #   } else {
+  #     # only refresh the sliders!
+  #     # def_settings[1]: default value remains, we always remove primers of low complexity
+  #     def_settings[2] = input$i_remove.primers.with.n
+  #     
+  #     # check4snps and check4repeats is calculated in the function calling the primer design pipeline
+  #     
+  #     def_settings[5] = input$i_allow.repeats.in.primers
+  #     def_settings[6] = input$i_allow.repeats.in.amplicon
+  #     
+  #     # these parameters are hardcoded and will stay the same as in the default settings of all primertypes: 
+  #     # annotate.genes = false 
+  #     # annotate.cpg.islands = false 
+  #     # create.toplist = true
+  #     
+  #     def_settings[10] = input$i_max.bins
+  #     def_settings[11] = input$i_primer.align.binsize
+  #     #def_settings[12] = 0 TODO: Do we need a twosided slider? 
+  #     def_settings[13] = input$i_snps.amplicon
+  #     #def_settings[14] = 0
+  #     def_settings[15] = input$i_snps.primer1
+  #     #def_settings[16] = 0
+  #     def_settings[17] = input$i_snps.primer2
+  #     
+  #     # only update these values, if a hairprin primer design is required
+  #     if(input$i_primer_type == "hp_NOME" ||input$i_primer_type == "hp_CLEVER" || input$i_primer_type == "hp_bisulfite") {
+  #       def_settings[18] = input$i_hp.length[1]
+  #       def_settings[19] = input$i_hp.length[2]
+  #     }
+  #     
+  #     # the adapters are calculated in the function calling the primer design pipeline.
+  #     #def_settings[20] = input$adapterForward
+  #     #def_settings[21] = input$adapterReverse
+  #     
+  #     def_settings[22] = input$i_strand
+  #     
+  #     # do not update for CrispRCas9PCR primertype
+  #     if (input$i_primer_type != "CrispRCas9PCR"){
+  #       print("Wiebke")
+  #       print(input$i_primerlength[1])
+  #       print(input$i_primerlength[2])
+  #       def_settings[23] = input$i_primerlength[1]
+  #       def_settings[24] = input$i_primerlength[2]
+  #       def_settings[25] = input$i_primertemp[1]
+  #       def_settings[26] = input$i_primertemp[2]
+  #     }
+  #     
+  #     # only update this value for all primer types except CrispRCas9
+  #     if (input$i_primer_type != "CrispRCas9PCR"){
+  #       def_settings[27] = input$i_meltdiff
+  #     }
+  #     
+  #     def_settings[28] = input$i_lengthAmp[1]
+  #     def_settings[29] = input$i_lengthAmp[2]
+  #     def_settings[30] = input$i_minGC
+  #     def_settings[31] = input$i_minCG
+  #     
+  #     # do not update for genomic or CrispRCas9
+  #     if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
+  #       def_settings[32] = input$i_minC2T
+  #       def_settings[33] = input$i_minG2A
+  #     }
+  #     
+  #     # only update this value for genomic primers
+  #     if (input$i_primer_type == "genomic"){
+  #       def_settings[34] = input$i_chop.size
+  #     }
+  #     print(def_settings)
+  #     return (def_settings)
+  #   }                                 
+  # })
+  
+  # observeEvent for all sliders for primer settings. 
+  observe({input$i_primer_type
+    print("changed primer type")
+    # Primer type is changed --> new default settings needed.
+    def_settings <<- defaultPrimerSettings(input$i_primer_type)
+    print(def_settings)
+  })
+  
+  observe({input$i_remove.primers.with.n
+    print("changed removal of primers containing N")
+    def_settings[2] <<- as.logical(input$i_remove.primers.with.n)
+    print(def_settings)
+  })
+  
+  observe({input$i_allow.repeats.in.primers
+    print("changed allowance of repeats in primers")
+    def_settings[5] <<- as.logical(input$i_allow.repeats.in.primers)
+    print(def_settings)
+  })
+  
+  observe({input$i_allow.repeats.in.amplicon
+    print("changed allowance of repeats in amplicons")
+    def_settings[6] <<- as.logical(input$i_allow.repeats.in.amplicon)
+    print(def_settings)
+  })
+  
+  observe({input$i_max.bins
+    print("changed max bins low complexity")
+    def_settings[10] <<- input$i_max.bins
+    print(def_settings)
+  })
+  
+  observe({input$i_primer.align.binsize
+    print("changed binsize")
+    def_settings[11] <<- input$i_primer.align.binsize
+    print(def_settings)
+  })
+  
+  observe({input$i_snps.amplicon
+    print("changed snps in amplicon")
+    def_settings[13] <<- input$i_snps.amplicon
+    print(def_settings)
+  })
+  
+  observe({input$i_snps.primer1
+    print("changed snps in primer 1")
+    def_settings[15] <<- input$i_snps.primer1
+    print(def_settings)
+  })
+  
+  observe({input$i_snps.primer2
+    print("changed snps in primer 2")
+    def_settings[17] <<- input$i_snps.primer2
+    print(def_settings)
+  })
+  
+  observe({input$i_hp.length
+    if(input$i_primer_type == "hp_NOME" ||input$i_primer_type == "hp_CLEVER" || input$i_primer_type == "hp_bisulfite") {
+      print("changed hairpin length")
+      def_settings[18] <<- input$i_hp.length[1]
+      def_settings[19] <<- input$i_hp.length[2]
+    }
+    print(def_settings)
+  })
+  
+  observe({input$i_strand
+    print("strand for analysis was changed")
+    def_settings[22] <<- input$i_strand
+    print(def_settings)
+  })
+  
+  observe({input$i_primerlength
+    print("primerlength change observed")
+    if (input$i_primer_type != "CrispRCas9PCR"){
+      def_settings[23] <<- input$i_primerlength[1]
+      def_settings[24] <<- input$i_primerlength[2]
+    }
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp
+    print("change in primer melting temperature observed")
+    if (input$i_primer_type != "CrispRCas9PCR"){
+      def_settings[25] <<- input$i_primertemp[1]
+      def_settings[26] <<- input$i_primertemp[2]
+    }
+    print(def_settings)
+  })
+  
+  observe({input$i_meltdiff
+    print("observed change in melting temperature difference")
+    if (input$i_primer_type != "CrispRCas9PCR"){
+      print("changed melting temperature difference")
+      def_settings[27] <<- input$i_meltdiff
+    }
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp
+    print("changed lower bound of amplicon length")
+    def_settings[28] <<- input$i_lengthAmp[1]
+    def_settings[29] <<- input$i_lengthAmp[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC
+    print("changed minGC content")
+    def_settings[30] <<- input$i_minGC
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG
+    print(def_settings)
+  })
+  
+  observe({input$i_minC2T
+    print("observed C 2 T change")
+    if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
+      print("changed C 2 T conversion")
+      def_settings[32] <<- input$i_minC2T
+    }
+    print(def_settings)
+  })
+  
+  observe({input$i_minG2A
+    print("observed G 2 A changed")
+    if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
+      print("changed G 2 A conversion ")
+      def_settings[33] <<- input$i_minG2A
+    }
+    print(def_settings)
+  })
+  
+  observe({input$i_chop.size
+    print("observed change in chopsize")
+    if (input$i_primer_type == "genomic"){
+      print("changed chopsize")
+      def_settings[34] <<- input$i_chop.size
+    }
+    print(def_settings)
   })
   
   # this function gives default settings depending on used primer type
-  defaultPrimerSettings <- function(input){
+  defaultPrimerSettings <- function(primer_type) {
     # low.complexity.primer.removal=TRUE,
     # remove.primers.with.n=input$i_remove.primers.with.n,
     # check4snps=check_snps,
@@ -1644,7 +1934,7 @@ server <- function(input, output) {
     # annotate.genes=FALSE,
     # annotate.cpg.islands=FALSE,
     # create.toplist = TRUE,
-    # max.bins.low.complexity=input$i_max.bins.low.complexity,
+    # max.bins.low.complexity=input$i_max.bins,
     # primer.align.binsize=input$i_primer.align.binsize,
     # min.snps.amplicon=0,
     # max.snps.amplicon=input$i_snps.amplicon,
@@ -1669,17 +1959,14 @@ server <- function(input, output) {
     # min.C2T.primer1 = input$i_minC2T,
     # min.G2A.primer2 = input$i_minG2A,
     # chop.size= input$i_chop.size
-    
-    switch(input$i_primer_type,
-           "genomic" = return(      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3, 200, 500, 0, 0, NA, NA, 30)),
-           "bisulfite" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 20, 32, 48, 60, 5, 200, 400, 0, 5,  3,  3, NA)),
-           "NOME" = return(         c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 20, 32, 48, 60, 6, 200, 400, 5, 5,  3,  3, NA)),
-           "CLEVER" = return(       c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 18, 25, 50, 60, 3, 200, 500, 0, 5,  3,  3, NA)),
-           "hp_bisulfite" = return( c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 5, 200, 400, 0, 1,  3,  3, NA)),
-           "hp_NOME" = return(      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 6, 200, 400, 1, 1,  3,  3, NA)),
-           "hp_CLEVER" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 5, 200, 400, 0, 1,  3,  3, NA)),
-           "CrispRCas9PCR" = return(c()))
+    switch(primer_type,
+           "genomic" = return(      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")),
+           "bisulfite" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 20, 32, 48, 60, 5,  200, 400, 0, 5,  3,  3,  NA, "bisulfite")),
+           "NOME" = return(         c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 20, 32, 48, 60, 6,  200, 400, 5, 5,  3,  3,  NA, "NOME")),
+           "CLEVER" = return(       c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", 18, 25, 50, 60, 3,  200, 500, 0, 5,  3,  3,  NA, "CLEVER")),
+           "hp_bisulfite" = return( c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 5,  200, 400, 0, 1,  3,  3,  NA, "hp_bisulfite")),
+           "hp_NOME" = return(      c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 7, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 20, 32, 48, 60, 6,  200, 400, 1, 1,  3,  3,  NA, "hp_NOME")),
+           "hp_CLEVER" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 18, 25, 50, 60, 3,  200, 500, 0, 1,  3,  3,  NA, "hp_CLEVER")),
+           "CrispRCas9PCR" = return(c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", NA, NA, NA, NA, NA, 200, 500, 0, 1,  NA, NA, NA, "CrispRCas9PCR")))
   }
-  
-  
 }
