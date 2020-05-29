@@ -1805,9 +1805,40 @@ server <- function(input, output) {
     print(def_settings)
   })
   
-  observe({input$i_max.bins
+  # observe all i_max.bin_"primertype" slider
+  observe({input$i_max.bins_genomic
     print("changed max bins low complexity")
-    def_settings[10] <<- input$i_max.bins
+    def_settings[10] <<- input$i_max.bins_genomic
+    print(def_settings)
+  })
+  
+  observe({input$i_max.bins_bis
+    print("changed max bins low complexity")
+    def_settings[10] <<- input$i_max.bins_bis
+    print(def_settings)
+  })
+  
+  observe({input$i_max.bins_hp_bis
+    print("changed max bins low complexity")
+    def_settings[10] <<- input$i_max.bins_hp_bis
+    print(def_settings)
+  })
+  
+  observe({input$i_max.bins_hp_clever
+    print("changed max bins low complexity")
+    def_settings[10] <<- input$i_max.bins_hp_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_max.bins_hp_NOME
+    print("changed max bins low complexity")
+    def_settings[10] <<- input$i_max.bins_hp_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_max.bins_crispr
+    print("changed max bins low complexity")
+    def_settings[10] <<- input$i_max.bins_crispr
     print(def_settings)
   })
   
@@ -1850,49 +1881,275 @@ server <- function(input, output) {
     print(def_settings)
   })
   
-  observe({input$i_primerlength
-    print("primerlength change observed")
-    if (input$i_primer_type != "CrispRCas9PCR"){
-      def_settings[23] <<- input$i_primerlength[1]
-      def_settings[24] <<- input$i_primerlength[2]
-    }
+  observe({input$i_primerlength_genomic
+    def_settings[23] <<- input$i_primerlength_genomic[1]
+    def_settings[24] <<- input$i_primerlength_genomic[2]
     print(def_settings)
   })
   
-  observe({input$i_primertemp
-    print("change in primer melting temperature observed")
-    if (input$i_primer_type != "CrispRCas9PCR"){
-      def_settings[25] <<- input$i_primertemp[1]
-      def_settings[26] <<- input$i_primertemp[2]
-    }
+  observe({input$i_primerlength_bis
+    def_settings[23] <<- input$i_primerlength_bis[1]
+    def_settings[24] <<- input$i_primerlength_bis[2]
     print(def_settings)
   })
   
-  observe({input$i_meltdiff
+  observe({input$i_primerlength_NOME
+    def_settings[23] <<- input$i_primerlength_NOME[1]
+    def_settings[24] <<- input$i_primerlength_NOME[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primerlength_clever
+    def_settings[23] <<- input$i_primerlength_clever[1]
+    def_settings[24] <<- input$i_primerlength_clever[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primerlength_hp_bis
+    def_settings[23] <<- input$i_primerlength_hp_bis[1]
+    def_settings[24] <<- input$i_primerlength_hp_bis[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primerlength_hp_NOME
+    def_settings[23] <<- input$i_primerlength_hp_NOME[1]
+    def_settings[24] <<- input$i_primerlength_hp_NOME[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primerlength_hp_clever
+    def_settings[23] <<- input$i_primerlength_hp_clever[1]
+    def_settings[24] <<- input$i_primerlength_hp_clever[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp_genomic
+    def_settings[25] <<- input$i_primertemp_genomic[1]
+    def_settings[26] <<- input$i_primertemp_genomic[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp_bis
+    def_settings[25] <<- input$i_primertemp_bis[1]
+    def_settings[26] <<- input$i_primertemp_bis[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp_clever
+    def_settings[25] <<- input$i_primertemp_clever[1]
+    def_settings[26] <<- input$i_primertemp_clever[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp_NOME
+    def_settings[25] <<- input$i_primertemp_NOME[1]
+    def_settings[26] <<- input$i_primertemp_NOME[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp_hp_bis
+    def_settings[25] <<- input$i_primertemp_hp_bis[1]
+    def_settings[26] <<- input$i_primertemp_hp_bis[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp__hp_NOME
+    def_settings[25] <<- input$i_primertemp_hp_NOME[1]
+    def_settings[26] <<- input$i_primertemp_hp_NOME[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_primertemp_hp_clever
+    def_settings[25] <<- input$i_primertemp_hp_clever[1]
+    def_settings[26] <<- input$i_primertemp_hp_clever[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_meltdiff_genomic
     print("observed change in melting temperature difference")
-    if (input$i_primer_type != "CrispRCas9PCR"){
-      print("changed melting temperature difference")
-      def_settings[27] <<- input$i_meltdiff
-    }
+    def_settings[27] <<- input$i_meltdiff_genomic
     print(def_settings)
   })
   
-  observe({input$i_lengthAmp
-    print("changed lower bound of amplicon length")
-    def_settings[28] <<- input$i_lengthAmp[1]
-    def_settings[29] <<- input$i_lengthAmp[2]
+  observe({input$i_meltdiff_bis
+    print("observed change in melting temperature difference")
+    def_settings[27] <<- input$i_meltdiff_bis
     print(def_settings)
   })
   
-  observe({input$i_minGC
+  observe({input$i_meltdiff_NOME
+    print("observed change in melting temperature difference")
+    def_settings[27] <<- input$i_meltdiff_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_meltdiff_clever
+    print("observed change in melting temperature difference")
+    def_settings[27] <<- input$i_meltdiff_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_meltdiff_hp_NOME
+    print("observed change in melting temperature difference")
+    def_settings[27] <<- input$i_meltdiff_hp_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_meltdiff_hp_clever
+    print("observed change in melting temperature difference")
+    def_settings[27] <<- input$i_meltdiff_hp_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_meltdiff_hp_bis
+    print("observed change in melting temperature difference")
+    def_settings[27] <<- input$i_meltdiff_hp_bis
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_genomic
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_genomic[1]
+    def_settings[29] <<- input$i_lengthAmp_genomic[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_bis
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_bis[1]
+    def_settings[29] <<- input$i_lengthAmp_bis[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_NOME
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_NOME[1]
+    def_settings[29] <<- input$i_lengthAmp_NOME[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_clever
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_clever[1]
+    def_settings[29] <<- input$i_lengthAmp_clever[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_hp_bis
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_hp_bis[1]
+    def_settings[29] <<- input$i_lengthAmp_hp_bis[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_hp_NOME
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_hp_NOME[1]
+    def_settings[29] <<- input$i_lengthAmp_hp_NOME[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_hp_clever
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_hp_clever[1]
+    def_settings[29] <<- input$i_lengthAmp_hp_clever[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_lengthAmp_crispr
+    print("changed amplicon length")
+    def_settings[28] <<- input$i_lengthAmp_crispr[1]
+    def_settings[29] <<- input$i_lengthAmp_crispr[2]
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC_genomic
     print("changed minGC content")
-    def_settings[30] <<- input$i_minGC
+    def_settings[30] <<- input$i_minGC_genomic
     print(def_settings)
   })
   
-  observe({input$i_minCG
+  observe({input$i_minGC_bis
     print("changed minGC content")
-    def_settings[31] <<- input$i_minCG
+    def_settings[30] <<- input$i_minGC_bis
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC_NOME
+    print("changed minGC content")
+    def_settings[30] <<- input$i_minGC_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC_clever
+    print("changed minGC content")
+    def_settings[30] <<- input$i_minGC_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC_hp_NOME
+    print("changed minGC content")
+    def_settings[30] <<- input$i_minGC_hp_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC_hp_clever
+    print("changed minGC content")
+    def_settings[30] <<- input$i_minGC_hp_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_minGC_crispr
+    print("changed minGC content")
+    def_settings[30] <<- input$i_minGC_crispr
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_genomic
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_genomic
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_bis
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_bis
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_NOME
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_clever
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_hp_bis
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_hp_bis
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_hp_NOME
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_hp_NOME
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_hp_clever
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_hp_clever
+    print(def_settings)
+  })
+  
+  observe({input$i_minCG_crispr
+    print("changed minGC content")
+    def_settings[31] <<- input$i_minCG_crispr
     print(def_settings)
   })
   
