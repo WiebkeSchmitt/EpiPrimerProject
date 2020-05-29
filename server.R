@@ -1599,589 +1599,287 @@ server <- function(input, output) {
       }	
     )
   
-  ################ setting the default values in an reactive event before calling the Primerdesign Pipeline ####################
+  ################ observing changes in settings for calling the Primerdesign Pipeline ####################
   
-  # this function reacts by changing settings according to user input
-  # change only affected settings, for the rest use default from default function below
-  # primerSettings <- observeEvent(c(input$i_primer_type, 
-  #                                   input$i_remove.primers.with.n, 
-  #                                   input$i_allow.repeats.in.amplicon, 
-  #                                   input$i_allow.repeats.in.primers, 
-  #                                   input$i_max.bins,
-  #                                   input$i_primer.align.binsize,
-  #                                   input$i_snps.amplicon,
-  #                                   input$i_snps.primer1, 
-  #                                   input$i_snps.primer2,
-  #                                   input$i_hp.length,
-  #                                   input$i_strand,
-  #                                   input$i_primerlength[1],
-  #                                   input$i_primerlength[2],
-  #                                   input$i_primertemp,
-  #                                   input$i_meltdiff,
-  #                                   input$i_lengthAmp, 
-  #                                   input$i_minGC,
-  #                                   input$i_minCG,
-  #                                   input$i_minC2T,
-  #                                   input$i_minG2A,
-  #                                   input$i_chop.size), {
-  #   # TODO: get these values from sliders or use default!
-  #   # todo: on change event for all variables, change corresponding position of default value vector
-  #                                     
-  #   # this happens only once, or when the primertype is changed.                                  
-  #   #def_settings <- defaultPrimerSettings(input$i_primer_type)
-  #   # did the primertype change? 
-  #                                     
-  #   print("event reactive!")      
-  #   if(as.character(def_settings[35]) != as.character(input$i_primer_type)){
-  #     # new primer type, we need to get new default settings.
-  #     
-  #     #TODO: Only refresh changed slider values! --> need to have 1 observe event for every slider! Changing the primer type will only affect default settings.
-  #     
-  #     # refresh all the sliders to the new default values and then grab current values.
-  #     def_settings <<- defaultPrimerSettings(input)
-  #     # def_settings[1]: default value remains, we always remove primers of low complexity
-  #     def_settings[2] = input$i_remove.primers.with.n
-  #     
-  #     # check4snps and check4repeats is calculated in the function calling the primer design pipeline
-  #     
-  #     def_settings[5] = input$i_allow.repeats.in.primers
-  #     def_settings[6] = input$i_allow.repeats.in.amplicon
-  #     
-  #     # these parameters are hardcoded and will stay the same as in the default settings of all primertypes: 
-  #     # annotate.genes = false 
-  #     # annotate.cpg.islands = false 
-  #     # create.toplist = true
-  #     
-  #     def_settings[10] = input$i_max.bins
-  #     def_settings[11] = input$i_primer.align.binsize
-  #     #def_settings[12] = 0 TODO: Do we need a twosided slider? 
-  #     def_settings[13] = input$i_snps.amplicon
-  #     #def_settings[14] = 0
-  #     def_settings[15] = input$i_snps.primer1
-  #     #def_settings[16] = 0
-  #     def_settings[17] = input$i_snps.primer2
-  #     
-  #     # only update these values, if a hairprin primer design is required
-  #     if(input$i_primer_type == "hp_NOME" ||input$i_primer_type == "hp_CLEVER" || input$i_primer_type == "hp_bisulfite") {
-  #       def_settings[18] = input$i_hp.length[1]
-  #       def_settings[19] = input$i_hp.length[2]
-  #     }
-  #     
-  #     # the adapters are calculated in the function calling the primer design pipeline.
-  #     #def_settings[20] = input$adapterForward
-  #     #def_settings[21] = input$adapterReverse
-  #     
-  #     def_settings[22] = input$i_strand
-  #     
-  #     # do not update for CrispRCas9PCR primertype
-  #     if (input$i_primer_type != "CrispRCas9PCR"){
-  #       print("Wiebke")
-  #       print(input$i_primerlength[1])
-  #       print(input$i_primerlength[2])
-  #       def_settings[23] = input$i_primerlength[1]
-  #       def_settings[24] = input$i_primerlength[2]
-  #       def_settings[25] = input$i_primertemp[1]
-  #       def_settings[26] = input$i_primertemp[2]
-  #     }
-  #     
-  #     # only update this value for all primer types except CrispRCas9
-  #     if (input$i_primer_type != "CrispRCas9PCR"){
-  #       def_settings[27] = input$i_meltdiff
-  #     }
-  #     
-  #     def_settings[28] = input$i_lengthAmp[1]
-  #     def_settings[29] = input$i_lengthAmp[2]
-  #     def_settings[30] = input$i_minGC
-  #     def_settings[31] = input$i_minCG
-  #     
-  #     # do not update for genomic or CrispRCas9
-  #     if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
-  #       def_settings[32] = input$i_minC2T
-  #       def_settings[33] = input$i_minG2A
-  #     }
-  #     
-  #     # only update this value for genomic primers
-  #     if (input$i_primer_type == "genomic"){
-  #       def_settings[34] = input$i_chop.size
-  #     }
-  #     print(def_settings)
-  #     return (def_settings)
-  #     
-  #   } else {
-  #     # only refresh the sliders!
-  #     # def_settings[1]: default value remains, we always remove primers of low complexity
-  #     def_settings[2] = input$i_remove.primers.with.n
-  #     
-  #     # check4snps and check4repeats is calculated in the function calling the primer design pipeline
-  #     
-  #     def_settings[5] = input$i_allow.repeats.in.primers
-  #     def_settings[6] = input$i_allow.repeats.in.amplicon
-  #     
-  #     # these parameters are hardcoded and will stay the same as in the default settings of all primertypes: 
-  #     # annotate.genes = false 
-  #     # annotate.cpg.islands = false 
-  #     # create.toplist = true
-  #     
-  #     def_settings[10] = input$i_max.bins
-  #     def_settings[11] = input$i_primer.align.binsize
-  #     #def_settings[12] = 0 TODO: Do we need a twosided slider? 
-  #     def_settings[13] = input$i_snps.amplicon
-  #     #def_settings[14] = 0
-  #     def_settings[15] = input$i_snps.primer1
-  #     #def_settings[16] = 0
-  #     def_settings[17] = input$i_snps.primer2
-  #     
-  #     # only update these values, if a hairprin primer design is required
-  #     if(input$i_primer_type == "hp_NOME" ||input$i_primer_type == "hp_CLEVER" || input$i_primer_type == "hp_bisulfite") {
-  #       def_settings[18] = input$i_hp.length[1]
-  #       def_settings[19] = input$i_hp.length[2]
-  #     }
-  #     
-  #     # the adapters are calculated in the function calling the primer design pipeline.
-  #     #def_settings[20] = input$adapterForward
-  #     #def_settings[21] = input$adapterReverse
-  #     
-  #     def_settings[22] = input$i_strand
-  #     
-  #     # do not update for CrispRCas9PCR primertype
-  #     if (input$i_primer_type != "CrispRCas9PCR"){
-  #       print("Wiebke")
-  #       print(input$i_primerlength[1])
-  #       print(input$i_primerlength[2])
-  #       def_settings[23] = input$i_primerlength[1]
-  #       def_settings[24] = input$i_primerlength[2]
-  #       def_settings[25] = input$i_primertemp[1]
-  #       def_settings[26] = input$i_primertemp[2]
-  #     }
-  #     
-  #     # only update this value for all primer types except CrispRCas9
-  #     if (input$i_primer_type != "CrispRCas9PCR"){
-  #       def_settings[27] = input$i_meltdiff
-  #     }
-  #     
-  #     def_settings[28] = input$i_lengthAmp[1]
-  #     def_settings[29] = input$i_lengthAmp[2]
-  #     def_settings[30] = input$i_minGC
-  #     def_settings[31] = input$i_minCG
-  #     
-  #     # do not update for genomic or CrispRCas9
-  #     if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
-  #       def_settings[32] = input$i_minC2T
-  #       def_settings[33] = input$i_minG2A
-  #     }
-  #     
-  #     # only update this value for genomic primers
-  #     if (input$i_primer_type == "genomic"){
-  #       def_settings[34] = input$i_chop.size
-  #     }
-  #     print(def_settings)
-  #     return (def_settings)
-  #   }                                 
-  # })
-  
-  # observeEvent for all sliders for primer settings. 
   observe({input$i_primer_type
-    print("changed primer type")
-    # Primer type is changed --> new default settings needed.
     def_settings <<- defaultPrimerSettings(input$i_primer_type)
-    print(def_settings)
   })
   
   observe({input$i_remove.primers.with.n
-    print("changed removal of primers containing N")
     def_settings[2] <<- as.logical(input$i_remove.primers.with.n)
-    print(def_settings)
   })
   
   observe({input$i_allow.repeats.in.primers
-    print("changed allowance of repeats in primers")
     def_settings[5] <<- as.logical(input$i_allow.repeats.in.primers)
-    print(def_settings)
   })
   
   observe({input$i_allow.repeats.in.amplicon
-    print("changed allowance of repeats in amplicons")
     def_settings[6] <<- as.logical(input$i_allow.repeats.in.amplicon)
-    print(def_settings)
   })
   
-  # observe all i_max.bin_"primertype" slider
   observe({input$i_max.bins_genomic
-    print("changed max bins low complexity")
     def_settings[10] <<- input$i_max.bins_genomic
-    print(def_settings)
   })
   
   observe({input$i_max.bins_bis
-    print("changed max bins low complexity")
     def_settings[10] <<- input$i_max.bins_bis
-    print(def_settings)
   })
   
   observe({input$i_max.bins_hp_bis
-    print("changed max bins low complexity")
     def_settings[10] <<- input$i_max.bins_hp_bis
-    print(def_settings)
   })
   
   observe({input$i_max.bins_hp_clever
-    print("changed max bins low complexity")
     def_settings[10] <<- input$i_max.bins_hp_clever
-    print(def_settings)
   })
   
   observe({input$i_max.bins_hp_NOME
-    print("changed max bins low complexity")
     def_settings[10] <<- input$i_max.bins_hp_NOME
-    print(def_settings)
   })
   
   observe({input$i_max.bins_crispr
-    print("changed max bins low complexity")
     def_settings[10] <<- input$i_max.bins_crispr
-    print(def_settings)
   })
   
   observe({input$i_primer.align.binsize
-    print("changed binsize")
     def_settings[11] <<- input$i_primer.align.binsize
-    print(def_settings)
   })
   
   observe({input$i_snps.amplicon
-    print("changed snps in amplicon")
     def_settings[13] <<- input$i_snps.amplicon
-    print(def_settings)
   })
   
   observe({input$i_snps.primer1
-    print("changed snps in primer 1")
     def_settings[15] <<- input$i_snps.primer1
-    print(def_settings)
   })
   
   observe({input$i_snps.primer2
-    print("changed snps in primer 2")
     def_settings[17] <<- input$i_snps.primer2
-    print(def_settings)
   })
   
   observe({input$i_hp.length
-    if(input$i_primer_type == "hp_NOME" ||input$i_primer_type == "hp_CLEVER" || input$i_primer_type == "hp_bisulfite") {
-      print("changed hairpin length")
-      def_settings[18] <<- input$i_hp.length[1]
-      def_settings[19] <<- input$i_hp.length[2]
-    }
-    print(def_settings)
+    def_settings[18] <<- input$i_hp.length[1]
+    def_settings[19] <<- input$i_hp.length[2]
+
   })
   
   observe({input$i_strand
-    print("strand for analysis was changed")
     def_settings[22] <<- input$i_strand
-    print(def_settings)
   })
   
   observe({input$i_primerlength_genomic
     def_settings[23] <<- input$i_primerlength_genomic[1]
     def_settings[24] <<- input$i_primerlength_genomic[2]
-    print(def_settings)
   })
   
   observe({input$i_primerlength_bis
     def_settings[23] <<- input$i_primerlength_bis[1]
     def_settings[24] <<- input$i_primerlength_bis[2]
-    print(def_settings)
   })
   
   observe({input$i_primerlength_NOME
     def_settings[23] <<- input$i_primerlength_NOME[1]
     def_settings[24] <<- input$i_primerlength_NOME[2]
-    print(def_settings)
   })
   
   observe({input$i_primerlength_clever
     def_settings[23] <<- input$i_primerlength_clever[1]
     def_settings[24] <<- input$i_primerlength_clever[2]
-    print(def_settings)
   })
   
   observe({input$i_primerlength_hp_bis
     def_settings[23] <<- input$i_primerlength_hp_bis[1]
     def_settings[24] <<- input$i_primerlength_hp_bis[2]
-    print(def_settings)
   })
   
   observe({input$i_primerlength_hp_NOME
     def_settings[23] <<- input$i_primerlength_hp_NOME[1]
     def_settings[24] <<- input$i_primerlength_hp_NOME[2]
-    print(def_settings)
   })
   
   observe({input$i_primerlength_hp_clever
     def_settings[23] <<- input$i_primerlength_hp_clever[1]
     def_settings[24] <<- input$i_primerlength_hp_clever[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp_genomic
     def_settings[25] <<- input$i_primertemp_genomic[1]
     def_settings[26] <<- input$i_primertemp_genomic[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp_bis
     def_settings[25] <<- input$i_primertemp_bis[1]
     def_settings[26] <<- input$i_primertemp_bis[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp_clever
     def_settings[25] <<- input$i_primertemp_clever[1]
     def_settings[26] <<- input$i_primertemp_clever[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp_NOME
     def_settings[25] <<- input$i_primertemp_NOME[1]
     def_settings[26] <<- input$i_primertemp_NOME[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp_hp_bis
     def_settings[25] <<- input$i_primertemp_hp_bis[1]
     def_settings[26] <<- input$i_primertemp_hp_bis[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp__hp_NOME
     def_settings[25] <<- input$i_primertemp_hp_NOME[1]
     def_settings[26] <<- input$i_primertemp_hp_NOME[2]
-    print(def_settings)
   })
   
   observe({input$i_primertemp_hp_clever
     def_settings[25] <<- input$i_primertemp_hp_clever[1]
     def_settings[26] <<- input$i_primertemp_hp_clever[2]
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_genomic
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_genomic
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_bis
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_bis
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_NOME
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_NOME
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_clever
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_clever
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_hp_NOME
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_hp_NOME
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_hp_clever
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_hp_clever
-    print(def_settings)
   })
   
   observe({input$i_meltdiff_hp_bis
-    print("observed change in melting temperature difference")
     def_settings[27] <<- input$i_meltdiff_hp_bis
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_genomic
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_genomic[1]
     def_settings[29] <<- input$i_lengthAmp_genomic[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_bis
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_bis[1]
     def_settings[29] <<- input$i_lengthAmp_bis[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_NOME
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_NOME[1]
     def_settings[29] <<- input$i_lengthAmp_NOME[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_clever
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_clever[1]
     def_settings[29] <<- input$i_lengthAmp_clever[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_hp_bis
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_hp_bis[1]
     def_settings[29] <<- input$i_lengthAmp_hp_bis[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_hp_NOME
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_hp_NOME[1]
     def_settings[29] <<- input$i_lengthAmp_hp_NOME[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_hp_clever
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_hp_clever[1]
     def_settings[29] <<- input$i_lengthAmp_hp_clever[2]
-    print(def_settings)
   })
   
   observe({input$i_lengthAmp_crispr
-    print("changed amplicon length")
     def_settings[28] <<- input$i_lengthAmp_crispr[1]
     def_settings[29] <<- input$i_lengthAmp_crispr[2]
-    print(def_settings)
   })
   
   observe({input$i_minGC_genomic
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_genomic
-    print(def_settings)
   })
   
   observe({input$i_minGC_bis
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_bis
-    print(def_settings)
   })
   
   observe({input$i_minGC_NOME
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_NOME
-    print(def_settings)
   })
   
   observe({input$i_minGC_clever
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_clever
-    print(def_settings)
   })
   
   observe({input$i_minGC_hp_NOME
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_hp_NOME
-    print(def_settings)
   })
   
   observe({input$i_minGC_hp_clever
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_hp_clever
-    print(def_settings)
   })
   
   observe({input$i_minGC_crispr
-    print("changed minGC content")
     def_settings[30] <<- input$i_minGC_crispr
-    print(def_settings)
   })
   
   observe({input$i_minCG_genomic
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_genomic
-    print(def_settings)
   })
   
   observe({input$i_minCG_bis
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_bis
-    print(def_settings)
   })
   
   observe({input$i_minCG_NOME
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_NOME
-    print(def_settings)
   })
   
   observe({input$i_minCG_clever
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_clever
-    print(def_settings)
   })
   
   observe({input$i_minCG_hp_bis
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_hp_bis
-    print(def_settings)
   })
   
   observe({input$i_minCG_hp_NOME
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_hp_NOME
-    print(def_settings)
   })
   
   observe({input$i_minCG_hp_clever
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_hp_clever
-    print(def_settings)
   })
   
   observe({input$i_minCG_crispr
-    print("changed minGC content")
     def_settings[31] <<- input$i_minCG_crispr
-    print(def_settings)
   })
   
   observe({input$i_minC2T
-    print("observed C 2 T change")
-    if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
-      print("changed C 2 T conversion")
-      def_settings[32] <<- input$i_minC2T
-    }
-    print(def_settings)
+    def_settings[32] <<- input$i_minC2T
   })
   
   observe({input$i_minG2A
-    print("observed G 2 A changed")
-    if (input$i_primer_type != "genomic" && input$i_primer_type != "CrispRCas9PCR"){
-      print("changed G 2 A conversion ")
-      def_settings[33] <<- input$i_minG2A
-    }
-    print(def_settings)
+    def_settings[33] <<- input$i_minG2A
   })
   
   observe({input$i_chop.size
-    print("observed change in chopsize")
-    if (input$i_primer_type == "genomic"){
-      print("changed chopsize")
-      def_settings[34] <<- input$i_chop.size
-    }
-    print(def_settings)
+    def_settings[34] <<- input$i_chop.size
   })
   
-  # this function gives default settings depending on used primer type
+  # default values for the different primer types
   defaultPrimerSettings <- function(primer_type) {
+    # order of the given parameters: 
     # low.complexity.primer.removal=TRUE,
     # remove.primers.with.n=input$i_remove.primers.with.n,
     # check4snps=check_snps,
