@@ -41,6 +41,7 @@ library(seqinr)
 library(xml2)
 library(httr)
 library(httr)
+library(stringr)
 
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 #def_settings <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
@@ -892,11 +893,11 @@ server <- function(input, output) {
       num_imperfect_matches_primer2 = nrow(imperfect_matches_primer2)
       
       # write to summary
-      writeLines(paste("Number of Primerpairs \t", length(Fseq), "\n"), summary_file)
-      writeLines(paste("Number perfect matches forward primer \t", num_perfect_matches_primer1, "\n"), summary_file)
-      writeLines(paste("Number perfect matches reverse primer \t", num_perfect_matches_primer2, "\n"), summary_file)
-      writeLines(paste("Number imperfect matches forward primer \t", num_imperfect_matches_primer1, "\n"), summary_file)
-      writeLines(paste("Number imperfect matches reverse primer \t", num_imperfect_matches_primer2, "\n"), summary_file)
+      writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
+      writeLines(paste("Total number perfect matches forward primer \t", num_perfect_matches_primer1, "\n"), summary_file)
+      writeLines(paste("Total number perfect matches reverse primer \t", num_perfect_matches_primer2, "\n"), summary_file)
+      writeLines(paste("Total number imperfect matches forward primer \t", num_imperfect_matches_primer1, "\n"), summary_file)
+      writeLines(paste("Total number imperfect matches reverse primer \t", num_imperfect_matches_primer2, "\n"), summary_file)
       
       #to check for close regions, always choose the same id and the same chromosome
       #to be able to do this, create GRanges Object from the perfect hits
@@ -973,6 +974,9 @@ server <- function(input, output) {
       }
       
       df1$Productsequence <- sequences
+      
+      # now count CpGs in Sequences by couting themn 
+      df1$CpGs <- str_count(df1$Productsequence, pattern = "cg")
       
       # sub1 <-subset(df1,
       #               F.strand == "+" &
@@ -1091,8 +1095,21 @@ server <- function(input, output) {
       
       #####################################################################################################################################  
       
+      # write Number of created amplicons to summary_file
+      writeLines(paste ("Total number of potential amplicons \t", nrow(df1)), summary_file)
+      
       writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
       close(summary_file)
+      
+      # make an overview file of the job executed
+      overview_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Overview.txt", sep="")
+      file.create(overview_file_path)
+      overview_file <- file(overview_file_path, open="wt")
+      
+      F.PrimerID <- df1[, "F.AmpliconID"]
+      table_df1_FprimerOccurances <- table(F.PrimerID)
+      write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
+      close(overview_file)
       
       showModal(modalDialog(
         title = "Computation of your virtual PCR has finished!",
@@ -1157,6 +1174,40 @@ server <- function(input, output) {
                  scrollY = TRUE),
   fillContainer = TRUE,
   class = "display"
+  )
+  
+  ############# display the overview of the ePCR ###########
+  
+  showOverviewePCR <- reactive({ if (!input$overviewePCR) {return(NULL)}
+    files <- data.frame(results=list.files(paste(getwd(), "PrimerQC", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    print(files)
+    file_path <- as.character(files[["results"]][grep("Overview",files[["results"]])])
+    print(file_path)
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Overview Found For ePCR!",
+        sprintf(paste0("Unfortunateley, we could not find any Overview for your ePCR Job."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Overview found!")
+    }
+    print(file_path)
+    read_file <- read.delim(file_path, header=TRUE, sep=" ")
+    
+    print(read_file)
+    return(read_file)
+  })
+  
+  output$ePCR.overview <- DT::renderDataTable({
+    if (!input$overviewePCR) {return(data.frame())}
+    showOverviewePCR()
+  },
+    extensions = 'FixedHeader',
+    options = list(fixedHeader = FALSE,
+                   scrollY = TRUE),
+    fillContainer = TRUE,
+    class = "display"
   )
   
   ############# display the summary of the ePCR ###########
