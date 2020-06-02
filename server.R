@@ -84,7 +84,7 @@ server <- function(input, output) {
     else if(file.exists(paste(getwd(),input$name,sep="/"))){ #dir.exists(paste(getwd(),"Data",input$name,sep="/") 
       "Dataset already exists!"
       sprintf("Dataset %s already exists, please choose other ID!", input$name)
-    }else{
+    } else {
       
       
       ww <-showModal(modalDialog(
@@ -93,8 +93,6 @@ server <- function(input, output) {
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      #showNotification("The computation of your primers has started!",duration = 25,type="message")
-      
       
       #get input values for Forward and Reverse adapters
       adaF <- input$adapterForward
@@ -109,38 +107,24 @@ server <- function(input, output) {
         adaR <- NA
       }
       
-      if (input$i_allow.repeats.in.primers || input$i_allow.repeats.in.amplicon){
-        check_repeats = TRUE
-      } else {
-        check_repeats = FALSE
-      }
-      
       if (input$i_snps.amplicon != 0 || input$i_snps.primer1 != 0 || input$i_snps.primer2 != 0){
         check_snps = TRUE
       } else {
         check_snps = FALSE
       }
       
-      #call the primer design pipeline
-      # get settings for calling the primer design pipeline
+      # get current settings
       settings_for_pipeline <- def_settings
       
       # now set checks for snps and repeats
       settings_for_pipeline[3] = check_snps
-      settings_for_pipeline[4] = FALSE #check_repeats
+      settings_for_pipeline[4] = FALSE
       
       # now set adapters, only if checkboxes were activated
       settings_for_pipeline[20] = adaF
       settings_for_pipeline[21] = adaR
       
-      #print(settings_for_pipeline)
-      # primer.design.pipeline.refactored(Dataset(), 
-      #                                   path.out = paste(getwd(), input$name, sep="/"),
-      #                                   settings_for_pipeline)
-      
-      print(settings_for_pipeline)
-      
-      #TODO: call this with the appropriate default settings!
+      #call the primer design pipeline
       primer.design.pipeline.refactored(Dataset(),
                              path.out = paste(getwd(),input$name,sep="/"),
                              primer.type = input$i_primer_type,
@@ -198,9 +182,7 @@ server <- function(input, output) {
       paste("ExampleSequenceFile", "txt", sep=".")
     },
     content = function(file){
-      # here we need a full path
       file_path <- file.path(primersDesign_wd, "input_sequences.txt", fsep=.Platform$file.sep)
-      #file.copy(file_to_be_copied, destination_folder)
       file.copy(file_path, file)
     },
     contentType = "txt"
@@ -232,14 +214,13 @@ server <- function(input, output) {
       #Put all file paths inside filesToSave...
       zz <- zip(zipfile=con, files = filesToSave,flags = "-r9X", extras = "",zip ="zip")
       return(zz)
-      
     }
   )
   
   ############# display the top list of primers ########### 
   
   showToplist <- reactive({ if (!input$toplist) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("toplist",files[["results"]])])
     if(length(file_path) == 0){
@@ -276,7 +257,7 @@ server <- function(input, output) {
   showWholelist <- reactive({ if (!input$wholelist) {return(NULL)}
     #wd <- setwd(primersDesign_wd)
     #print(wd)
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("wholelist",files[["results"]])])
     if(length(file_path) == 0){
@@ -334,7 +315,6 @@ server <- function(input, output) {
   })
   
   output$viewSelectlist <- DT::renderDataTable({
-    
     return(showSelectlist())
   },
   extensions = 'FixedHeader',
@@ -344,14 +324,12 @@ server <- function(input, output) {
   class = "display"
   )
   
-  
-  
   ############# display the black list of primers ###########
   
   showBlacklist <- reactive({ if (!input$blacklist) {return(NULL)}
     #wd <- setwd(primersDesign_wd)
     #print(wd)
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("blacklist",files[["results"]])])
     if(length(file_path) == 0){
@@ -385,7 +363,7 @@ server <- function(input, output) {
   showWhitelist <- reactive({ if (!input$whitelist) {return(NULL)}
     #wd <- setwd(primersDesign_wd)
     #print(wd)
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("white",files[["results"]])])
     if(length(file_path) == 0){
@@ -420,7 +398,7 @@ server <- function(input, output) {
   showLogfile <- reactive({ if (!input$logfile) {return(NULL)}
     #wd <- setwd(primersDesign_wd)
     #print(wd)
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
     if(length(file_path) == 0){
@@ -447,7 +425,7 @@ server <- function(input, output) {
   ############# display the primer design by sequence  ###########
   
   showPrimerdesigns.by.sequence <- reactive({ if (!input$primerdesigns.by.sequence) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("primerdesigns.by.sequence",files[["results"]])])
     if(length(file_path) == 0){
@@ -474,7 +452,7 @@ server <- function(input, output) {
   ############# display the summary of the primer design ###########
   
   showSummary <- reactive({ if (!input$Summary) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("summary",files[["results"]])])
     if(length(file_path) == 0){
@@ -501,7 +479,7 @@ server <- function(input, output) {
   ############# display the settings of the primer design ###########
   
   showSettings <- reactive({ if (!input$settings) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(),input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("settings",files[["results"]])])
     if(length(file_path) == 0){
