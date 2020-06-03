@@ -561,12 +561,18 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                             #selectInput("filter_ePCR_results", label = "Select Primerpair", choices = ???, multiple = FALSE),
                                                             #selectizeInput("filter_ePCR_results", label = "Select Primerpair", choices = c("choose" = "", levels(pQC.results$F.AmpliconID)), multiple = FALSE, options = NULL),
                                                             hr(),
-                                                            DT::dataTableOutput("pQC.results")
+                                                            #DT::dataTableOutput("pQC.results"),
+                                                            uiOutput("pQC.results")
                                                    ),
                                                    tabPanel("Overview",
                                                             actionButton("overviewePCR", label = "Overview", icon = icon("sync-alt")),
                                                             hr(),
                                                             DT::dataTableOutput("ePCR.overview")
+                                                            ),
+                                                   tabPanel("Settings",
+                                                            actionButton("settingsePCR", label = "Settings", icon = icon("sync-alt")),
+                                                            hr(),
+                                                            DT::dataTableOutput("ePCR.settings")
                                                             ),
                                                    tabPanel("Summary",
                                                             actionButton("summaryePCR", label = "Summary", icon = icon("sync-alt")),

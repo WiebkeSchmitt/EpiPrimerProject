@@ -15,6 +15,10 @@ library(rtracklayer)
 library(BSgenome)
 library(Biostrings)
 
+## libraries for ePCR  ##
+library(tidyr)
+library(dplyr)
+
 ## tooltips ##
 library(shinyBS)
 library(tippy)
@@ -877,7 +881,7 @@ server <- function(input, output) {
       summary_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Summary.txt", sep="")
       file.create(summary_file_path)
       summary_file <- file(summary_file_path, open="wt")
-      writeLines(paste("PARAMETERS \t SETTINGS \n"), summary_file)
+      writeLines(paste("Parameters \t Settings \n"), summary_file)
       writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
       writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
       
@@ -1105,11 +1109,22 @@ server <- function(input, output) {
       overview_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Overview.txt", sep="")
       file.create(overview_file_path)
       overview_file <- file(overview_file_path, open="wt")
-      
       F.PrimerID <- df1[, "F.AmpliconID"]
       table_df1_FprimerOccurances <- table(F.PrimerID)
       write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
       close(overview_file)
+      
+      # make a settings file of the job executed
+      settings_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Settings.txt", sep="")
+      file.create(settings_file_path)
+      settings_file <- file(settings_file_path, open="wt")
+      writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
+      writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
+      writeLines(paste("Referencegenome \t", input$genome, "\n", sep = ""), settings_file)
+      writeLines(paste("Bisulfiteanalysis \t", input$is_bisulfite, "\n", sep = ""), settings_file)
+      writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
+      writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
+      close(settings_file)
       
       showModal(modalDialog(
         title = "Computation of your virtual PCR has finished!",
@@ -1155,26 +1170,38 @@ server <- function(input, output) {
     
     if(length(primerQC_table_sub) == 0){
       ww <-showModal(modalDialog(
-        title = "No PrimerQC Found!",
+        title = "No ePCR results found!",
         sprintf(paste0("Unfortunateley, we were unable to perform a Primer Quality Control for your input. Please check your job and settings and try again.")),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No PrimerQC found!")
+      stop("No ePCR results found!")
     }
     return(primerQC_table_sub)
   })
   
-  output$pQC.results <- DT::renderDataTable({
+  output$pQC.results <- renderUI({
     if (!input$refreshPQC) {return(data.frame())}
-    preparePQC()
-  },
-  extensions = 'FixedHeader',
-  options = list(fixedHeader = FALSE,
-                 scrollY = TRUE),
-  fillContainer = TRUE,
-  class = "display"
-  )
+    #preparePQC()
+    # select variables to display by selectInput
+    selectedRange <- input$test_select
+    if (length(selectedRange) == 0){
+      return (data.frame())
+    }
+    table <- read.delim(paste0(primersDesign_wd, "/PrimerQC/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
+    selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
+    output$out <- renderDataTable(selTable)
+    dataTableOutput("out")
+  })
+  
+  # display selectInput / Dropdownmenue to filter Results for one primerpair analyzed
+  observeEvent(input$refreshPQC, {
+    insertUI(
+      selector= "#refreshPQC",
+      where = "afterEnd",
+      ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = preparePQC()[6] )
+    )
+  }, once = TRUE)
   
   ############# display the overview of the ePCR ###########
   
@@ -1208,6 +1235,40 @@ server <- function(input, output) {
                    scrollY = TRUE),
     fillContainer = TRUE,
     class = "display"
+  )
+  
+  ############# display the settings of the ePCR ###########
+  
+  showSettingsePCR <- reactive({ if (!input$settingsePCR) {return(NULL)}
+    files <- data.frame(results=list.files(paste(getwd(), "PrimerQC", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    print(files)
+    file_path <- as.character(files[["results"]][grep("Settings",files[["results"]])])
+    print(file_path)
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Settings Found For ePCR!",
+        sprintf(paste0("Unfortunateley, we could not find any Settings for your ePCR Job."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Settings found!")
+    }
+    print(file_path)
+    read_file <- read.delim(file_path, header=TRUE, sep="\t")
+    
+    print(read_file)
+    return(read_file)
+  })
+  
+  output$ePCR.settings <- DT::renderDataTable({
+    if (!input$settingsePCR) {return(data.frame())}
+    showSettingsePCR()
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = FALSE,
+                 scrollY = TRUE),
+  fillContainer = TRUE,
+  class = "display"
   )
   
   ############# display the summary of the ePCR ###########
