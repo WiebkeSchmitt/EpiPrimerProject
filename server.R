@@ -1196,12 +1196,20 @@ server <- function(input, output) {
   
   # display selectInput / Dropdownmenue to filter Results for one primerpair analyzed
   observeEvent(input$refreshPQC, {
+    removeUI(
+      selector= "div:has(>> #test_select)",
+      
+      immediate = TRUE
+    )
     insertUI(
       selector= "#refreshPQC",
       where = "afterEnd",
-      ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = preparePQC()[6] )
+      ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = preparePQC()[6], selected = preparePQC()[6], multiple = FALSE)
     )
-  }, once = TRUE)
+  }#, once = TRUE
+  )
+  
+  
   
   ############# display the overview of the ePCR ###########
   
