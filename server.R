@@ -1092,7 +1092,12 @@ server <- function(input, output) {
     }
     table <- read.delim(paste0(primersDesign_wd, "/PrimerQC/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
     selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
-    output$out <- DT::renderDataTable({selTable}, options = list (scrollY = TRUE))
+    output$out <- DT::renderDataTable({selTable}, extensions = 'FixedHeader',
+                                                  options = list(fixedHeader = FALSE,
+                                                                #scrollY = "200px",
+                                                                scrollX = TRUE),
+                                                  #fillContainer = TRUE,
+                                                  class = "display")
     DT::dataTableOutput("out")
   })
   
