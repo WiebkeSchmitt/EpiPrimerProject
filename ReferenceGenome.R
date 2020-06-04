@@ -98,7 +98,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     if(!dir.exists(paste(z@wd, fsep=.Platform$file.sep))){
       dir.create(file.path(z@wd, "database", fsep=.Platform$file.sep), recursive = TRUE)
       #get the fasta file for the corresponding genome
-      fastafile <- export(getReferenceGenome(z), (file.path(z@wd, "database", paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), compress="no", compression_level=NA, verbose=TRUE)
+      fastafile <- export(getReferenceGenome(z), (file.path(z@wd, paste(z@name, ".fasta", sep=""), fsep=.Platform$file.sep)), compress="no", compression_level=NA, verbose=TRUE)
     }
     
     #now check if makeblastdb is needed for this genome
