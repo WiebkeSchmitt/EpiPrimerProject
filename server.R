@@ -717,8 +717,7 @@ server <- function(input, output) {
       
       #blasting 
       blast_args <- "-task blastn -evalue %s"
-      #costumized_BLAST_args <- sprintf(blast_args, input$Evalue)
-      costumized_BLAST_args <- sprintf(blast_args, 10)
+      costumized_BLAST_args <- sprintf(blast_args, 50)
       print(costumized_BLAST_args)
       
       #blast forward and reverse primer against CT and GA converted genome
@@ -726,6 +725,51 @@ server <- function(input, output) {
       R_CTblast <- predict(dbList$CTdb, Rseq, BLAST_args = costumized_BLAST_args)
       F_GAblast <- predict(dbList$GAdb, Fseq, BLAST_args = costumized_BLAST_args)
       R_GAblast <- predict(dbList$GAdb, Rseq, BLAST_args = costumized_BLAST_args)
+      
+      # filter out hits with too many mismatches
+      F_CTblast <- subset(F_CTblast, 
+                              Mismatches <= input$primer_mismatches)
+      R_CTblast <- subset(R_CTblast, 
+                              Mismatches <= input$primer_mismatches)
+      F_GAblast <- subset(F_GAblast, 
+                         Mismatches <= input$primer_mismatches)
+      R_GAblast <- subset(R_GAblast, 
+                          Mismatches <= input$primer_mismatches)
+      
+      # write this to table
+      result_folder <- paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep="")
+      dir.create(result_folder)
+      #write blast results for both primers to table
+      write.table(F_CTblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_C_to_T_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(R_CTblast, paste(result_folder, "\\Blast_Hits_Reverse_Primers_C_to_T_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F)
+      write.table(F_GAblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_G_to_A_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(R_GAblast, paste(result_folder, "\\Blast_Hits_Reverse_Primers_G_to_A_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      
+      #initialize summary file
+      summary_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Summary.txt", sep="")
+      file.create(summary_file_path)
+      summary_file <- file(summary_file_path, open="wt")
+      writeLines(paste("Parameters \t Settings \n"), summary_file)
+      writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
+      writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
+      
+      #calculate number of perfect and imperfect matches
+      perfect_matches_primer1_C2T = F_CTblast[F_CTblast$Perc.Ident == 100, ]
+      perfect_matches_primer2_C2T = R_CTblast[R_CTblast$Perc.Ident == 100, ]
+      imperfect_matches_primer1_G2A = F_GAblast[F_GAblast$Perc.Ident != 100, ]
+      imperfect_matches_primer2_G2A = R_GAblast[R_GAblast$Perc.Ident != 100, ]
+      
+      num_perfect_matches_primer1_C2T = nrow(perfect_matches_primer1_C2T)
+      num_perfect_matches_primer2_C2T = nrow(perfect_matches_primer2_C2T)
+      num_imperfect_matches_primer1_G2A = nrow(imperfect_matches_primer1_G2A)
+      num_imperfect_matches_primer2_G2A = nrow(imperfect_matches_primer2_G2A)
+      
+      # write to summary
+      writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
+      writeLines(paste("Total number perfect matches forward primer \t", perfect_matches_primer1_C2T, "\n"), summary_file)
+      writeLines(paste("Total number perfect matches reverse primer \t", num_perfect_matches_primer2_C2T, "\n"), summary_file)
+      writeLines(paste("Total number imperfect matches forward primer \t", num_imperfect_matches_primer1_G2A, "\n"), summary_file)
+      writeLines(paste("Total number imperfect matches reverse primer \t", num_imperfect_matches_primer2_G2A, "\n"), summary_file)
       
       # finding genomic ranges for all hits 
       hits<- c(
@@ -794,27 +838,15 @@ server <- function(input, output) {
       
       colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
       
-      sub1 <-subset(df1,
+      df1 <-subset(df1,
                     F.strand == "+" &
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
                       abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
       
-      showModal(modalDialog(
-        title = "Computation of your virtual PCR has finished!",
-        paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
-        easyClose = FALSE,
-        footer = modalButton("Close")))
       
-      # write a table
-      if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", sep=""))){
-        dir.create(paste(primersDesign_wd, "/PrimerQC/", sep=""))
-      }
-      write.table(sub1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
-                  col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
-      
-      return (paste0("Finished virtual PCR for Bisulfite Primers!"))
+      print("Finished ePCR part for bisulfite Primerpairs")
       
     } else {
       print("Starting non-bisulfite ePCR")
@@ -942,228 +974,98 @@ server <- function(input, output) {
       overlap_hits <- findOverlaps(hits, hits, maxgap=input$gap, ignore.strand=TRUE)
       df1 <-cbind(as.data.frame(hits[overlap_hits@from,]), as.data.frame(hits[overlap_hits@to,]))
       colnames(df1) <- paste(rep(c("F", "R"), each=11), colnames(df1), sep=".")
-
-      # add used ReferenceGenome and PCR Productsize
-      df1$assembly <- getAssemblyName(refgen)
-      df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start+1, df1$F.start-df1$R.end+1)
       
-      # calculate sequeces only for fragments longer than 50 bp 
-      df1 <- subset(df1,
-                    Productsize >= 50)
-      
-      #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
-      chr <- df1$F.seqnames
-      start <- ifelse(df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
-      end <- ifelse(!df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
-      
-      assembly <- getAssemblyName(refgen)
-      url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
-      
-      if(length(url.full) != 0){
-        r <- GET(url.full[1])
-        s <- content(r)
-        seq <- xml_find_all(s, ".//DNA")
-        split1 <- strsplit(as.character(seq), ">")[[1]][2]
-        split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        sequences <- c(as.character(gsub("[\r\n]", "", split2)))
-      }
-      
-      for (i in 2:length(url.full)){
-        r <- GET(url.full[i]) 
-        s <- content(r)
-        seq <- xml_find_all(s, ".//DNA")
-        split1 <- strsplit(as.character(seq), ">")[[1]][2]
-        split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
-      }
-      
-      df1$Productsequence <- sequences
-      
-      # now count CpGs in Sequences by couting themn 
-      df1$CpGs <- str_count(df1$Productsequence, pattern = "cg")
-      
-      # sub1 <-subset(df1,
-      #               F.strand == "+" &
-      #                 R.strand == "-" &
-      #                 as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
-      #                 as.character(F.seqnames) == as.character(R.seqnames) & 
-      #                 abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
-      
-      ##############################################################################################################################################
-      # continue with processing imperfect blast matches
-      #print("starting calculation of imperfect primer matches... ")
-      
-      # first step: get 3' Primer Portion according to user input
-      #primer_portion = input$partial_match
-      
-      #Fseq_portion = Biostrings::BStringSet(Fseq, start=width(Fseq)-primer_portion, end=width(Fseq))
-      #Rseq_portion = Biostrings::BStringSet(Rseq, start=width(Rseq)-primer_portion, end=width(Rseq))
-
-      # blast Primerportions again, Reference Genome stays the same
-      #costumized_BLAST_args <- sprintf(blast_args, 50)
-      #print(Fseq)
-      #print(Fseq_portion)
-      #primer1_portion_blast <- predict(dbList$genomeDB, Fseq_portion, BLAST_args = costumized_BLAST_args)
-      #primer2_portion_blast <- predict(dbList$genomeDB, Rseq_portion, BLAST_args = costumized_BLAST_args)
-      
-      #write blast results of primer portions for both primers to table
-      #write.table(primer1_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      #write.table(primer2_portion_blast, paste0(result_folder, "\\Blast_Hits_Partial_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      
-      #calculate number of perfect and imperfect matches for primer portions
-      #perfect_matches_primer1_portion = primer1_portion_blast[primer1_portion_blast$Perc.Ident == 100, ]
-      #perfect_matches_primer2_portion = primer2_portion_blast[primer2_portion_blast$Perc.Ident == 100, ]
-      
-      #num_perfect_partial_matches_primer1 = nrow(perfect_matches_primer1_portion)
-      #num_perfect_partial_matches_primer2 = nrow(perfect_matches_primer2_portion)
-      
-      # write these values to summary
-      #print(num_perfect_partial_matches_primer1)
-      #print(num_perfect_partial_matches_primer2)
-      #writeLines(paste("Number perfect matches partial forward primer \t", num_perfect_partial_matches_primer1, "\n"), summary_file)
-      #writeLines(paste("Number perfect matches partial reverse primer \t", num_perfect_partial_matches_primer2, "\n"), summary_file)
-      
-      # calculate overlaps for partial hits
-      # finding genomic ranges for all partial hits 
-      # hits_imperfect <- c(
-      #   GRanges(
-      #     Source="PartialForwardPrimerBlast", #name of used ReferenceGenome
-      #     AmpliconID = perfect_matches_primer1_portion[["QueryID"]],
-      #     seqnames = perfect_matches_primer1_portion[["SubjectID"]],
-      #     ranges = IRanges(
-      #       start=pmin(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]]),
-      #       end = pmax(perfect_matches_primer1_portion[["S.start"]], perfect_matches_primer1_portion[["S.end"]])
-      #     ), 
-      #     strand=ifelse(perfect_matches_primer1_portion[["S.start"]]>perfect_matches_primer1_portion[["S.end"]],"-","+"), 
-      #     length=perfect_matches_primer1_portion[["Alignment.Length"]], 
-      #     mismatches=perfect_matches_primer1_portion[["Mismatches"]], 
-      #     bit_score=perfect_matches_primer1_portion[["Bits"]], 
-      #     e_value=perfect_matches_primer1_portion[["E"]]
-      #   ),
-      #   GRanges(
-      #     Source="PartialReversePrimerBlast",
-      #     AmpliconID = perfect_matches_primer2_portion[["QueryID"]],
-      #     seqnames = perfect_matches_primer2_portion[["SubjectID"]],
-      #     ranges = IRanges(
-      #       start=pmin(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]]),
-      #       end = pmax(perfect_matches_primer2_portion[["S.start"]], perfect_matches_primer2_portion[["S.end"]])
-      #     ),
-      #     strand=ifelse(perfect_matches_primer2_portion[["S.start"]]>perfect_matches_primer2_portion[["S.end"]],"-","+"),
-      #     length=perfect_matches_primer2_portion[["Alignment.Length"]],
-      #     mismatches=perfect_matches_primer2_portion[["Mismatches"]],
-      #     bit_score=perfect_matches_primer2_portion[["Bits"]],
-      #     e_value=perfect_matches_primer2_portion[["E"]]
-      #   )
-      # )
-      # 
-      # #overlapping between genomic ranges and processing results
-      # overlap_hits_imperfect <- findOverlaps(hits_imperfect, hits_imperfect, maxgap=input$gap, ignore.strand=TRUE)
-      # df_imperfect <-cbind(as.data.frame(hits_imperfect[overlap_hits_imperfect@from,]),as.data.frame(hits_imperfect[overlap_hits_imperfect@to,]))
-      # colnames(df_imperfect)<-paste(rep(c("F","R"),each=11), colnames(df_imperfect), sep=".")
-      # 
-      # # add used ReferenceGenome and PCR Productsize and 3' Primerportion
-      # df_imperfect$assembly <- getAssemblyName(refgen)
-      # df_imperfect$Productsize <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$R.end-df_imperfect$F.start+1, df_imperfect$F.start-df_imperfect$R.end+1)
-      # 
-      # #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
-      # chr <- df_imperfect$F.seqnames
-      # start <- ifelse(df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
-      # end <- ifelse(!df_imperfect$F.start <= df_imperfect$R.end, df_imperfect$F.start, df_imperfect$R.end)
-      # 
-      # assembly <- getAssemblyName(refgen)
-      # url.full_imp <- paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
-      # 
-      # if(length(url.full_imp) != 0){
-      #   r <- GET(url.full_imp[1])
-      #   s <- content(r)
-      #   seq <- xml_find_all(s, ".//DNA")
-      #   split1 <- strsplit(as.character(seq), ">")[[1]][2]
-      #   split2 <- strsplit(as.character(split1), "<")[[1]][1]
-      #   sequences <- c(as.character(gsub("[\r\n]", "", split2)))
-      # }
-      # 
-      # for (i in 2:length(url.full_imp)){
-      #   r <- GET(url.full_imp[i]) 
-      #   s <- content(r)
-      #   seq <- xml_find_all(s, ".//DNA")
-      #   split1 <- strsplit(as.character(seq), ">")[[1]][2]
-      #   split2 <- strsplit(as.character(split1), "<")[[1]][1]
-      #   sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
-      # }
-      # 
-      # df_imperfect$Productsequence <- sequences
-      # 
-      # # write df_imperfect to file
-      # write.table(df_imperfect, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_imperfect.txt", sep=""),
-      #             col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
-      
-      #####################################################################################################################################  
-      
-      # write Number of created amplicons to summary_file
-      writeLines(paste ("Total number of potential amplicons \t", nrow(df1)), summary_file)
-      
-      writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
-      close(summary_file)
-      
-      # make an overview file of the job executed
-      overview_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Overview.txt", sep="")
-      file.create(overview_file_path)
-      overview_file <- file(overview_file_path, open="wt")
-      F.PrimerID <- df1[, "F.AmpliconID"]
-      table_df1_FprimerOccurances <- table(F.PrimerID)
-      write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
-      close(overview_file)
-      
-      # make a settings file of the job executed
-      settings_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Settings.txt", sep="")
-      file.create(settings_file_path)
-      settings_file <- file(settings_file_path, open="wt")
-      writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
-      writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
-      writeLines(paste("Referencegenome \t", input$genome, "\n", sep = ""), settings_file)
-      writeLines(paste("Bisulfiteanalysis \t", input$is_bisulfite, "\n", sep = ""), settings_file)
-      writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
-      writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
-      close(settings_file)
-      
-      showModal(modalDialog(
-        title = "Computation of your virtual PCR has finished!",
-        paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
-        easyClose = FALSE,
-        footer = modalButton("Close")))
-      
-      # write a table instead of returning the results
-      if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))){
-        dir.create(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))
-      }
-      write.table(df1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
-                  col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
-      
-      end = Sys.time()
-      runtime = end - start
-      
-      return ("Finished virtual PCR for genomic Primers!")
-      
+    } # end of non-bisulfite ePCR
+    
+    # add used ReferenceGenome and PCR Productsize
+    df1$assembly <- getAssemblyName(refgen)
+    df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start+1, df1$F.start-df1$R.end+1)
+    
+    # calculate sequeces only for fragments longer than 50 bp 
+    df1 <- subset(df1,
+                  Productsize >= 50)
+    
+    #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
+    chr <- df1$F.seqnames
+    start <- ifelse(df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
+    end <- ifelse(!df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
+    
+    assembly <- getAssemblyName(refgen)
+    url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
+    
+    if(length(url.full) != 0){
+      r <- GET(url.full[1])
+      s <- content(r)
+      seq <- xml_find_all(s, ".//DNA")
+      split1 <- strsplit(as.character(seq), ">")[[1]][2]
+      split2 <- strsplit(as.character(split1), "<")[[1]][1]
+      sequences <- c(as.character(gsub("[\r\n]", "", split2)))
     }
+    
+    for (i in 2:length(url.full)){
+      r <- GET(url.full[i]) 
+      s <- content(r)
+      seq <- xml_find_all(s, ".//DNA")
+      split1 <- strsplit(as.character(seq), ">")[[1]][2]
+      split2 <- strsplit(as.character(split1), "<")[[1]][1]
+      sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
+    }
+    
+    df1$Productsequence <- sequences
+    
+    # now count CpGs in Sequences by couting themn 
+    df1$CpGs <- str_count(df1$Productsequence, pattern = "cg")
+    
+    # write Number of created amplicons to summary_file
+    writeLines(paste ("Total number of potential amplicons \t", nrow(df1)), summary_file)
+    
+    writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
+    close(summary_file)
+    
+    # make an overview file of the job executed
+    overview_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Overview.txt", sep="")
+    file.create(overview_file_path)
+    overview_file <- file(overview_file_path, open="wt")
+    F.PrimerID <- df1[, "F.AmpliconID"]
+    table_df1_FprimerOccurances <- table(F.PrimerID)
+    write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
+    close(overview_file)
+    
+    # make a settings file of the job executed
+    settings_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Settings.txt", sep="")
+    file.create(settings_file_path)
+    settings_file <- file(settings_file_path, open="wt")
+    writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
+    writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
+    writeLines(paste("Referencegenome \t", input$genome, "\n", sep = ""), settings_file)
+    writeLines(paste("Bisulfiteanalysis \t", input$is_bisulfite, "\n", sep = ""), settings_file)
+    writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
+    writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
+    close(settings_file)
+    
+    showModal(modalDialog(
+      title = "Computation of your virtual PCR has finished!",
+      paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
+      easyClose = FALSE,
+      footer = modalButton("Close")))
+    
+    # write a table instead of returning the results
+    if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))){
+      dir.create(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))
+    }
+    write.table(df1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
+                col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+    
+    end = Sys.time()
+    runtime = end - start
+    
+    return ("Finished virtual PCR!")
   })
   
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
     wd <- primersDesign_wd
     primerQC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
-    
-    # filter here for the requirements from input
-    # primerQC_table <- subset(primer_QC_table,
-    #                              F.bit_score>=25 &
-    #                                R.bit_score>=25  &
-    #                                #F.e_value<=input$Evalue  &
-    #                                F.e_value<=10 &
-    #                                #R.e_value<=input$Evalue  &
-    #                                R.e_value<=10 &
-    #                                F.mismatches <= input$primer_mismatches &
-    #                                R.mismatches <= input$primer_mismatches &
-    #                                Productsize >= 50
-    # )
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
     primerQC_table_sub <- subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
@@ -1190,8 +1092,8 @@ server <- function(input, output) {
     }
     table <- read.delim(paste0(primersDesign_wd, "/PrimerQC/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
     selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
-    output$out <- renderDataTable(selTable)
-    dataTableOutput("out")
+    output$out <- DT::renderDataTable({selTable}, options = list (scrollY = TRUE))
+    DT::dataTableOutput("out")
   })
   
   # display selectInput / Dropdownmenue to filter Results for one primerpair analyzed
