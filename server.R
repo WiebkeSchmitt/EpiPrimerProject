@@ -50,7 +50,7 @@ library(stringr)
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 #def_settings <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   ### global variable for Primersettings
   def_settings <<- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
   
@@ -510,7 +510,7 @@ server <- function(input, output) {
   
   #################### display graphics of primer design#############
   
-  showGraphics <-eventReactive(input$graphics,{
+  showGraphics <-eventReactive(input$graphics, {
     files <- data.frame(graphs=list.files(paste(getwd(),input$name,"PrimerAnalysis","graphics",sep="/"),full.names=TRUE, pattern =".png"))
   })
   
@@ -1946,4 +1946,20 @@ server <- function(input, output) {
            "hp_CLEVER" = return(    c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, 50, 200, NA, NA, "top", 18, 25, 50, 60, 3,  200, 500, 0, 1,  3,  3,  NA, "hp_CLEVER")),
            "CrispRCas9PCR" = return(c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA, "top", NA, NA, NA, NA, NA, 200, 500, 0, 1,  NA, NA, NA, "CrispRCas9PCR")))
   }
+  
+  ######### switch tab when button is pressed ############
+  observeEvent(input$switch_to_advanced, {
+    newtab <- switch(input$tabs,
+                     "PrimerDesign" = "AdvancedPrimerSettings"
+                     )
+    updateTabItems(session, "tabs", newtab)
+  })
+  
+  ######### switch tab when button is pressed ############
+  observeEvent(input$switch_to_graphs, {
+    newtab <- switch(input$tabs,
+                     "PDresults" = "PDgraphs"
+    )
+    updateTabItems(session, "tabs", newtab)
+  })
 }

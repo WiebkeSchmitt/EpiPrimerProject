@@ -43,14 +43,14 @@ dbHeader <- dashboardHeader(title = "EpiPrimer")
 ui <- fluidPage(dashboardPage(skin = "yellow",
                               dashboardHeader(title = "EpiPrimer"),#dbHeader,
                               dashboardSidebar(
-                                sidebarMenu(
+                                sidebarMenu(id = "tabs",
                                   menuItem("Primer Design Start", tabName = "PrimerDesign", icon = icon("dna")),
                                   menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dashboard")),
                                   menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
                                   menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
                                   menuItem("ePCR Start", tabName = "PrimerQC", icon = icon("check-circle")),
                                   menuItem("Results of ePCR", tabName = "PrimerQCResults", icon = icon("list-ol")),
-                                  menuItem("Imprint", tabName = "Imprint", icon = icon("paw"))
+                                  menuItem("Imprint", tabName = "Imprint", icon = icon("university"))
                                 )
                               ),
                               dashboardBody(
@@ -112,11 +112,13 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               hr(),
                                               checkboxInput("i_remove.primers.with.n", label = h4("Remove primers that contain N bases"), TRUE),
                                               checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
-                                              checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
+                                              checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE),
+                                              actionButton("switch_to_advanced", label="Advanced Primer Settings", icon("cogs"),
+                                                           style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:400px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px")
                                           ),
                                           fluidRow(
                                             actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
-                                                         style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:100px; margin-right:0px"),
+                                                         style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px"),
                                             bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished.", "left")
                                           )
                                                 )
@@ -497,7 +499,10 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                 hr(),
                                                 downloadButton('downloadSelectedPrimers', 'Selected Primers')
                                             )
-                                          )
+                                          ),
+                                          actionButton("switch_to_graphs", label = "View Graphs", icon("chart-bar"),
+                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:1225px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px")
+                                          
                                   ),
                                   tabItem(tabName = "PDgraphs",
                                           box(title = h2("Graphs"),
