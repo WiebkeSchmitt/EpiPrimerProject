@@ -1004,11 +1004,26 @@ server <- function(input, output) {
     
     for (i in 2:length(url.full)){
       r <- GET(url.full[i]) 
-      s <- content(r)
-      seq <- xml_find_all(s, ".//DNA")
-      split1 <- strsplit(as.character(seq), ">")[[1]][2]
-      split2 <- strsplit(as.character(split1), "<")[[1]][1]
-      sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
+      # filter errors from content function
+      is_err <- tryCatch(
+        s <- content(r),
+        error = function(e){
+          print("Error occured when fetching DNA sequence!")
+        }
+      )
+      
+      # handle occurance of errors from content function
+      if(!inherits(is_err, "error")){
+        #REAL WORK
+        seq <- xml_find_all(s, ".//DNA")
+        split1 <- strsplit(as.character(seq), ">")[[1]][2]
+        split2 <- strsplit(as.character(split1), "<")[[1]][1]
+        sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
+      } else {
+        # ERROR HANDLING
+        sequences <- append (sequences, "NotFound")
+        next()
+      }
     }
     
     df1$Productsequence <- sequences
@@ -1068,7 +1083,6 @@ server <- function(input, output) {
     primerQC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
-    print("subsetting")
     primerQC_table_sub = subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
     if(length(primerQC_table_sub) == 0){
