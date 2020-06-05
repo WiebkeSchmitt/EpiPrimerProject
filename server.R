@@ -1068,12 +1068,13 @@ server <- function(input, output) {
     primerQC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
-    primerQC_table_sub <- subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
+    print("subsetting")
+    primerQC_table_sub = subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
     if(length(primerQC_table_sub) == 0){
       ww <-showModal(modalDialog(
         title = "No ePCR results found!",
-        sprintf(paste0("Unfortunateley, we were unable to perform a Primer Quality Control for your input. Please check your job and settings and try again.")),
+        sprintf(paste0("Unfortunateley, we were unable to perform a Primer Quality Control for your input. Please check your settings and try again.")),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
@@ -1092,6 +1093,8 @@ server <- function(input, output) {
     }
     table <- read.delim(paste0(primersDesign_wd, "/PrimerQC/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
     selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
+    selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
+    
     output$out <- DT::renderDataTable({selTable}, extensions = 'FixedHeader',
                                                   options = list(fixedHeader = FALSE,
                                                                 #scrollY = "200px",
