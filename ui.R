@@ -19,24 +19,6 @@ library(Biostrings)
 library(shinyBS)
 library(tippy)
 
-## for Flowcell QC ##
-mypath <- ("./flowcell_package/newStruct_trimmed")
-choices_info <- data.frame(path=list.files(mypath,full.names=TRUE, pattern =".csv"))
-print(choices_info[["path"]])
-choices_info[["nameS"]]<-sapply(strsplit(as.character(choices_info[["path"]]),"/"),function(x) x[length(x)])
-print(choices_info[["nameS"]])
-
-## for Reads Extraction ##
-# the script needs Trim galore package 
-# HTML needs Trim galore as well 
-flowcell_folders <- data.frame(path=list.dirs(mypath,full.names=TRUE,recursive = FALSE))
-packages_names <- sapply(flowcell_folders$path,function(x) basename(as.character(x)))
-
-## For Reads Alignment ##
-wrapper_file <- file.path(primersDesign_wd, "wrapper.r", fsep=.Platform$file.sep)
-source(wrapper_file)
-library(seqinr)
-
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 
 ## UI using shiny dashboard ##
