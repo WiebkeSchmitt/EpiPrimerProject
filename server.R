@@ -153,7 +153,7 @@ server <- function(input, output, session) {
       sprintf("Finished Computation!!")
       ww <-showModal(modalDialog(
         title = "Primers are READY!",
-        sprintf(paste0("You can find details concerning your run in the next tap and further analyze them using the created files in the folder %s"),input$name),
+        sprintf(paste0("You can find details concerning your run in the Menueitem 'Results of Primer Design' and further analyze them using the created files in the folder %s"),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
@@ -966,11 +966,22 @@ server <- function(input, output, session) {
     
     if(length(url.full) != 0){
       r <- GET(url.full[1])
-      s <- content(r)
-      seq <- xml_find_all(s, ".//DNA")
-      split1 <- strsplit(as.character(seq), ">")[[1]][2]
-      split2 <- strsplit(as.character(split1), "<")[[1]][1]
-      sequences <- c(as.character(gsub("[\r\n]", "", split2)))
+      is_err <- tryCatch(
+        s <- content(r),
+        error = function(e){
+          print("Error occured when fetching DNA sequence!")
+        }
+      )
+      if(!inherits(is_err, "error")){
+        seq <- xml_find_all(s, ".//DNA")
+        split1 <- strsplit(as.character(seq), ">")[[1]][2]
+        split2 <- strsplit(as.character(split1), "<")[[1]][1]
+        sequences <- c(as.character(gsub("[\r\n]", "", split2)))
+      } else {
+        # ERROR HANDLING
+        sequences <- append (sequences, "NotFound")
+        next()
+      }
     }
     
     for (i in 2:length(url.full)){
