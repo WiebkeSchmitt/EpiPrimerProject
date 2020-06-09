@@ -27,10 +27,10 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                               dashboardSidebar(
                                 sidebarMenu(id = "tabs",
                                   menuItem("Primer Design Start", tabName = "PrimerDesign", icon = icon("dna")),
-                                  menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dashboard")),
+                                  #menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dashboard")),
                                   menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
-                                  menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")),
-                                  menuItem("ePCR Start", tabName = "PrimerQC", icon = icon("check-circle")),
+                                  #menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")), 
+                                  menuItem("ePCR Start", tabName = "PrimerQC", icon = icon("dna")), #check-circle
                                   menuItem("Results of ePCR", tabName = "PrimerQCResults", icon = icon("list-ol")),
                                   menuItem("Imprint", tabName = "Imprint", icon = icon("university"))
                                 )
@@ -88,337 +88,660 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                              choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
                                                              selected = "top"),
                                                 bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "left", "hover")
-                                              ),
-                                              hr(),
-                                              helpText( h3("Choose some options for your primer design: ")),
-                                              hr(),
-                                              checkboxInput("i_remove.primers.with.n", label = h4("Remove primers that contain N bases"), TRUE),
-                                              checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
-                                              checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE),
-                                              actionButton("switch_to_advanced", label="Advanced Primer Settings", icon("cogs"),
-                                                           style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:400px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px")
+                                              )
+                                              #actionButton("switch_to_advanced", label="Advanced Primer Settings", icon("cogs"),
+                                              #             style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:400px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px")
+                                          ),
+                                          hr(),
+                                          box(
+                                            fluidRow(column(width=6,
+                                                            sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the Amplicon"),
+                                                                        min = 0, max = 80, value = 10),
+                                                            sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the Forward Primer"),
+                                                                        min = 0, max = 80, value = 0),
+                                                            sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the Reverse Primer"),
+                                                                        min = 0, max = 80, value = 0),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'genomic'",
+                                                              sliderInput("i_max.bins_genomic", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 5)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'bisulfite'",
+                                                              sliderInput("i_max.bins_bis", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 7)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'NOME'",
+                                                              sliderInput("i_max.bins_NOME", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 7)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'CLEVER'",
+                                                              sliderInput("i_max.bins_CLEVER", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 5)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_bisulfite'",
+                                                              sliderInput("i_max.bins_hp_bis", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 7)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_NOME'",
+                                                              sliderInput("i_max.bins_hp_NOME", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 7)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_CLEVER'",
+                                                              sliderInput("i_max.bins_hp_clever", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 5)
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                                              sliderInput("i_max.bins_crispr", label = h4("Maximum length of monomeric base stretches"),
+                                                                          min = 0, max = 10, value = 5)
+                                                            ),
+                                                            sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
+                                                                        min = 0, max = 50, value = 12),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'genomic'",
+                                                              sliderInput("i_primerlength_genomic", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(18, 25))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'bisulfite'",
+                                                              sliderInput("i_primerlength_bis", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(20, 32))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'NOME'",
+                                                              sliderInput("i_primerlength_NOME", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(20, 32))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'CLEVER'",
+                                                              sliderInput("i_primerlength_clever", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(18, 25))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_bisulfite'",
+                                                              sliderInput("i_primerlength_hp_bis", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(20, 32))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_NOME'",
+                                                              sliderInput("i_primerlength_hp_NOME", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(20, 32))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_CLEVER'",
+                                                              sliderInput("i_primerlength_hp_clever", label = h4("Primer Length"),
+                                                                          min = 10, max = 80, value = c(18, 25))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'genomic'",
+                                                              sliderInput("i_primertemp_genomic", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(50, 60))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'bisulfite'",
+                                                              sliderInput("i_primertemp_bis", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(48, 60))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'NOME'",
+                                                              sliderInput("i_primertemp_NOME", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(48, 60))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'CLEVER'",
+                                                              sliderInput("i_primertemp_clever", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(50, 60))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_bisulfite'",
+                                                              sliderInput("i_primertemp_hp_bis", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(48, 60))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_NOME'",
+                                                              sliderInput("i_primertemp_hp_NOME", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(48, 60))
+                                                            ),
+                                                            conditionalPanel(
+                                                              condition = "input.i_primer_type == 'hp_CLEVER'",
+                                                              sliderInput("i_primertemp_hp_clever", label = h4("Primer Melting Temperature"),
+                                                                          min = 40, max = 75, value = c(50, 60))
+                                                            )
+                                            ),
+                                            column(width = 6,
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'genomic'",
+                                                     sliderInput("i_meltdiff_genomic", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 3)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'bisulfite'",
+                                                     sliderInput("i_meltdiff_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 5)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'NOME'",
+                                                     sliderInput("i_meltdiff_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 6)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'CLEVER'",
+                                                     sliderInput("i_meltdiff_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 3)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'hp_bisulfite'",
+                                                     sliderInput("i_meltdiff_hp_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 5)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'hp_NOME'",
+                                                     sliderInput("i_meltdiff_hp_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 6)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type == 'hp_CLEVER'",
+                                                     sliderInput("i_meltdiff_hp_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                                                 min = 0, max = 10, value = 3)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'genomic'",
+                                                     sliderInput("i_lengthAmp_genomic", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,500))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'bisulfite'",
+                                                     sliderInput("i_lengthAmp_bis", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,400))
+                                                   ),  
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'NOME'",
+                                                     sliderInput("i_lengthAmp_NOME", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,400))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'CLEVER'",
+                                                     sliderInput("i_lengthAmp_clever", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,500))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_bisulfite'",
+                                                     sliderInput("i_lengthAmp_hp_bis", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,400))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_NOME'",
+                                                     sliderInput("i_lengthAmp_hp_NOME", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,400))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_CLEVER'",
+                                                     sliderInput("i_lengthAmp_hp_clever", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,500))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                                     sliderInput("i_lengthAmp_crispr", label = h4("Amplicon Length"),
+                                                                 min = 100, max = 800, value = c(200,500))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'genomic'",
+                                                     sliderInput("i_minGC_genomic", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'bisulfite'",
+                                                     sliderInput("i_minGC_bis", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'NOME'",
+                                                     sliderInput("i_minGC_NOME", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 5)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'CLEVER'",
+                                                     sliderInput("i_minGC_clever", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_bisulfite'",
+                                                     sliderInput("i_minGC_hp_bis", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_NOME'",
+                                                     sliderInput("i_minGC_hp_NOME", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 1)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_CLEVER'",
+                                                     sliderInput("i_minGC_hp_clever", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                                     sliderInput("i_minGC_crispr", h4("Minimum Number of GCs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'genomic'",
+                                                     sliderInput("i_minCG_genomic", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 0)
+                                                   ), 
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'bisulfite'",
+                                                     sliderInput("i_minCG_bis", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 5)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'NOME'",
+                                                     sliderInput("i_minCG_NOME", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 5)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'CLEVER'",
+                                                     sliderInput("i_minCG_clever", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 5)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_bisulfite'",
+                                                     sliderInput("i_minCG_hp_bis", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 1)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_NOME'",
+                                                     sliderInput("i_minCG_hp_NOME", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 1)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_CLEVER'",
+                                                     sliderInput("i_minCG_hp_clever", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 1)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                                     sliderInput("i_minCG_crispr", h4("Minimum Number of CGs per amplicon"),
+                                                                 min = 0, max = 10, value = 1)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                                     sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
+                                                                 min = 0, max = 10, value = 3)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                                     sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
+                                                                 min = 0, max = 10, value = 3)
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER'", 
+                                                     sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                                                 min = 0, max = 1000, value = c(50, 200))
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.i_primer_type == 'genomic'",
+                                                     sliderInput("i_chop.size", label = h4("Input sequence slicing"),
+                                                                 min = 0, max = 50, value = 30)
+                                                     
+                                                   )
+                                            )
+                                            ),
+                                            #hr(),
+                                            #helpText( h3("Choose some options for your primer design: ")),
+                                            hr(),
+                                            h2("Add Adapters to my Primers: "),
+                                            # adapter box
+                                            fluidRow(column(12,
+                                                            textInput("adapterForward", h4("Add a specific sequence to the 5' end of the forward primer: "), ""), #CTTTCCCTACACGACGCTCTTCCGATCT
+                                                            textInput("adapterReverse", h4("Add a specific sequence to the 5' end of the reverse primer: "), "") #GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT
+                                            )),
+                                            hr(),
+                                            h2("Further Settings: "),
+                                            fluidRow(column(12,
+                                                            checkboxInput("i_remove.primers.with.n", label = h4("Remove primers that contain N bases"), TRUE),
+                                                            checkboxInput("i_allow.repeats.in.primers", label = h4("Allow repeats in primers"), FALSE),
+                                                            checkboxInput("i_allow.repeats.in.amplicon", label = h4("Allow repeats in Amplicons"), FALSE)
+                                                            )
+                                                     )
+                                            
+                                            
+                                            ,
+                                            title = h2("Advanced Primer Settings"),
+                                            width = 12,
+                                            status = "primary",
+                                            solidHeader = TRUE,
+                                            collapsible = TRUE,
+                                            collapsed = TRUE
                                           ),
                                           fluidRow(
                                             actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
                                                          style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px"),
                                             bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished.", "left")
                                           )
+                                          
                                                 )
                                           
                                           ),
-                                  tabItem(tabName = "AdvancedPrimerSettings",
-                                          box(
-                                            sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the Amplicon"),
-                                                        min = 0, max = 80, value = 10),
-                                            sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the Forward Primer"),
-                                                        min = 0, max = 80, value = 0),
-                                            sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the Reverse Primer"),
-                                                        min = 0, max = 80, value = 0),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_max.bins_genomic", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_max.bins_bis", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 7)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_max.bins_NOME", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 7)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_max.bins_CLEVER", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_max.bins_hp_bis", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 7)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_max.bins_hp_NOME", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 7)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_max.bins_hp_clever", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CrispRCas9PCR'",
-                                              sliderInput("i_max.bins_crispr", label = h4("Maximum length of monomeric base stretches"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
-                                                        min = 0, max = 50, value = 12),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_primerlength_genomic", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(18, 25))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_primerlength_bis", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(20, 32))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_primerlength_NOME", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(20, 32))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_primerlength_clever", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(18, 25))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_primerlength_hp_bis", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(20, 32))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_primerlength_hp_NOME", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(20, 32))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_primerlength_hp_clever", label = h4("Primer Length"),
-                                                          min = 10, max = 80, value = c(18, 25))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_primertemp_genomic", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(50, 60))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_primertemp_bis", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(48, 60))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_primertemp_NOME", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(48, 60))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_primertemp_clever", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(50, 60))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_primertemp_hp_bis", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(48, 60))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_primertemp_hp_NOME", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(48, 60))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_primertemp_hp_clever", label = h4("Primer Melting Temperature"),
-                                                          min = 40, max = 75, value = c(50, 60))
-                                            )
-                                          ),
-                                          box(
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'genomic'",
-                                              sliderInput("i_meltdiff_genomic", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 3)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_meltdiff_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'NOME'",
-                                              sliderInput("i_meltdiff_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 6)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_meltdiff_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 3)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_meltdiff_hp_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_meltdiff_hp_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 6)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_meltdiff_hp_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
-                                                          min = 0, max = 10, value = 3)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_lengthAmp_genomic", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,500))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_lengthAmp_bis", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,400))
-                                            ),  
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_lengthAmp_NOME", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,400))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_lengthAmp_clever", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,500))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_lengthAmp_hp_bis", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,400))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_lengthAmp_hp_NOME", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,400))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_lengthAmp_hp_clever", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,500))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CrispRCas9PCR'",
-                                              sliderInput("i_lengthAmp_crispr", label = h4("Amplicon Length"),
-                                                          min = 100, max = 800, value = c(200,500))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_minGC_genomic", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_minGC_bis", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_minGC_NOME", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_minGC_clever", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_minGC_hp_bis", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_minGC_hp_NOME", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 1)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_minGC_hp_clever", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CrispRCas9PCR'",
-                                              sliderInput("i_minGC_crispr", h4("Minimum Number of GCs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_minCG_genomic", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 0)
-                                            ), 
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'bisulfite'",
-                                              sliderInput("i_minCG_bis", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'NOME'",
-                                              sliderInput("i_minCG_NOME", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CLEVER'",
-                                              sliderInput("i_minCG_clever", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 5)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite'",
-                                              sliderInput("i_minCG_hp_bis", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 1)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_NOME'",
-                                              sliderInput("i_minCG_hp_NOME", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 1)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_CLEVER'",
-                                              sliderInput("i_minCG_hp_clever", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 1)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'CrispRCas9PCR'",
-                                              sliderInput("i_minCG_crispr", h4("Minimum Number of CGs per amplicon"),
-                                                          min = 0, max = 10, value = 1)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
-                                              sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
-                                                          min = 0, max = 10, value = 3)
-                                            ),
-                                            conditionalPanel(
-                                              condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
-                                              sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
-                                                          min = 0, max = 10, value = 3)
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER'", 
-                                              sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
-                                                          min = 0, max = 1000, value = c(50, 200))
-                                            ),
-                                            conditionalPanel(
-                                              condition = "input.i_primer_type == 'genomic'",
-                                              sliderInput("i_chop.size", label = h4("Input sequence slicing"),
-                                                          min = 0, max = 50, value = 30)
-                                              
-                                            )
-                                          ),
-                                          box(title = h3("Add Adapters: "),
-                                              width = 12,
-                                              checkboxInput("adapterF", label = h4("Add a specific sequence to the 5' end of the forward primer"), FALSE),
-                                              conditionalPanel(
-                                                "input.adapterF == 1",
-                                                textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
-                                              ),
-                                              checkboxInput("adapterR", label = h4("Add a specific sequence to the 5' end of the reverse primer"), FALSE),
-                                              conditionalPanel(
-                                                "input.adapterR==1",
-                                                textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
-                                              )
-                                          )
-                                  ),
+                                  # tabItem(tabName = "AdvancedPrimerSettings",
+                                  #         box(
+                                  #           sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the Amplicon"),
+                                  #                       min = 0, max = 80, value = 10),
+                                  #           sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the Forward Primer"),
+                                  #                       min = 0, max = 80, value = 0),
+                                  #           sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the Reverse Primer"),
+                                  #                       min = 0, max = 80, value = 0),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_max.bins_genomic", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_max.bins_bis", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 7)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_max.bins_NOME", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 7)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_max.bins_CLEVER", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_max.bins_hp_bis", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 7)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_max.bins_hp_NOME", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 7)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_max.bins_hp_clever", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                  #             sliderInput("i_max.bins_crispr", label = h4("Maximum length of monomeric base stretches"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
+                                  #                       min = 0, max = 50, value = 12),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_primerlength_genomic", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(18, 25))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_primerlength_bis", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(20, 32))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_primerlength_NOME", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(20, 32))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_primerlength_clever", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(18, 25))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_primerlength_hp_bis", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(20, 32))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_primerlength_hp_NOME", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(20, 32))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_primerlength_hp_clever", label = h4("Primer Length"),
+                                  #                         min = 10, max = 80, value = c(18, 25))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_primertemp_genomic", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(50, 60))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_primertemp_bis", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(48, 60))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_primertemp_NOME", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(48, 60))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_primertemp_clever", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(50, 60))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_primertemp_hp_bis", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(48, 60))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_primertemp_hp_NOME", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(48, 60))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_primertemp_hp_clever", label = h4("Primer Melting Temperature"),
+                                  #                         min = 40, max = 75, value = c(50, 60))
+                                  #           )
+                                  #         ),
+                                  #         box(
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_meltdiff_genomic", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 3)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_meltdiff_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_meltdiff_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 6)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_meltdiff_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 3)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_meltdiff_hp_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_meltdiff_hp_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 6)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_meltdiff_hp_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+                                  #                         min = 0, max = 10, value = 3)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_lengthAmp_genomic", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,500))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_lengthAmp_bis", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,400))
+                                  #           ),  
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_lengthAmp_NOME", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,400))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_lengthAmp_clever", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,500))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_lengthAmp_hp_bis", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,400))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_lengthAmp_hp_NOME", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,400))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_lengthAmp_hp_clever", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,500))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                  #             sliderInput("i_lengthAmp_crispr", label = h4("Amplicon Length"),
+                                  #                         min = 100, max = 800, value = c(200,500))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_minGC_genomic", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_minGC_bis", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_minGC_NOME", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_minGC_clever", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_minGC_hp_bis", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_minGC_hp_NOME", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 1)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_minGC_hp_clever", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                  #             sliderInput("i_minGC_crispr", h4("Minimum Number of GCs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_minCG_genomic", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 0)
+                                  #           ), 
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'bisulfite'",
+                                  #             sliderInput("i_minCG_bis", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'NOME'",
+                                  #             sliderInput("i_minCG_NOME", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CLEVER'",
+                                  #             sliderInput("i_minCG_clever", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 5)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite'",
+                                  #             sliderInput("i_minCG_hp_bis", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 1)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_NOME'",
+                                  #             sliderInput("i_minCG_hp_NOME", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 1)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_CLEVER'",
+                                  #             sliderInput("i_minCG_hp_clever", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 1)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'CrispRCas9PCR'",
+                                  #             sliderInput("i_minCG_crispr", h4("Minimum Number of CGs per amplicon"),
+                                  #                         min = 0, max = 10, value = 1)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                  #             sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
+                                  #                         min = 0, max = 10, value = 3)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+                                  #             sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
+                                  #                         min = 0, max = 10, value = 3)
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER'", 
+                                  #             sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+                                  #                         min = 0, max = 1000, value = c(50, 200))
+                                  #           ),
+                                  #           conditionalPanel(
+                                  #             condition = "input.i_primer_type == 'genomic'",
+                                  #             sliderInput("i_chop.size", label = h4("Input sequence slicing"),
+                                  #                         min = 0, max = 50, value = 30)
+                                  #             
+                                  #           )
+                                  #         ),
+                                  #         box(title = h3("Add Adapters: "),
+                                  #             width = 12,
+                                  #             checkboxInput("adapterF", label = h4("Add a specific sequence to the 5' end of the forward primer"), FALSE),
+                                  #             conditionalPanel(
+                                  #               "input.adapterF == 1",
+                                  #               textInput("adapterForward", "Forward adapter: ", "TCTTTCCCTACACGACGCTCTTCCGATCT")
+                                  #             ),
+                                  #             checkboxInput("adapterR", label = h4("Add a specific sequence to the 5' end of the reverse primer"), FALSE),
+                                  #             conditionalPanel(
+                                  #               "input.adapterR==1",
+                                  #               textInput("adapterReverse", "Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
+                                  #             )
+                                  #         )
+                                  #),
                                   tabItem(tabName = "PDresults",
                                           fluidRow(
                                             tabBox(title = "",
@@ -482,23 +805,35 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                 downloadButton('downloadSelectedPrimers', 'Selected Primers')
                                             )
                                           ),
-                                          actionButton("switch_to_graphs", label = "View Graphs", icon("chart-bar"),
-                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:1225px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px")
-                                          
-                                  ),
-                                  tabItem(tabName = "PDgraphs",
-                                          box(title = h2("Graphs"),
+                                          #actionButton("switch_to_graphs", label = "View Graphs", icon("chart-bar"),
+                                          #             style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:1225px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px"),
+                                          #hr(),
+                                          box(actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
+                                              uiOutput("plot3"),
+                                              title = h2("Graphs"),
                                               status = "primary",
                                               solidHeader = TRUE,
-                                              width = 12,
-                                              actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
-                                              uiOutput("plot3"))
+                                              collapsible = TRUE,
+                                              width = 12
+                                          )
+                                          
                                   ),
+                                  # tabItem(tabName = "PDgraphs",
+                                  #         box(title = h2("Graphs"),
+                                  #             status = "primary",
+                                  #             solidHeader = TRUE,
+                                  #             width = 12,
+                                  #             actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
+                                  #             uiOutput("plot3"))
+                                  #),
                                   tabItem(tabName = "PrimerQC",
                                           box(title = h2("Upload files for ePCR"),
                                               status = "primary", 
                                               solidHeader = TRUE,
                                               width = 6,
+                                              helpText("To check the quality of your primer pair, we perform a blast against the Reference Genome and provide potential Fragments during PCR."),
+                                              #helpText("This feature is available for: "),
+                                              hr(),
                                               helpText("Import primers from Primer Design, that were added to my Selected List"),
                                               actionButton("loadprimers", "Import Primers", icon = icon("file-import"),
                                                            style="margin-left:275px; margin-right:0px"),

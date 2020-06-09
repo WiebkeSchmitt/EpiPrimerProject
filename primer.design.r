@@ -915,17 +915,7 @@ CLEVER.primer.design<-function(sequence,
   tmg$fragment.length<-nchar(tmg$fragment.sequence)
   tmg$primer.start.starts<-1
   tmg$primer.start.ends<-tmg$fragment.length-min.length.primer
-  print("debug a")
-  print(tmg)
   tmg<-tmg[tmg$primer.start.ends>0,]
-  print("debug b")
-  print(tmg)
-  print(nrow(tmg))
-  print(length(tmg))
-  print(typeof(tmg))
-  print(typeof(tmg$primer.start.starts))
-  print(nrow(tmg) == 0)
-  print(typeof(nrow(tmg)==0))
   if((nrow(tmg) == 0)){
     print("No primer design possible.")
     return(out)

@@ -61,7 +61,6 @@ server <- function(input, output, session) {
   
   output$state <- eventReactive(input$action, {
     primerDesign_wd <- setwd(primersDesign_wd)
-    #print(primersDesign_wd)
     
     if (is.null(input$file)){
       sprintf("Please upload an input file!")
@@ -80,35 +79,33 @@ server <- function(input, output, session) {
         footer = modalButton("Close")
       ))
       
-      #get input values for Forward and Reverse adapters
-      adaF <- input$adapterForward
-      adaR <- input$adapterReverse
-      
-      #check, if adapters should be used, if not, remove default adapters
-      if (!input$adapterF){
-        adaF <- NA
-      }
-      
-      if (!input$adapterR){
-        adaR <- NA
-      }
-      
-      if (input$i_snps.amplicon != 0 || input$i_snps.primer1 != 0 || input$i_snps.primer2 != 0){
-        check_snps = TRUE
-      } else {
-        check_snps = FALSE
-      }
-      
       # get current settings
       settings_for_pipeline <- def_settings
+      
+      #get input values for Forward and Reverse adapters
+      if (!is.null(input$adapterForward) && !is.null(input$adapterReverse)){
+        adaF <- input$adapterForward
+        adaR <- input$adapterReverse
+        # now set adapters, only if checkboxes were activated
+        settings_for_pipeline[20] = adaF
+        settings_for_pipeline[21] = adaR
+      } else {
+        settings_for_pipeline[20] = NA
+        settings_for_pipeline[21] = NA
+      }
+      
+      check_snps = FALSE
+      if(!is.null(input$i_snps.amplicon) && !is.null(input$i_snps.primer1) && !is.null(input$i_snps.primer2)) {
+        if (input$i_snps.amplicon != 0 || input$i_snps.primer1 != 0 || input$i_snps.primer2 != 0){
+          check_snps = TRUE
+        } else {
+          check_snps = FALSE
+        }
+      }
       
       # now set checks for snps and repeats
       settings_for_pipeline[3] = check_snps
       settings_for_pipeline[4] = FALSE
-      
-      # now set adapters, only if checkboxes were activated
-      settings_for_pipeline[20] = adaF
-      settings_for_pipeline[21] = adaR
       
       #call the primer design pipeline
       primer.design.pipeline.refactored(Dataset(),
@@ -1213,284 +1210,6 @@ server <- function(input, output, session) {
     showSummaryePCR()
   })
   
-  ################ observing changes in settings for calling the Primerdesign Pipeline ####################
-  
-  observe({input$i_primer_type
-    def_settings <<- defaultPrimerSettings(input$i_primer_type)
-  })
-  
-  observe({input$i_remove.primers.with.n
-    def_settings[2] <<- as.logical(input$i_remove.primers.with.n)
-  })
-  
-  observe({input$i_allow.repeats.in.primers
-    def_settings[5] <<- as.logical(input$i_allow.repeats.in.primers)
-  })
-  
-  observe({input$i_allow.repeats.in.amplicon
-    def_settings[6] <<- as.logical(input$i_allow.repeats.in.amplicon)
-  })
-  
-  observe({input$i_max.bins_genomic
-    def_settings[10] <<- input$i_max.bins_genomic
-  })
-  
-  observe({input$i_max.bins_bis
-    def_settings[10] <<- input$i_max.bins_bis
-  })
-  
-  observe({input$i_max.bins_hp_bis
-    def_settings[10] <<- input$i_max.bins_hp_bis
-  })
-  
-  observe({input$i_max.bins_hp_clever
-    def_settings[10] <<- input$i_max.bins_hp_clever
-  })
-  
-  observe({input$i_max.bins_hp_NOME
-    def_settings[10] <<- input$i_max.bins_hp_NOME
-  })
-  
-  observe({input$i_max.bins_crispr
-    def_settings[10] <<- input$i_max.bins_crispr
-  })
-  
-  observe({input$i_primer.align.binsize
-    def_settings[11] <<- input$i_primer.align.binsize
-  })
-  
-  observe({input$i_snps.amplicon
-    def_settings[13] <<- input$i_snps.amplicon
-  })
-  
-  observe({input$i_snps.primer1
-    def_settings[15] <<- input$i_snps.primer1
-  })
-  
-  observe({input$i_snps.primer2
-    def_settings[17] <<- input$i_snps.primer2
-  })
-  
-  observe({input$i_hp.length
-    def_settings[18] <<- input$i_hp.length[1]
-    def_settings[19] <<- input$i_hp.length[2]
-
-  })
-  
-  observe({input$i_strand
-    def_settings[22] <<- input$i_strand
-  })
-  
-  observe({input$i_primerlength_genomic
-    def_settings[23] <<- input$i_primerlength_genomic[1]
-    def_settings[24] <<- input$i_primerlength_genomic[2]
-  })
-  
-  observe({input$i_primerlength_bis
-    def_settings[23] <<- input$i_primerlength_bis[1]
-    def_settings[24] <<- input$i_primerlength_bis[2]
-  })
-  
-  observe({input$i_primerlength_NOME
-    def_settings[23] <<- input$i_primerlength_NOME[1]
-    def_settings[24] <<- input$i_primerlength_NOME[2]
-  })
-  
-  observe({input$i_primerlength_clever
-    def_settings[23] <<- input$i_primerlength_clever[1]
-    def_settings[24] <<- input$i_primerlength_clever[2]
-  })
-  
-  observe({input$i_primerlength_hp_bis
-    def_settings[23] <<- input$i_primerlength_hp_bis[1]
-    def_settings[24] <<- input$i_primerlength_hp_bis[2]
-  })
-  
-  observe({input$i_primerlength_hp_NOME
-    def_settings[23] <<- input$i_primerlength_hp_NOME[1]
-    def_settings[24] <<- input$i_primerlength_hp_NOME[2]
-  })
-  
-  observe({input$i_primerlength_hp_clever
-    def_settings[23] <<- input$i_primerlength_hp_clever[1]
-    def_settings[24] <<- input$i_primerlength_hp_clever[2]
-  })
-  
-  observe({input$i_primertemp_genomic
-    def_settings[25] <<- input$i_primertemp_genomic[1]
-    def_settings[26] <<- input$i_primertemp_genomic[2]
-  })
-  
-  observe({input$i_primertemp_bis
-    def_settings[25] <<- input$i_primertemp_bis[1]
-    def_settings[26] <<- input$i_primertemp_bis[2]
-  })
-  
-  observe({input$i_primertemp_clever
-    def_settings[25] <<- input$i_primertemp_clever[1]
-    def_settings[26] <<- input$i_primertemp_clever[2]
-  })
-  
-  observe({input$i_primertemp_NOME
-    def_settings[25] <<- input$i_primertemp_NOME[1]
-    def_settings[26] <<- input$i_primertemp_NOME[2]
-  })
-  
-  observe({input$i_primertemp_hp_bis
-    def_settings[25] <<- input$i_primertemp_hp_bis[1]
-    def_settings[26] <<- input$i_primertemp_hp_bis[2]
-  })
-  
-  observe({input$i_primertemp__hp_NOME
-    def_settings[25] <<- input$i_primertemp_hp_NOME[1]
-    def_settings[26] <<- input$i_primertemp_hp_NOME[2]
-  })
-  
-  observe({input$i_primertemp_hp_clever
-    def_settings[25] <<- input$i_primertemp_hp_clever[1]
-    def_settings[26] <<- input$i_primertemp_hp_clever[2]
-  })
-  
-  observe({input$i_meltdiff_genomic
-    def_settings[27] <<- input$i_meltdiff_genomic
-  })
-  
-  observe({input$i_meltdiff_bis
-    def_settings[27] <<- input$i_meltdiff_bis
-  })
-  
-  observe({input$i_meltdiff_NOME
-    def_settings[27] <<- input$i_meltdiff_NOME
-  })
-  
-  observe({input$i_meltdiff_clever
-    def_settings[27] <<- input$i_meltdiff_clever
-  })
-  
-  observe({input$i_meltdiff_hp_NOME
-    def_settings[27] <<- input$i_meltdiff_hp_NOME
-  })
-  
-  observe({input$i_meltdiff_hp_clever
-    def_settings[27] <<- input$i_meltdiff_hp_clever
-  })
-  
-  observe({input$i_meltdiff_hp_bis
-    def_settings[27] <<- input$i_meltdiff_hp_bis
-  })
-  
-  observe({input$i_lengthAmp_genomic
-    def_settings[28] <<- input$i_lengthAmp_genomic[1]
-    def_settings[29] <<- input$i_lengthAmp_genomic[2]
-  })
-  
-  observe({input$i_lengthAmp_bis
-    def_settings[28] <<- input$i_lengthAmp_bis[1]
-    def_settings[29] <<- input$i_lengthAmp_bis[2]
-  })
-  
-  observe({input$i_lengthAmp_NOME
-    def_settings[28] <<- input$i_lengthAmp_NOME[1]
-    def_settings[29] <<- input$i_lengthAmp_NOME[2]
-  })
-  
-  observe({input$i_lengthAmp_clever
-    def_settings[28] <<- input$i_lengthAmp_clever[1]
-    def_settings[29] <<- input$i_lengthAmp_clever[2]
-  })
-  
-  observe({input$i_lengthAmp_hp_bis
-    def_settings[28] <<- input$i_lengthAmp_hp_bis[1]
-    def_settings[29] <<- input$i_lengthAmp_hp_bis[2]
-  })
-  
-  observe({input$i_lengthAmp_hp_NOME
-    def_settings[28] <<- input$i_lengthAmp_hp_NOME[1]
-    def_settings[29] <<- input$i_lengthAmp_hp_NOME[2]
-  })
-  
-  observe({input$i_lengthAmp_hp_clever
-    def_settings[28] <<- input$i_lengthAmp_hp_clever[1]
-    def_settings[29] <<- input$i_lengthAmp_hp_clever[2]
-  })
-  
-  observe({input$i_lengthAmp_crispr
-    def_settings[28] <<- input$i_lengthAmp_crispr[1]
-    def_settings[29] <<- input$i_lengthAmp_crispr[2]
-  })
-  
-  observe({input$i_minGC_genomic
-    def_settings[30] <<- input$i_minGC_genomic
-  })
-  
-  observe({input$i_minGC_bis
-    def_settings[30] <<- input$i_minGC_bis
-  })
-  
-  observe({input$i_minGC_NOME
-    def_settings[30] <<- input$i_minGC_NOME
-  })
-  
-  observe({input$i_minGC_clever
-    def_settings[30] <<- input$i_minGC_clever
-  })
-  
-  observe({input$i_minGC_hp_NOME
-    def_settings[30] <<- input$i_minGC_hp_NOME
-  })
-  
-  observe({input$i_minGC_hp_clever
-    def_settings[30] <<- input$i_minGC_hp_clever
-  })
-  
-  observe({input$i_minGC_crispr
-    def_settings[30] <<- input$i_minGC_crispr
-  })
-  
-  observe({input$i_minCG_genomic
-    def_settings[31] <<- input$i_minCG_genomic
-  })
-  
-  observe({input$i_minCG_bis
-    def_settings[31] <<- input$i_minCG_bis
-  })
-  
-  observe({input$i_minCG_NOME
-    def_settings[31] <<- input$i_minCG_NOME
-  })
-  
-  observe({input$i_minCG_clever
-    def_settings[31] <<- input$i_minCG_clever
-  })
-  
-  observe({input$i_minCG_hp_bis
-    def_settings[31] <<- input$i_minCG_hp_bis
-  })
-  
-  observe({input$i_minCG_hp_NOME
-    def_settings[31] <<- input$i_minCG_hp_NOME
-  })
-  
-  observe({input$i_minCG_hp_clever
-    def_settings[31] <<- input$i_minCG_hp_clever
-  })
-  
-  observe({input$i_minCG_crispr
-    def_settings[31] <<- input$i_minCG_crispr
-  })
-  
-  observe({input$i_minC2T
-    def_settings[32] <<- input$i_minC2T
-  })
-  
-  observe({input$i_minG2A
-    def_settings[33] <<- input$i_minG2A
-  })
-  
-  observe({input$i_chop.size
-    def_settings[34] <<- input$i_chop.size
-  })
-  
   # default values for the different primer types
   defaultPrimerSettings <- function(primer_type) {
     # order of the given parameters: 
@@ -1540,18 +1259,699 @@ server <- function(input, output, session) {
   }
   
   ######### switch tab when button is pressed ############
-  observeEvent(input$switch_to_advanced, {
-    newtab <- switch(input$tabs,
-                     "PrimerDesign" = "AdvancedPrimerSettings"
-                     )
-    updateTabItems(session, "tabs", newtab)
+  # observeEvent(input$switch_to_advanced, {
+  #   newtab <- switch(input$tabs,
+  #                    "PrimerDesign" = "AdvancedPrimerSettings"
+  #                    )
+  #   updateTabItems(session, "tabs", newtab)
+  # })
+  # instead of going to new tab, show advanced settings below
+  # output$advancedSettings <- renderUI({
+  #   if (!input$switch_to_advanced) {return(NULL)}
+  #                   box(
+  #                   fluidRow(column(width=6,
+  #                   sliderInput("i_snps.amplicon", label = h4("Number of SNPs allowed in the Amplicon"),
+  #                               min = 0, max = 80, value = 10),
+  #                   sliderInput("i_snps.primer1", label = h4("Number of SNPs allowed in the Forward Primer"),
+  #                               min = 0, max = 80, value = 0),
+  #                   sliderInput("i_snps.primer2", label = h4("Number of SNPs allowed in the Reverse Primer"),
+  #                               min = 0, max = 80, value = 0),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'genomic'",
+  #                     sliderInput("i_max.bins_genomic", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 5)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'bisulfite'",
+  #                     sliderInput("i_max.bins_bis", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 7)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'NOME'",
+  #                     sliderInput("i_max.bins_NOME", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 7)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'CLEVER'",
+  #                     sliderInput("i_max.bins_CLEVER", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 5)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_bisulfite'",
+  #                     sliderInput("i_max.bins_hp_bis", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 7)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_NOME'",
+  #                     sliderInput("i_max.bins_hp_NOME", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 7)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_CLEVER'",
+  #                     sliderInput("i_max.bins_hp_clever", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 5)
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'CrispRCas9PCR'",
+  #                     sliderInput("i_max.bins_crispr", label = h4("Maximum length of monomeric base stretches"),
+  #                                 min = 0, max = 10, value = 5)
+  #                   ),
+  #                   sliderInput("i_primer.align.binsize", label = h4("Maximum length for Primer Self-Interaction"),
+  #                               min = 0, max = 50, value = 12),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'genomic'",
+  #                     sliderInput("i_primerlength_genomic", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(18, 25))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'bisulfite'",
+  #                     sliderInput("i_primerlength_bis", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(20, 32))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'NOME'",
+  #                     sliderInput("i_primerlength_NOME", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(20, 32))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'CLEVER'",
+  #                     sliderInput("i_primerlength_clever", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(18, 25))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_bisulfite'",
+  #                     sliderInput("i_primerlength_hp_bis", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(20, 32))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_NOME'",
+  #                     sliderInput("i_primerlength_hp_NOME", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(20, 32))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_CLEVER'",
+  #                     sliderInput("i_primerlength_hp_clever", label = h4("Primer Length"),
+  #                                 min = 10, max = 80, value = c(18, 25))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'genomic'",
+  #                     sliderInput("i_primertemp_genomic", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(50, 60))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'bisulfite'",
+  #                     sliderInput("i_primertemp_bis", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(48, 60))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'NOME'",
+  #                     sliderInput("i_primertemp_NOME", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(48, 60))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'CLEVER'",
+  #                     sliderInput("i_primertemp_clever", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(50, 60))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_bisulfite'",
+  #                     sliderInput("i_primertemp_hp_bis", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(48, 60))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_NOME'",
+  #                     sliderInput("i_primertemp_hp_NOME", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(48, 60))
+  #                   ),
+  #                   conditionalPanel(
+  #                     condition = "input.i_primer_type == 'hp_CLEVER'",
+  #                     sliderInput("i_primertemp_hp_clever", label = h4("Primer Melting Temperature"),
+  #                                 min = 40, max = 75, value = c(50, 60))
+  #                   )
+  #                   ),
+  #                   column(width = 6,
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'genomic'",
+  #                         sliderInput("i_meltdiff_genomic", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 3)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'bisulfite'",
+  #                         sliderInput("i_meltdiff_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 5)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'NOME'",
+  #                         sliderInput("i_meltdiff_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 6)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'CLEVER'",
+  #                         sliderInput("i_meltdiff_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 3)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'hp_bisulfite'",
+  #                         sliderInput("i_meltdiff_hp_bis", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 5)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'hp_NOME'",
+  #                         sliderInput("i_meltdiff_hp_NOME", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 6)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type == 'hp_CLEVER'",
+  #                         sliderInput("i_meltdiff_hp_clever", label = h4("Maximum Difference in Primer Melting Temperature \n (degrees Celsius)"),
+  #                                     min = 0, max = 10, value = 3)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'genomic'",
+  #                         sliderInput("i_lengthAmp_genomic", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,500))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'bisulfite'",
+  #                         sliderInput("i_lengthAmp_bis", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,400))
+  #                       ),  
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'NOME'",
+  #                         sliderInput("i_lengthAmp_NOME", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,400))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'CLEVER'",
+  #                         sliderInput("i_lengthAmp_clever", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,500))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_bisulfite'",
+  #                         sliderInput("i_lengthAmp_hp_bis", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,400))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_NOME'",
+  #                         sliderInput("i_lengthAmp_hp_NOME", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,400))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_CLEVER'",
+  #                         sliderInput("i_lengthAmp_hp_clever", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,500))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'CrispRCas9PCR'",
+  #                         sliderInput("i_lengthAmp_crispr", label = h4("Amplicon Length"),
+  #                                     min = 100, max = 800, value = c(200,500))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'genomic'",
+  #                         sliderInput("i_minGC_genomic", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'bisulfite'",
+  #                         sliderInput("i_minGC_bis", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'NOME'",
+  #                         sliderInput("i_minGC_NOME", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 5)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'CLEVER'",
+  #                         sliderInput("i_minGC_clever", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_bisulfite'",
+  #                         sliderInput("i_minGC_hp_bis", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_NOME'",
+  #                         sliderInput("i_minGC_hp_NOME", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 1)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_CLEVER'",
+  #                         sliderInput("i_minGC_hp_clever", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'CrispRCas9PCR'",
+  #                         sliderInput("i_minGC_crispr", h4("Minimum Number of GCs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'genomic'",
+  #                         sliderInput("i_minCG_genomic", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 0)
+  #                       ), 
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'bisulfite'",
+  #                         sliderInput("i_minCG_bis", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 5)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'NOME'",
+  #                         sliderInput("i_minCG_NOME", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 5)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'CLEVER'",
+  #                         sliderInput("i_minCG_clever", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 5)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_bisulfite'",
+  #                         sliderInput("i_minCG_hp_bis", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 1)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_NOME'",
+  #                         sliderInput("i_minCG_hp_NOME", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 1)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_CLEVER'",
+  #                         sliderInput("i_minCG_hp_clever", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 1)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'CrispRCas9PCR'",
+  #                         sliderInput("i_minCG_crispr", h4("Minimum Number of CGs per amplicon"),
+  #                                     min = 0, max = 10, value = 1)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+  #                         sliderInput("i_minC2T", h4("Minimum 'C' to 'T' conversions in forward primer"),
+  #                                     min = 0, max = 10, value = 3)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition="input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
+  #                         sliderInput("i_minG2A", h4("Minimum 'G' to 'A' conversions in reverse primer"),
+  #                                     min = 0, max = 10, value = 3)
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'hp_bisulfite' || input.i_primer_type == 'hp_NOME' || input.i_primer_type == 'hp_CLEVER'", 
+  #                         sliderInput("i_hp.length", label = h4("length of one arm in the hairpin molecule"),
+  #                                     min = 0, max = 1000, value = c(50, 200))
+  #                       ),
+  #                       conditionalPanel(
+  #                         condition = "input.i_primer_type == 'genomic'",
+  #                         sliderInput("i_chop.size", label = h4("Input sequence slicing"),
+  #                                     min = 0, max = 50, value = 30)
+  #                         
+  #                       )
+  #                   )
+  #                   ),
+  #                   h2("Add Adapters to my Primers: "),
+  #                   # adapter box
+  #                   fluidRow(column(12,
+  #                       textInput("adapterForward", h4("Add a specific sequence to the 5' end of the forward primer: "), ""), #CTTTCCCTACACGACGCTCTTCCGATCT
+  #                       textInput("adapterReverse", h4("Add a specific sequence to the 5' end of the reverse primer: "), "") #GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT
+  #                   )
+  #                   ),
+  #                   title = h2("Advanced Primer Settings"),
+  #                   width = 12,
+  #                   status = "primary",
+  #                   solidHeader = TRUE,
+  #                   collapsible = TRUE,
+  #                   collapsed = TRUE
+  #            )
+  # })
+  
+  ################ observing changes in settings for calling the Primerdesign Pipeline ####################
+  
+  observe({input$i_primer_type
+    def_settings <<- defaultPrimerSettings(input$i_primer_type)
   })
   
-  ######### switch tab when button is pressed ############
-  observeEvent(input$switch_to_graphs, {
-    newtab <- switch(input$tabs,
-                     "PDresults" = "PDgraphs"
-    )
-    updateTabItems(session, "tabs", newtab)
+  observe({input$i_remove.primers.with.n
+    def_settings[2] <<- as.logical(input$i_remove.primers.with.n)
   })
+  
+  observe({input$i_allow.repeats.in.primers
+    def_settings[5] <<- as.logical(input$i_allow.repeats.in.primers)
+  })
+  
+  observe({input$i_allow.repeats.in.amplicon
+    def_settings[6] <<- as.logical(input$i_allow.repeats.in.amplicon)
+  })
+  
+  observe({input$i_max.bins_genomic
+    if (is.null(input$i_max.bins_genomic)) {return(NULL)}
+    def_settings[10] <<- input$i_max.bins_genomic
+  })
+  
+  observe({input$i_max.bins_bis
+    if (is.null(input$i_max.bins_bis)) {return(NULL)}
+    def_settings[10] <<- input$i_max.bins_bis
+  })
+  
+  observe({input$i_max.bins_hp_bis
+    if (is.null(input$i_max.bins_hp_bis)) {return(NULL)}
+    def_settings[10] <<- input$i_max.bins_hp_bis
+  })
+  
+  observe({input$i_max.bins_hp_clever
+    if (is.null(input$i_max.bins_hp_clever)) {return(NULL)}
+    def_settings[10] <<- input$i_max.bins_hp_clever
+  })
+  
+  observe({input$i_max.bins_hp_NOME
+    if (is.null(input$i_max.bins_hp_NOME)) {return(NULL)}
+    def_settings[10] <<- input$i_max.bins_hp_NOME
+  })
+  
+  observe({input$i_max.bins_crispr
+    if (is.null(input$i_max.bins_crispr)) {return(NULL)}
+    def_settings[10] <<- input$i_max.bins_crispr
+  })
+  
+  observe({input$i_primer.align.binsize
+    if (is.null(input$i_primer.align.binsize)) {return(NULL)}
+    def_settings[11] <<- input$i_primer.align.binsize
+  })
+  
+  observe({input$i_snps.amplicon
+    if (is.null(input$i_snps.amplicon)) {return(NULL)}
+    def_settings[13] <<- input$i_snps.amplicon
+  })
+  
+  observe({input$i_snps.primer1
+    if (is.null(input$i_snps.primer1)) {return(NULL)}
+    def_settings[15] <<- input$i_snps.primer1
+  })
+  
+  observe({input$i_snps.primer2
+    if (is.null(input$i_snps.primer2)) {return(NULL)}
+    def_settings[17] <<- input$i_snps.primer2
+  })
+  
+  observe({input$i_hp.length
+    if (is.null(input$i_hp.length)) {return(NULL)}
+    def_settings[18] <<- input$i_hp.length[1]
+    def_settings[19] <<- input$i_hp.length[2]
+    
+  })
+  
+  observe({input$i_strand
+    def_settings[22] <<- input$i_strand
+  })
+  
+  observe({input$i_primerlength_genomic
+    if (is.null(input$i_primerlength_genomic)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_genomic[1]
+    def_settings[24] <<- input$i_primerlength_genomic[2]
+  })
+  
+  observe({input$i_primerlength_bis
+    if (is.null(input$i_primerlength_bis)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_bis[1]
+    def_settings[24] <<- input$i_primerlength_bis[2]
+  })
+  
+  observe({input$i_primerlength_NOME
+    if (is.null(input$i_primerlength_NOME)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_NOME[1]
+    def_settings[24] <<- input$i_primerlength_NOME[2]
+  })
+  
+  observe({input$i_primerlength_clever
+    if (is.null(input$i_primerlength_clever)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_clever[1]
+    def_settings[24] <<- input$i_primerlength_clever[2]
+  })
+  
+  observe({input$i_primerlength_hp_bis
+    if (is.null(input$i_primerlength_hp_bis)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_hp_bis[1]
+    def_settings[24] <<- input$i_primerlength_hp_bis[2]
+  })
+  
+  observe({input$i_primerlength_hp_NOME
+    if (is.null(input$i_primerlength_hp_NOME)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_hp_NOME[1]
+    def_settings[24] <<- input$i_primerlength_hp_NOME[2]
+  })
+  
+  observe({input$i_primerlength_hp_clever
+    if (is.null(input$i_primerlength_hp_clever)) {return(NULL)}
+    def_settings[23] <<- input$i_primerlength_hp_clever[1]
+    def_settings[24] <<- input$i_primerlength_hp_clever[2]
+  })
+  
+  observe({input$i_primertemp_genomic
+    if (is.null(input$i_primertemp_genomic)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_genomic[1]
+    def_settings[26] <<- input$i_primertemp_genomic[2]
+  })
+  
+  observe({input$i_primertemp_bis
+    if (is.null(input$i_primertemp_bis)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_bis[1]
+    def_settings[26] <<- input$i_primertemp_bis[2]
+  })
+  
+  observe({input$i_primertemp_clever
+    if (is.null(input$i_primertemp_clever)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_clever[1]
+    def_settings[26] <<- input$i_primertemp_clever[2]
+  })
+  
+  observe({input$i_primertemp_NOME
+    if (is.null(input$i_primertemp_NOME)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_NOME[1]
+    def_settings[26] <<- input$i_primertemp_NOME[2]
+  })
+  
+  observe({input$i_primertemp_hp_bis
+    if (is.null(input$i_primertemp_hp_bis)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_hp_bis[1]
+    def_settings[26] <<- input$i_primertemp_hp_bis[2]
+  })
+  
+  observe({input$i_primertemp__hp_NOME
+    if (is.null(input$i_primertemp_hp_NOME)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_hp_NOME[1]
+    def_settings[26] <<- input$i_primertemp_hp_NOME[2]
+  })
+  
+  observe({input$i_primertemp_hp_clever
+    if (is.null(input$i_primertemp_hp_clever)) {return(NULL)}
+    def_settings[25] <<- input$i_primertemp_hp_clever[1]
+    def_settings[26] <<- input$i_primertemp_hp_clever[2]
+  })
+  
+  observe({input$i_meltdiff_genomic
+    if (is.null(input$i_meltdiff_genomic)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_genomic
+  })
+  
+  observe({input$i_meltdiff_bis
+    if (is.null(input$i_meltdiff_bis)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_bis
+  })
+  
+  observe({input$i_meltdiff_NOME
+    if (is.null(input$i_meltdiff_NOME)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_NOME
+  })
+  
+  observe({input$i_meltdiff_clever
+    if (is.null(input$i_meltdiff_clever)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_clever
+  })
+  
+  observe({input$i_meltdiff_hp_NOME
+    if (is.null(input$i_meltdiff_hp_NOME)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_hp_NOME
+  })
+  
+  observe({input$i_meltdiff_hp_clever
+    if (is.null(input$i_meltdiff_hp_clever)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_hp_clever
+  })
+  
+  observe({input$i_meltdiff_hp_bis
+    if (is.null(input$i_meltdiff_hp_bis)) {return(NULL)}
+    def_settings[27] <<- input$i_meltdiff_hp_bis
+  })
+  
+  observe({input$i_lengthAmp_genomic
+    if (is.null(input$i_lengthAmp_genomic)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_genomic[1]
+    def_settings[29] <<- input$i_lengthAmp_genomic[2]
+  })
+  
+  observe({input$i_lengthAmp_bis
+    if (is.null(input$i_lengthAmp_bis)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_bis[1]
+    def_settings[29] <<- input$i_lengthAmp_bis[2]
+  })
+  
+  observe({input$i_lengthAmp_NOME
+    if (is.null(input$i_lengthAmp_NOME)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_NOME[1]
+    def_settings[29] <<- input$i_lengthAmp_NOME[2]
+  })
+  
+  observe({input$i_lengthAmp_clever
+    if (is.null(input$i_lengthAmp_clever)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_clever[1]
+    def_settings[29] <<- input$i_lengthAmp_clever[2]
+  })
+  
+  observe({input$i_lengthAmp_hp_bis
+    if (is.null(input$i_lengthAmp_hp_bis)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_hp_bis[1]
+    def_settings[29] <<- input$i_lengthAmp_hp_bis[2]
+  })
+  
+  observe({input$i_lengthAmp_hp_NOME
+    if (is.null(input$i_lengthAmp_hp_NOME)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_hp_NOME[1]
+    def_settings[29] <<- input$i_lengthAmp_hp_NOME[2]
+  })
+  
+  observe({input$i_lengthAmp_hp_clever
+    if (is.null(input$i_lengthAmp_hp_clever)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_hp_clever[1]
+    def_settings[29] <<- input$i_lengthAmp_hp_clever[2]
+  })
+  
+  observe({input$i_lengthAmp_crispr
+    if (is.null(input$i_lengthAmp_crispr)) {return(NULL)}
+    def_settings[28] <<- input$i_lengthAmp_crispr[1]
+    def_settings[29] <<- input$i_lengthAmp_crispr[2]
+  })
+  
+  observe({input$i_minGC_genomic
+    if (is.null(input$i_minGC_genomic)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_genomic
+  })
+  
+  observe({input$i_minGC_bis
+    if (is.null(input$i_minGC_bis)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_bis
+  })
+  
+  observe({input$i_minGC_NOME
+    if (is.null(input$i_minGC_NOME)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_NOME
+  })
+  
+  observe({input$i_minGC_clever
+    if (is.null(input$i_minGC_clever)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_clever
+  })
+  
+  observe({input$i_minGC_hp_NOME
+    if (is.null(input$i_minGC_hp_NOME)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_hp_NOME
+  })
+  
+  observe({input$i_minGC_hp_clever
+    if (is.null(input$i_minGC_hp_clever)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_hp_clever
+  })
+  
+  observe({input$i_minGC_crispr
+    if (is.null(input$i_minGC_crispr)) {return(NULL)}
+    def_settings[30] <<- input$i_minGC_crispr
+  })
+  
+  observe({input$i_minCG_genomic
+    if (is.null(input$i_minCG_genomic)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_genomic
+  })
+  
+  observe({input$i_minCG_bis
+    if (is.null(input$i_minCG_bis)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_bis
+  })
+  
+  observe({input$i_minCG_NOME
+    if (is.null(input$i_minCG_NOME)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_NOME
+  })
+  
+  observe({input$i_minCG_clever
+    if (is.null(input$i_minCG_clever)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_clever
+  })
+  
+  observe({input$i_minCG_hp_bis
+    if (is.null(input$i_minCG_hp_bis)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_hp_bis
+  })
+  
+  observe({input$i_minCG_hp_NOME
+    if (is.null(input$i_minCG_hp_NOME)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_hp_NOME
+  })
+  
+  observe({input$i_minCG_hp_clever
+    if (is.null(input$i_minCG_hp_clever)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_hp_clever
+  })
+  
+  observe({input$i_minCG_crispr
+    if (is.null(input$i_minCG_crispr)) {return(NULL)}
+    def_settings[31] <<- input$i_minCG_crispr
+  })
+  
+  observe({input$i_minC2T
+    if (is.null(input$i_minC2T)) {return(NULL)}
+    def_settings[32] <<- input$i_minC2T
+  })
+  
+  observe({input$i_minG2A
+    if (is.null(input$i_minG2A)) {return(NULL)}
+    def_settings[33] <<- input$i_minG2A
+  })
+  
+  observe({input$i_chop.size
+    if (is.null(input$i_chop.size)) {return(NULL)}
+    def_settings[34] <<- input$i_chop.size
+  })
+  
+  # observeEvent(input$adapterF,{
+  #   #print("observed FAda")
+  #   insertUI(
+  #     selector= "#adapterF",
+  #     where = "afterEnd",
+  #     ui = textInput("adapterForward", "Add Forward adapter: ", "CTTTCCCTACACGACGCTCTTCCGATCT")
+  #   )
+  # })
+  # 
+  # output$ReverseAdapter <- renderUI({
+  #   if (!input$adapterR) {return(NULL)}
+  #   textInput("adapterReverse", "Add Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
+  # })
+  
+  ######### switch tab when button is pressed ############
+  # observeEvent(input$switch_to_graphs, {
+  #   newtab <- switch(input$tabs,
+  #                    "PDresults" = "PDgraphs"
+  #   )
+  #   updateTabItems(session, "tabs", newtab)
+  # })
+  # output$Graphs <- renderUI({
+  #   if (!input$switch_to_graphs) {return(NULL)}
+  #   box(actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
+  #       uiOutput("plot3"),
+  #       title = h2("Graphs"),
+  #       status = "primary",
+  #       solidHeader = TRUE,
+  #       collapsible = TRUE,
+  #       width = 12
+  #       )
+  #   
+  # })
+  
 }
