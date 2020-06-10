@@ -7,6 +7,7 @@ primersDesign_wd <- getwd()
 
 ## Source for Primer Design  ##
 source("generalDesign.R")
+source("ReferenceGenome.R")
 
 ## libraries for primer design  ##
 library(devtools)
@@ -656,7 +657,7 @@ server <- function(input, output, session) {
       }
       
       # get a new reference genome to the organism in question using the ReferenceGenome class
-      refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
+      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path(primersDesign_wd, "database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
       
       #building databases
       dbList <- getBlastDB(refgen, input$is_bisulfite)
@@ -832,7 +833,7 @@ server <- function(input, output, session) {
       }
       
       # get a new reference genome to the organism in question using the ReferenceGenome class
-      refgen <- new("ReferenceGenome", genome=getBSgenome(input$genome), name=(input$genome), wd=file.path(primersDesign_wd, "database", (input$genome), fsep=.Platform$file.sep))
+      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path(primersDesign_wd, "database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
       
       #building databases
       dbList <- getBlastDB(refgen, input$is_bisulfite)
@@ -1037,12 +1038,6 @@ server <- function(input, output, session) {
     writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
     close(settings_file)
     
-    showModal(modalDialog(
-      title = "Computation of your virtual PCR has finished!",
-      paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
-      easyClose = FALSE,
-      footer = modalButton("Close")))
-    
     # write a table instead of returning the results
     if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))){
       dir.create(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))
@@ -1050,9 +1045,16 @@ server <- function(input, output, session) {
     write.table(df1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
                 col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
     
-    end = Sys.time()
-    runtime = end - start
+    # create barplot for results and put it in the results folder using ggplot2
+    # TODO
+    #plot <- ggplot()
     
+    showModal(modalDialog(
+      title = "Computation of your virtual PCR has finished!",
+      paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
+      easyClose = FALSE,
+      footer = modalButton("Close")))
+  
     return ("Finished virtual PCR!")
   })
   

@@ -54,6 +54,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     print("bisulfite primer quality control")
 
     #now check if makeblastdb is needed for this genome
+    # TODO: Adjust this for multiple reference genomes!
     CTdb <- (
       if(!file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa.nhr", sep=""))
          || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa.nin", sep=""))
