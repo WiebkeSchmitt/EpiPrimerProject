@@ -684,7 +684,8 @@ server <- function(input, output, session) {
       
       #blasting 
       blast_args <- "-task blastn -evalue %s"
-      costumized_BLAST_args <- sprintf(blast_args, 50)
+      # set e-value for calculation a little bit lower, to avoid too many (unnecessary) results
+      costumized_BLAST_args <- sprintf(blast_args, 5)
       print(costumized_BLAST_args)
       
       #blast forward and reverse primer against CT and GA converted genome
