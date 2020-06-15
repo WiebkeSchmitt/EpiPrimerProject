@@ -55,33 +55,51 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
 
     #now check if makeblastdb is needed for this genome
     # TODO: Adjust this for multiple reference genomes!
+    # get name of desired reference geomoe 
+    name <- z@name
+    
+    # now get CT and GA converted reference genomes from the database folder
+    # reference genomes have to be created by converting non-bisulfite converted versions of the reference genome
+    # this can be done via the server: linux commands (can be entered via commandline) #name# is the corresponding file name, depending on the job run
+    # 1.a) create C to T converted reference genome: "cat #path_to_fastafile_of_reference_genome_non_bis# | tr 'cC' 'tT' > #name_for_new_CT_converted_genome.fa#"
+    # 1.b) to reverse conversion of the "chr" at the beginning of the fastafile to "thr", the following command needs to be entered: "sed -i 's/>t/>c/g'"
+    # 2. create G to A converted reference genome: "cat #path_to_fastafile_of_reference_genome_non_bis# | tr 'gG' 'aA' > #name_for_new_GA_converted_genome.fa#"
+    # alternatively, a program to achieve the same without command line could be written (this could be integrated into EpiPrimer to enable users to upload ANY reference genome of their own.)
+    
+    bis_name <- paste0("Bis_", gsub("UCSC.", "", gsub("BSgenome.", "", name)))
+    bis_path <- file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa", sep=""))
+    
     CTdb <- (
-      if(!file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa.nhr", sep=""))
-         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa.nin", sep=""))
-         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa.nsq", sep=""))
+      if(!file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa", sep=""))
+         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa.nin", sep=""))
+         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa.nsq", sep=""))
+         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa.nhr", sep=""))
       ){
         # build the database and index for ref genome
-        makeblastdb(file=(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa", sep=""))), dbtype = "nucl")
-        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa", sep="")))
+        print("making new database...")
+        makeblastdb(file=(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa", sep=""))), dbtype = "nucl")
+        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa", sep="")))
       }
       else{
         #files already exist so no need to build the database again
-        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "CTgenome", ".fa", sep="")))
+        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "CTgenome", ".fa", sep="")))
       }
     )
     
     GAdb <- (
-      if(!file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "GAgenome", ".fa.nhr", sep=""))
-         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "GAgenome", ".fa.nin", sep=""))
-         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "GAgenome", ".fa.nsq", sep=""))
+      if(!file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa", sep=""))
+         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa.nin", sep=""))
+         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa.nsq", sep=""))
+         || !file.exists(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa.nhr", sep=""))
       ){
         # build the database and index for ref genome
-        makeblastdb(file=(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "GAgenome", ".fa", sep=""))), dbtype = "nucl")
-        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "GAgenome", ".fa", sep = "")))
+        print("making new database...")
+        makeblastdb(file=(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa", sep=""))), dbtype = "nucl")
+        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa", sep = "")))
       }
       else{
         #files already exist so no need to build the database again
-        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", "Bis_hg19", "/", "GAgenome", ".fa", sep = "")))
+        blast(file.path(paste("C:/Users/Wiebk/Desktop/epiprimer/database", "/", bis_name, "/", "GAgenome", ".fa", sep = "")))
       }
     )
     
@@ -135,6 +153,9 @@ setGeneric(
 )
 
 setMethod("getAssemblyName", "ReferenceGenome", function(x){
+  if (x@name == "BSgenome.Hsapiens.UCSC.hg18"){
+    return ("hg18")
+  }
   if (x@name == "BSgenome.Hsapiens.UCSC.hg19"){
     return ("hg19")
   }
@@ -147,5 +168,5 @@ setMethod("getAssemblyName", "ReferenceGenome", function(x){
   if (x@name == "BSgenome.Mmusculus.UCSC.mm9"){
     return ("mm9")
   }  
-  return ("The genme assembly you choose is invalid!")  
+  return ("The genome assembly you choose is invalid!")  
 })

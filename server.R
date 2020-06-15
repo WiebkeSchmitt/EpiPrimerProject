@@ -651,8 +651,6 @@ server <- function(input, output, session) {
       if(!xor(exists_upload, exists_previous_job)){
         # no file was uploaded, inform the user
         print("No file uploaded!")
-        #this did not work
-        #return(paste("<span style=\"color:red\">No file was uploaded, please provide primers as input!</span>"))
         return (sprintf("No file was uploaded, please provide primers as input!"))
       }
       
@@ -735,10 +733,10 @@ server <- function(input, output, session) {
       
       # write to summary
       writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
-      writeLines(paste("Total number perfect matches forward primer \t", perfect_matches_primer1_C2T, "\n"), summary_file)
-      writeLines(paste("Total number perfect matches reverse primer \t", num_perfect_matches_primer2_C2T, "\n"), summary_file)
-      writeLines(paste("Total number imperfect matches forward primer \t", num_imperfect_matches_primer1_G2A, "\n"), summary_file)
-      writeLines(paste("Total number imperfect matches reverse primer \t", num_imperfect_matches_primer2_G2A, "\n"), summary_file)
+      #writeLines(paste("Total number perfect matches forward primer \t", perfect_matches_primer1_C2T, "\n"), summary_file)
+      #writeLines(paste("Total number perfect matches reverse primer \t", num_perfect_matches_primer2_C2T, "\n"), summary_file)
+      #writeLines(paste("Total number imperfect matches forward primer \t", num_imperfect_matches_primer1_G2A, "\n"), summary_file)
+      #writeLines(paste("Total number imperfect matches reverse primer \t", num_imperfect_matches_primer2_G2A, "\n"), summary_file)
       
       # finding genomic ranges for all hits 
       hits<- c(
