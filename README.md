@@ -15,16 +15,15 @@ Requirements for local development of the project:
 
 A web application will be available shortly.
 
-## 1.2	Running the project locally
+## 1.2	Running the project locally for development
 
 Clone the code for the epiprimer project from its GitHub repository: 
 
 https://github.com/WiebkeSchmitt/EpiPrimerProject.git
 
-Additionally, you need to create two new folders: 
-1. A folder called "database"
-2. A folder called "flowcell_package" (this folder should be given to you by an administrator of the project)
-3. A folder called "PrimerQC" to hold results from Primer Quality Control
+Additionally, you need two folders: 
+1. A folder called "database" containing the reference genomes needed for ePCR
+2. A folder called "PrimerQC" to hold results from the ePCR tool
 
 R packages, that need to be installed: 
 
@@ -41,13 +40,13 @@ This pipeline can be run seperately via the commandline if desired.
 
 Primers can be designed for mouse genome assemblies 8 and 9 as well as for human genome assemblies 18 and 19. 
 
-##	2.2	Primer Blast (formerly: Primer Quality Control)
+##	2.2	ePCR (formerly: Primer Quality Control, Primer Blast)
 
-The Primer Blast allows (as already contained in the name) the blast of user designed primers and primer created during the primer design against a reference genome. 
+The ePCR module allows the blast of user designed primers and primers created during the primer design against a reference genome. 
 
 We expect primers to be given in 5' to 3' direction. 
 
-We support blasting for primers against a bisulfite treated human genome.  
+We support this for: hg18, hg19, hg38, mm9, mm10
 
 //TODO
 

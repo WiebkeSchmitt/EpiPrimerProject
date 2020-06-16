@@ -981,7 +981,13 @@ server <- function(input, output, session) {
       }
     }
     
-    for (i in 2:length(url.full)){
+    # This is reduced to fetching only the first 100 sequences to avoid too much runtime
+    end = length(url.full)
+    if (end > 100){
+      end = 100
+    }
+    
+    for (i in 2:end){  
       r <- GET(url.full[i]) 
       # filter errors from content function
       is_err <- tryCatch(
