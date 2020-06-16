@@ -632,8 +632,8 @@ server <- function(input, output, session) {
   output$primer_qc_start <- eventReactive(input$computePQC, {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
-      title = "Computation of your virtual PCR has started!",
-      paste0("The Quality Control for your Primers is being computed. Your results will be available in a few moments. You can find them in the 'Results of ePCR' tab when they are ready."),
+      title = "ePCR has started!",
+      paste0("The ePCR for your primers is being computed. Your results will be available in a few moments. You can find them in the 'Results of ePCR' tab when they are ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
     
@@ -642,12 +642,11 @@ server <- function(input, output, session) {
     if (is_bis){
       print ("Starting bisulfite ePCR")
       
-      #first see if the user has uploaded primers
-      # check if upload field is empty
+      # first check if the user has uploaded primers: check if the upload field is empty
       exists_upload = !is.null(input$Fprimers) && !is.null(input$Rprimers)
-      # was there was a previous primer design job?
+      # was there was a previous primer design job from which we can import the generated primers?
       exists_previous_job = file.exists(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")) && file.exists(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
-      
+      # inform the user, that no primers are available
       if(!xor(exists_upload, exists_previous_job)){
         # no file was uploaded, inform the user
         print("No file uploaded!")
@@ -656,20 +655,17 @@ server <- function(input, output, session) {
       
       # get a new reference genome to the organism in question using the ReferenceGenome class
       refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path(primersDesign_wd, "database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
-      
-      #building databases
+      # build/get CT and GA databases to the organism in question --> this is handles by the ReferenceGenome.R class, that needs to be available
       dbList <- getBlastDB(refgen, input$is_bisulfite)
       
       #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
       Fseq <- (if(is.null(input$Fprimers)) {
         vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
-        
       }
       else{
         #validate(need(readDNAStringSet(input$Fprimers$datapath)), "no upload")
         vF <- readDNAStringSet(input$Fprimers$datapath)
       } )
-      
       Rseq <- (if(is.null(input$Rprimers)) {
         vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
         
@@ -678,15 +674,15 @@ server <- function(input, output, session) {
         vR <- readDNAStringSet(input$Rprimers$datapath)
       } )
       
-      #output of the used primers
+      # output of the used primers
       print(Fseq)
       print(Rseq)
       
-      #blasting 
+      # arguments for conducting the blast
       blast_args <- "-task blastn -evalue %s"
-      # set e-value for calculation a little bit lower, to avoid too many (unnecessary) results
+      # the e-value for calculation of bisulfite primers is set lower than the commonly used value of 10, to avoid too many (unnecessary) results
       costumized_BLAST_args <- sprintf(blast_args, 5)
-      print(costumized_BLAST_args)
+      #print(costumized_BLAST_args)
       
       #blast forward and reverse primer against CT and GA converted genome
       F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
@@ -705,39 +701,53 @@ server <- function(input, output, session) {
                           Mismatches <= input$primer_mismatches)
       
       # write this to table
-      result_folder <- paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep="")
+      result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
       dir.create(result_folder)
-      #write blast results for both primers to table
+      
+      #write blast results for both primers to seperate tables
       write.table(F_CTblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_C_to_T_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(R_CTblast, paste(result_folder, "\\Blast_Hits_Reverse_Primers_C_to_T_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F)
       write.table(F_GAblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_G_to_A_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(R_GAblast, paste(result_folder, "\\Blast_Hits_Reverse_Primers_G_to_A_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       
       #initialize summary file
-      summary_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Summary.txt", sep="")
+      summary_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Summary.txt", sep="")
       file.create(summary_file_path)
       summary_file <- file(summary_file_path, open="wt")
       writeLines(paste("Parameters \t Settings \n"), summary_file)
       writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
       writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
-      
-      #calculate number of perfect and imperfect matches
-      perfect_matches_primer1_C2T = F_CTblast[F_CTblast$Perc.Ident == 100, ]
-      perfect_matches_primer2_C2T = R_CTblast[R_CTblast$Perc.Ident == 100, ]
-      imperfect_matches_primer1_G2A = F_GAblast[F_GAblast$Perc.Ident != 100, ]
-      imperfect_matches_primer2_G2A = R_GAblast[R_GAblast$Perc.Ident != 100, ]
-      
-      num_perfect_matches_primer1_C2T = nrow(perfect_matches_primer1_C2T)
-      num_perfect_matches_primer2_C2T = nrow(perfect_matches_primer2_C2T)
-      num_imperfect_matches_primer1_G2A = nrow(imperfect_matches_primer1_G2A)
-      num_imperfect_matches_primer2_G2A = nrow(imperfect_matches_primer2_G2A)
-      
-      # write to summary
+
+      # total number of primers
       writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
-      #writeLines(paste("Total number perfect matches forward primer \t", perfect_matches_primer1_C2T, "\n"), summary_file)
-      #writeLines(paste("Total number perfect matches reverse primer \t", num_perfect_matches_primer2_C2T, "\n"), summary_file)
-      #writeLines(paste("Total number imperfect matches forward primer \t", num_imperfect_matches_primer1_G2A, "\n"), summary_file)
-      #writeLines(paste("Total number imperfect matches reverse primer \t", num_imperfect_matches_primer2_G2A, "\n"), summary_file)
+      
+      # loop over all primers and count the blast matches
+      for (i in names(Fseq)){
+        primer_subsetCT = subset(F_CTblast, F_CTblast$QueryID==i)
+        matchesCT = nrow(primer_subsetCT) 
+        perfect_matchesCT = nrow(subset(primer_subsetCT, primer_subsetCT$Perc.Ident == 100))
+        primer_subsetGA = subset(F_GAblast, F_GAblast$QueryID==i)
+        matchesGA = nrow(primer_subsetGA) 
+        perfect_matchesGA = nrow(subset(primer_subsetGA, primer_subsetGA$Perc.Ident == 100))
+        writeLines(paste("Total number matches forward primer to CT-reference genome ", i, "\t", matchesCT,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches forward primer to CT-reference genome ", i, "\t", perfect_matchesCT, "\n"), summary_file)
+        writeLines(paste("Total number matches forward primer to GA-reference genome ", i, "\t", matchesGA,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches forward primer to GA-reference genome ", i, "\t", perfect_matchesGA, "\n"), summary_file)
+      }
+      
+      for (i in names(Rseq)){
+        primer_subsetCT = subset(R_CTblast, R_CTblast$QueryID==i)
+        matchesCT = nrow(primer_subsetCT) 
+        perfect_matchesCT = nrow(subset(primer_subsetCT, primer_subsetCT$Perc.Ident == 100))
+        primer_subsetGA = subset(R_GAblast, R_GAblast$QueryID==i)
+        matchesGA = nrow(primer_subsetGA) 
+        perfect_matchesGA = nrow(subset(primer_subsetGA, primer_subsetGA$Perc.Ident == 100))
+        writeLines(paste("Total number matches reverse primer to CT-reference genome ", i, "\t", matchesCT,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches reverse primer to CT-reference genome ", i, "\t", perfect_matchesCT, "\n"), summary_file)
+        writeLines(paste("Total number matches reverse primer to GA-reference genome ", i, "\t", matchesGA,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches reverse primer to GA-reference genome ", i, "\t", perfect_matchesGA, "\n"), summary_file)
+      }
+      # TODO: does this work with uploaded files?
       
       # finding genomic ranges for all hits 
       hits<- c(
@@ -870,7 +880,7 @@ server <- function(input, output, session) {
                               Mismatches <= input$primer_mismatches)
       
       # write this to table
-      result_folder <- paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep="")
+      result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
       print(result_folder)
       dir.create(result_folder)
       #write blast results for both primers to table
@@ -878,7 +888,7 @@ server <- function(input, output, session) {
       write.table(primer2_blast, paste(result_folder, "\\Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       
       #initialize summary file
-      summary_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Summary.txt", sep="")
+      summary_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Summary.txt", sep="")
       file.create(summary_file_path)
       summary_file <- file(summary_file_path, open="wt")
       writeLines(paste("Parameters \t Settings \n"), summary_file)
@@ -1023,7 +1033,7 @@ server <- function(input, output, session) {
     close(summary_file)
     
     # make an overview file of the job executed
-    overview_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Overview.txt", sep="")
+    overview_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Overview.txt", sep="")
     file.create(overview_file_path)
     overview_file <- file(overview_file_path, open="wt")
     F.PrimerID <- df1[, "F.AmpliconID"]
@@ -1032,7 +1042,7 @@ server <- function(input, output, session) {
     close(overview_file)
     
     # make a settings file of the job executed
-    settings_file_path <- paste(getwd(), "/PrimerQC/", input$blast_id, "/Settings.txt", sep="")
+    settings_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Settings.txt", sep="")
     file.create(settings_file_path)
     settings_file <- file(settings_file_path, open="wt")
     writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
@@ -1044,10 +1054,10 @@ server <- function(input, output, session) {
     close(settings_file)
     
     # write a table instead of returning the results
-    if (!dir.exists(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))){
-      dir.create(paste(primersDesign_wd, "/PrimerQC/", input$blast_id, sep=""))
+    if (!dir.exists(paste(primersDesign_wd, "/ePCR/", input$blast_id, sep=""))){
+      dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, sep=""))
     }
-    write.table(df1, file = paste(primersDesign_wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
+    write.table(df1, file = paste(primersDesign_wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
                 col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
     
     # create barplot for results and put it in the results folder using ggplot2
@@ -1066,12 +1076,12 @@ server <- function(input, output, session) {
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
     wd <- primersDesign_wd
-    primerQC_table <- read.delim(paste(wd, "/PrimerQC/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
+    ePCR_table <- read.delim(paste(wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
-    primerQC_table_sub = subset(primerQC_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
+    ePCR_table_sub = subset(ePCR_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
-    if(length(primerQC_table_sub) == 0){
+    if(length(ePCR_table_sub) == 0){
       ww <-showModal(modalDialog(
         title = "No ePCR results found!",
         sprintf(paste0("Unfortunateley, we were unable to perform a Primer Quality Control for your input. Please check your settings and try again.")),
@@ -1080,7 +1090,7 @@ server <- function(input, output, session) {
       ))
       stop("No ePCR results found!")
     }
-    return(primerQC_table_sub)
+    return(ePCR_table_sub)
   })
   
   output$pQC.results <- renderUI({
@@ -1091,7 +1101,7 @@ server <- function(input, output, session) {
     if (length(selectedRange) == 0){
       return (data.frame())
     }
-    table <- read.delim(paste0(primersDesign_wd, "/PrimerQC/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
+    table <- read.delim(paste0(primersDesign_wd, "/ePCR/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
     selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
     selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
@@ -1124,7 +1134,7 @@ server <- function(input, output, session) {
   ############# display the overview of the ePCR ###########
   
   showOverviewePCR <- reactive({ if (!input$overviewePCR) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(), "PrimerQC", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(getwd(), "ePCR", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Overview",files[["results"]])])
     print(file_path)
@@ -1158,7 +1168,7 @@ server <- function(input, output, session) {
   ############# display the settings of the ePCR ###########
   
   showSettingsePCR <- reactive({ if (!input$settingsePCR) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(), "PrimerQC", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(getwd(), "ePCR", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Settings",files[["results"]])])
     print(file_path)
@@ -1192,7 +1202,7 @@ server <- function(input, output, session) {
   ############# display the summary of the ePCR ###########
   
   showSummaryePCR <- reactive({ if (!input$summaryePCR) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(), "PrimerQC", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(paste(getwd(), "ePCR", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Summary",files[["results"]])])
     print(file_path)
