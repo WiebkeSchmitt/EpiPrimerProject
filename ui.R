@@ -542,7 +542,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               sliderInput("gap", "Maximum size of reported product", min = 500, max = 10000, value = 2000, step = 500),
                                               #sliderInput("partial_match", "3' primer portion to report partial matches", min=0, max=25, value=16),
                                               sliderInput("primer_mismatches", "Number of Mismatches allowed in Primer Blast", min=0, max=25, value=7),
-                                              helpText("ePCR is currently under active development! Should you encounter any problems during your run, please contact us!"),
+                                              helpText(h3("ePCR is currently under active development! Should you encounter any problems during your run, please contact us!")),
                                               hr(),
                                               textOutput("primer_qc_start"),
                                               tags$head(tags$style("#primer_qc_start{color: red;
@@ -587,13 +587,15 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    )
                                             )),
                                             fluidRow(box(
+                                              actionButton("graphics_ePCR", label = "Graphs", icon = icon("sync-alt")),
+                                              uiOutput("ePCR_Graphs"),
                                               title = h2("Graphs for ePCR"),
                                               status = "primary",
                                               solidHeader = TRUE,
                                               collapsible = TRUE,
                                               collapsed = FALSE,
                                               width = 12,
-                                              "To be implemented"
+                                              "Further supporting graphs to be implemented"
                                             )
                                           )
                                           

@@ -1150,12 +1150,18 @@ server <- function(input, output, session) {
     # visualize overview results: potential amplicons per primerpair
     # make a folder containing the graphs
     dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep=""))
-    graphs_path <- paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep="")
-    png(paste(graphs_path, "PotentialAmpliconFrequencies.png", sep=""))
-    print(as.data.frame(table_df1_FprimerOccurances))
-    print(names(as.data.frame(table_df1_FprimerOccurances)))
-    plot <- ggplot(as.data.frame(table_df1_FprimerOccurances), aes(x=Freq, y=F.PrimerID), geom_bar = (stat = "identity"))
-    print(plot)
+    graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
+    
+    require(ggplot2)
+    df <- as.data.frame(table_df1_FprimerOccurances)
+    png(file.path(graphs_path, "PotentialAmpliconFrequencies.png"), height=1000, width=1200, pointsize=24)
+    #print("start plotting")
+    #counts <- table(df$Freq)
+    #print(counts)
+    #print(df$F.PrimerID)
+    barplot(df$Freq, main="Potential Amplicons per Primerpair", names=df$F.PrimerID, col="#3c8dbc")
+    dev.off()
+    #print("plotted.")
     
     showModal(modalDialog(
       title = "Computation of your virtual PCR has finished!",
@@ -1723,5 +1729,40 @@ server <- function(input, output, session) {
   #   textOutput("This is to be implemented")
   # 
   # })
+  
+  
+  
+  ######### display graphics for ePCR ############
+  showGraphicsePCR <-eventReactive(input$graphics_ePCR, {
+    files <- data.frame(graphs=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs"),full.names=TRUE, pattern =".png"))
+    print(files)
+    })
+  
+  output$ePCR_Graphs <-renderUI({
+    #check, if there are graphics that can be displayed, if not inform the user 
+    if(is.data.frame(showGraphicsePCR()) && nrow(showGraphicsePCR())== 0){
+      return(data.frame())
+    } else {
+      ss <- lapply(1:nrow(showGraphicsePCR()),function(x){
+        out_ui <- paste0("image", x)
+        imageOutput(out_ui, height = "800px")
+      })
+      do.call(tagList,ss)
+    }
+  })
+  
+  observe({
+    for(x in 1:nrow(showGraphicsePCR()))
+    {
+      local({
+        my_x <- x
+        out_ui <- paste0("image",my_x)
+        output[[out_ui]] <- renderImage({
+          list(src = paste(showGraphicsePCR()$graphs[my_x]),
+               alt = "Image failed to render", style="width: 800px; height: 700px")
+        }, deleteFile = FALSE)
+      })
+    }
+  })
   
 }
