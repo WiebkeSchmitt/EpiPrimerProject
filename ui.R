@@ -542,7 +542,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               sliderInput("gap", "Maximum size of reported product", min = 500, max = 10000, value = 2000, step = 500),
                                               #sliderInput("partial_match", "3' primer portion to report partial matches", min=0, max=25, value=16),
                                               sliderInput("primer_mismatches", "Number of Mismatches allowed in Primer Blast", min=0, max=25, value=7),
-                                              helpText("ePCR is currently under active development!"),
+                                              helpText("ePCR is currently under active development! Should you encounter any problems during your run, please contact us!"),
                                               hr(),
                                               textOutput("primer_qc_start"),
                                               tags$head(tags$style("#primer_qc_start{color: red;

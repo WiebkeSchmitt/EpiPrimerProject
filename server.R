@@ -29,6 +29,7 @@ library(xml2)
 library(httr)
 library(httr)
 library(stringr)
+library(ggplot2)
 
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 
@@ -647,7 +648,7 @@ server <- function(input, output, session) {
       # was there was a previous primer design job from which we can import the generated primers?
       exists_previous_job = file.exists(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")) && file.exists(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
       # inform the user, that no primers are available
-      if(!xor(exists_upload, exists_previous_job)){
+      if(!exists_upload && !exists_previous_job){
         # no file was uploaded, inform the user
         print("No file uploaded!")
         return (sprintf("No file was uploaded, please provide primers as input!"))
@@ -723,31 +724,30 @@ server <- function(input, output, session) {
       
       # loop over all primers and count the blast matches
       for (i in names(Fseq)){
-        primer_subsetCT = subset(F_CTblast, F_CTblast$QueryID==i)
+        primer_subsetCT = subset(F_CTblast, F_CTblast$QueryID == i)
         matchesCT = nrow(primer_subsetCT) 
         perfect_matchesCT = nrow(subset(primer_subsetCT, primer_subsetCT$Perc.Ident == 100))
-        primer_subsetGA = subset(F_GAblast, F_GAblast$QueryID==i)
+        primer_subsetGA = subset(F_GAblast, F_GAblast$QueryID == i)
         matchesGA = nrow(primer_subsetGA) 
         perfect_matchesGA = nrow(subset(primer_subsetGA, primer_subsetGA$Perc.Ident == 100))
-        writeLines(paste("Total number matches forward primer to CT-reference genome ", i, "\t", matchesCT,  "\n"), summary_file)
-        writeLines(paste("Total number perfect matches forward primer to CT-reference genome ", i, "\t", perfect_matchesCT, "\n"), summary_file)
-        writeLines(paste("Total number matches forward primer to GA-reference genome ", i, "\t", matchesGA,  "\n"), summary_file)
-        writeLines(paste("Total number perfect matches forward primer to GA-reference genome ", i, "\t", perfect_matchesGA, "\n"), summary_file)
+        writeLines(paste("Total number matches forward primer ", i, " to CT-reference genome \t", matchesCT,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches forward primer", i, "  to CT-reference genome \t", perfect_matchesCT, "\n"), summary_file)
+        writeLines(paste("Total number matches forward primer", i, " to GA-reference genome \t", matchesGA,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches forward primer", i, " to GA-reference genome \t", perfect_matchesGA, "\n"), summary_file)
       }
       
       for (i in names(Rseq)){
-        primer_subsetCT = subset(R_CTblast, R_CTblast$QueryID==i)
+        primer_subsetCT = subset(R_CTblast, R_CTblast$QueryID == i)
         matchesCT = nrow(primer_subsetCT) 
         perfect_matchesCT = nrow(subset(primer_subsetCT, primer_subsetCT$Perc.Ident == 100))
-        primer_subsetGA = subset(R_GAblast, R_GAblast$QueryID==i)
+        primer_subsetGA = subset(R_GAblast, R_GAblast$QueryID == i)
         matchesGA = nrow(primer_subsetGA) 
         perfect_matchesGA = nrow(subset(primer_subsetGA, primer_subsetGA$Perc.Ident == 100))
-        writeLines(paste("Total number matches reverse primer to CT-reference genome ", i, "\t", matchesCT,  "\n"), summary_file)
-        writeLines(paste("Total number perfect matches reverse primer to CT-reference genome ", i, "\t", perfect_matchesCT, "\n"), summary_file)
-        writeLines(paste("Total number matches reverse primer to GA-reference genome ", i, "\t", matchesGA,  "\n"), summary_file)
-        writeLines(paste("Total number perfect matches reverse primer to GA-reference genome ", i, "\t", perfect_matchesGA, "\n"), summary_file)
+        writeLines(paste("Total number matches reverse primer ", i, " to CT-reference genome \t", matchesCT,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches reverse primer ", i, " to CT-reference genome \t", perfect_matchesCT, "\n"), summary_file)
+        writeLines(paste("Total number matches reverse primer ", i, " to GA-reference genome \t", matchesGA,  "\n"), summary_file)
+        writeLines(paste("Total number perfect matches reverse primer ", i, " to GA-reference genome \t", perfect_matchesGA, "\n"), summary_file)
       }
-      # TODO: does this work with uploaded files?
       
       # finding genomic ranges for all hits 
       hits<- c(
@@ -810,19 +810,18 @@ server <- function(input, output, session) {
       )
       
       #overlapping between genomic ranges 
-      overlap_hits <- findOverlaps(hits,hits,maxgap=input$gap,ignore.strand=TRUE)
+      overlap_hits <- findOverlaps(hits, hits, maxgap=input$gap, ignore.strand=TRUE)
       
-      df1 <-cbind(as.data.frame(hits[overlap_hits@from,]),as.data.frame(hits[overlap_hits@to,]))
+      df1 <- cbind(as.data.frame(hits[overlap_hits@from, ]),as.data.frame(hits[overlap_hits@to, ]))
       
-      colnames(df1)<-paste(rep(c("F","R"),each=11), colnames(df1), sep=".")
+      colnames(df1) <- paste(rep(c("F", "R"), each=11), colnames(df1), sep=".")
       
       df1 <-subset(df1,
                     F.strand == "+" &
                       R.strand == "-" &
                       as.character(F.AmpliconID) == as.character(R.AmpliconID) & 
                       as.character(F.seqnames) == as.character(R.seqnames) & 
-                      abs(pmin(F.start,F.end)-pmax(R.start,R.end)) <= input$gap)
-      
+                      abs(pmin(F.start, F.end) - pmax(R.start, R.end)) <= input$gap)
       
       print("Finished ePCR part for bisulfite Primerpairs")
       
@@ -835,7 +834,7 @@ server <- function(input, output, session) {
       # was there was a previous primer design job?
       exists_previous_job = file.exists(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")) && file.exists(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
       
-      if(!xor(exists_upload, exists_previous_job)){
+      if(!exists_upload && !exists_previous_job){
         # no file was uploaded, inform the user
         print("No file uploaded!")
         return (sprintf("No file was uploaded, please provide primers as input!"))
@@ -898,24 +897,31 @@ server <- function(input, output, session) {
       #calculate number of perfect and imperfect matches
       perfect_matches_primer1 = primer1_blast[primer1_blast$Perc.Ident == 100, ]
       perfect_matches_primer2 = primer2_blast[primer2_blast$Perc.Ident == 100, ]
-      imperfect_matches_primer1 = primer1_blast[primer1_blast$Perc.Ident != 100, ]
-      imperfect_matches_primer2 = primer2_blast[primer2_blast$Perc.Ident != 100, ]
-      
+      num_imperfect_matches_primer1 = nrow(primer1_blast)
+      num_imperfect_matches_primer2 = nrow(primer2_blast)
       num_perfect_matches_primer1 = nrow(perfect_matches_primer1)
       num_perfect_matches_primer2 = nrow(perfect_matches_primer2)
-      num_imperfect_matches_primer1 = nrow(imperfect_matches_primer1)
-      num_imperfect_matches_primer2 = nrow(imperfect_matches_primer2)
       
       # write to summary
       writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
-      writeLines(paste("Total number perfect matches forward primer \t", num_perfect_matches_primer1, "\n"), summary_file)
-      writeLines(paste("Total number perfect matches reverse primer \t", num_perfect_matches_primer2, "\n"), summary_file)
-      writeLines(paste("Total number imperfect matches forward primer \t", num_imperfect_matches_primer1, "\n"), summary_file)
-      writeLines(paste("Total number imperfect matches reverse primer \t", num_imperfect_matches_primer2, "\n"), summary_file)
+      writeLines(paste("Total number perfect matches forward primers \t", num_perfect_matches_primer1, "\n"), summary_file)
+      writeLines(paste("Total number perfect matches reverse primers \t", num_perfect_matches_primer2, "\n"), summary_file)
+      writeLines(paste("Total number imperfect matches forward primers \t", num_imperfect_matches_primer1, "\n"), summary_file)
+      writeLines(paste("Total number imperfect matches reverse primers \t", num_imperfect_matches_primer2, "\n"), summary_file)
+      
+      # calculate primer blast matches according to primer pair
+      for (i in names(Fseq)){
+        sub_table <- subset(primer1_blast, primer1_blast$QueryID == i)
+        writeLines(paste("Total blast hits forward primer ", i,  "\t", nrow(sub_table), "\n"), summary_file)
+      }
+      
+      for (i in names(Rseq)){
+        sub_table <- subset(primer2_blast, primer2_blast$QueryID == i)
+        writeLines(paste("Total blast hits reverse primer ", i,  "\t", nrow(sub_table), "\n"), summary_file)
+      }
       
       #to check for close regions, always choose the same id and the same chromosome
       #to be able to do this, create GRanges Object from the perfect hits
-      
       # finding genomic ranges for all hits 
       hits<- c(
         GRanges(
@@ -955,77 +961,156 @@ server <- function(input, output, session) {
       
     } # end of non-bisulfite ePCR
     
+    # Check, if there were overlaps - if not, inform the user
+    if(nrow(df1) == 0){
+      writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
+      close(summary_file)
+      # make primer_qc_results_all file, but empty, to avoid errors for display.
+      results_path_empty <- paste(getwd(), "/ePCR/", input$blast_id, "/primer_qc_results_all.txt", sep="")
+      file.create(results_path_empty)
+      
+      # make a settings file of the job executed
+      settings_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Settings.txt", sep="")
+      file.create(settings_file_path)
+      settings_file <- file(settings_file_path, open="wt")
+      writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
+      writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
+      writeLines(paste("Referencegenome \t", input$genome, "\n", sep = ""), settings_file)
+      writeLines(paste("Bisulfiteanalysis \t", input$is_bisulfite, "\n", sep = ""), settings_file)
+      writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
+      writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
+      close(settings_file)
+      
+      showModal(modalDialog(
+        title = "No potential PCR products found!",
+        paste0("The Quality Control for your Primers is finished. We could not find any potential PCR fragments for your Primerpairs. Details of your results are available in the Primer Design Quality Control tab."),
+        easyClose = FALSE,
+        footer = modalButton("Close")))
+      return("No PCR fragments found.")
+    }
+    
     # add used ReferenceGenome and PCR Productsize
     df1$assembly <- getAssemblyName(refgen)
     df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start+1, df1$F.start-df1$R.end+1)
     
-    # calculate sequeces only for fragments longer than 50 bp 
+    # use sequeces only for fragments longer than 50 bp 
     df1 <- subset(df1,
                   Productsize >= 50)
     
     #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
-    chr <- df1$F.seqnames
-    start <- ifelse(df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
-    end <- ifelse(!df1$F.start <= df1$R.end, df1$F.start, df1$R.end)
+    # initialize result dataframe
+    res_table <- data.frame(F.seqnames=character(), 
+                            F.start=integer(), 
+                            F.end=integer(), 
+                            F.width=integer(), 
+                            F.strand=character(),
+                            F.Source=character(),
+                            F.AmpliconID=character(),
+                            F.Length=integer(),
+                            F.mismatches=integer(),
+                            F.bit_score=numeric(),
+                            F.e_value=numeric(),
+                            R.seqnames=character(), 
+                            R.start=integer(), 
+                            R.end=integer(), 
+                            R.width=integer(), 
+                            R.strand=character(),
+                            R.Source=character(),
+                            R.AmpliconID=character(),
+                            R.Length=integer(),
+                            R.mismatches=integer(),
+                            R.bit_score=numeric(),
+                            R.e_value=numeric(),
+                            assembly=character(),
+                            Productsize=integer(),
+                            Productsequence=character(),
+                            CpGs=integer())
     
-    assembly <- getAssemblyName(refgen)
-    url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
     
-    if(length(url.full) != 0){
-      r <- GET(url.full[1])
-      is_err <- tryCatch(
-        s <- content(r),
-        error = function(e){
-          print("Error occured when fetching DNA sequence!")
-        }
-      )
-      if(!inherits(is_err, "error")){
-        seq <- xml_find_all(s, ".//DNA")
-        split1 <- strsplit(as.character(seq), ">")[[1]][2]
-        split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        sequences <- c(as.character(gsub("[\r\n]", "", split2)))
-      } else {
-        # ERROR HANDLING
-        sequences <- append (sequences, "NotFound")
-        next()
-      }
-    }
-    
-    # This is reduced to fetching only the first 100 sequences to avoid too much runtime
-    end = length(url.full)
-    if (end > 100){
-      end = 100
-    }
-    
-    for (i in 2:end){  
-      r <- GET(url.full[i]) 
-      # filter errors from content function
-      is_err <- tryCatch(
-        s <- content(r),
-        error = function(e){
-          print("Error occured when fetching DNA sequence!")
-        }
-      )
+    for (i in names(Fseq)){
+      # get subset of df1
+      primer_subset = subset(df1, df1$F.AmpliconID == i)
+      # write Number of created potential amplicons for this primer to summary_file
+      #writeLines(paste ("Total number of potential amplicons for primer ", i, "\t", nrow(primer_subset)), summary_file)
       
-      # handle occurance of errors from content function
-      if(!inherits(is_err, "error")){
-        #REAL WORK
-        seq <- xml_find_all(s, ".//DNA")
-        split1 <- strsplit(as.character(seq), ">")[[1]][2]
-        split2 <- strsplit(as.character(split1), "<")[[1]][1]
-        sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
-      } else {
-        # ERROR HANDLING
-        sequences <- append (sequences, "NotFound")
-        next()
+      # now get sequences for the first 100 entries
+      # keep in mind: not every entry of Fseq must be contained in df1!
+      if(nrow(primer_subset) != 0){
+        chr <- primer_subset$F.seqnames
+        start <- ifelse(primer_subset$F.start <= primer_subset$R.end, primer_subset$F.start, primer_subset$R.end)
+        end <- ifelse(!primer_subset$F.start <= primer_subset$R.end, primer_subset$F.start, primer_subset$R.end)
+        assembly <- getAssemblyName(refgen)
+      
+        # fetch sequences only for first 100 results for each primer pair
+      
+        url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
+      
+        if(length(url.full) != 0){
+          r <- GET(url.full[1])
+          is_err <- tryCatch(
+            s <- content(r),
+            error = function(e){
+              print("Error occured when fetching DNA sequence!")
+            }
+          )
+          if(!inherits(is_err, "error")){
+            seq <- xml_find_all(s, ".//DNA")
+            split1 <- strsplit(as.character(seq), ">")[[1]][2]
+            split2 <- strsplit(as.character(split1), "<")[[1]][1]
+            sequences <- c(as.character(gsub("[\r\n]", "", split2)))
+          } else {
+            # ERROR HANDLING
+            sequences <- append (sequences, "NotFound")
+            next()
+          }
+        }
+      
+        # This is reduced to fetching only the first 100 sequences to avoid too much runtime
+        end = length(url.full)
+        if (end > 100){
+          end = 100
+        }
+      
+        for (i in 2:end){  
+          r <- GET(url.full[i]) 
+          # filter errors from content function
+          is_err <- tryCatch(
+            s <- content(r),
+            error = function(e){
+              print("Error occured when fetching DNA sequence!")
+            }
+          )
+        
+          # handle occurance of errors from content function
+          if(!inherits(is_err, "error")){
+            #REAL WORK
+            seq <- xml_find_all(s, ".//DNA")
+            split1 <- strsplit(as.character(seq), ">")[[1]][2]
+            split2 <- strsplit(as.character(split1), "<")[[1]][1]
+            sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
+          } else {
+            # ERROR HANDLING
+            sequences <- append (sequences, "NotFound")
+            next()
+          }
+        }
+      
+        # before adding to the dataframe, make sure, vector and dataframe are of the same length
+        if (end < 100){
+          primer_subset$Productsequence <- sequences
+        } else {
+          # append enough NAs to be able to merge vector and dataframe
+          seq_vec <- append(sequences, rep(NA, nrow(primer_subset) - 100), after = 100)
+          primer_subset$Productsequence <- seq_vec
+        }
+        # now count CpGs in Sequences by couting them
+        primer_subset$CpGs <- str_count(primer_subset$Productsequence, pattern = "cg")
+  
+        # put these subsequence tables into a single resulttable.
+        res_table = rbind(res_table, primer_subset)
+        }
       }
-    }
-    
-    df1$Productsequence <- sequences
-    
-    # now count CpGs in Sequences by couting themn 
-    df1$CpGs <- str_count(df1$Productsequence, pattern = "cg")
-    
+
     # write Number of created amplicons to summary_file
     writeLines(paste ("Total number of potential amplicons \t", nrow(df1)), summary_file)
     
@@ -1057,16 +1142,24 @@ server <- function(input, output, session) {
     if (!dir.exists(paste(primersDesign_wd, "/ePCR/", input$blast_id, sep=""))){
       dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, sep=""))
     }
-    write.table(df1, file = paste(primersDesign_wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
+    write.table(res_table, file = paste(primersDesign_wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
                 col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
     
     # create barplot for results and put it in the results folder using ggplot2
     # TODO
-    #plot <- ggplot()
+    # visualize overview results: potential amplicons per primerpair
+    # make a folder containing the graphs
+    dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep=""))
+    graphs_path <- paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep="")
+    png(paste(graphs_path, "PotentialAmpliconFrequencies.png", sep=""))
+    print(as.data.frame(table_df1_FprimerOccurances))
+    print(names(as.data.frame(table_df1_FprimerOccurances)))
+    plot <- ggplot(as.data.frame(table_df1_FprimerOccurances), aes(x=Freq, y=F.PrimerID), geom_bar = (stat = "identity"))
+    print(plot)
     
     showModal(modalDialog(
       title = "Computation of your virtual PCR has finished!",
-      paste0("The Quality Control for your Primers is being finished Your results are available in the Primer Design Quality Control tab."),
+      paste0("The Quality Control for your Primers is finished. Your results are available in the Primer Design Quality Control tab."),
       easyClose = FALSE,
       footer = modalButton("Close")))
   
@@ -1076,20 +1169,12 @@ server <- function(input, output, session) {
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
     wd <- primersDesign_wd
+    
     ePCR_table <- read.delim(paste(wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
     
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
     ePCR_table_sub = subset(ePCR_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
-    if(length(ePCR_table_sub) == 0){
-      ww <-showModal(modalDialog(
-        title = "No ePCR results found!",
-        sprintf(paste0("Unfortunateley, we were unable to perform a Primer Quality Control for your input. Please check your settings and try again.")),
-        easyClose = FALSE,
-        footer = modalButton("Close")
-      ))
-      stop("No ePCR results found!")
-    }
     return(ePCR_table_sub)
   })
   
@@ -1101,6 +1186,14 @@ server <- function(input, output, session) {
     if (length(selectedRange) == 0){
       return (data.frame())
     }
+    
+    file_name = paste(primersDesign_wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep="")
+    # empty = (nrow(file_name) == 0)
+    # 
+    # if(length(empty) == 0){
+    #   return(data.frame())
+    # }
+    
     table <- read.delim(paste0(primersDesign_wd, "/ePCR/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
     selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
     selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
