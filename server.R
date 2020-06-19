@@ -773,7 +773,7 @@ server <- function(input, output, session) {
               xlab = "Primer",
               col = c("black", "white", "#3c8dbc", "#f39c12")
       )
-      legend("topright",
+      legend("topleft",
              c("Blasthits forward primer C-to-T converted reference genome", "Blasthits forward primer G-to-A converted reference genome", "Blasthits reverse primer C-to-T converted reference genome", "Blasthits reverse primer G-to-A converted reference genome"),
              fill = c("black", "white", "#3c8dbc","#f39c12")
       )
