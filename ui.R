@@ -481,8 +481,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                             box(title = "Selected List",
                                                 width = 12,
                                                 helpText("You can download primerpairs and analyze them further by adding them to your list of selected primers below."),
-                                                helpText("Primers added to the Selected List will automatically be downloaded to the Folder containing all details of your Primer Design run."),
-                                                helpText("To add primers to your Selected List, mark them on the Toplist before generating your Selected List."),
+                                                helpText("Primers added to the Selected List will automatically be downloaded to the folder containing all details of your Primer Design run."),
+                                                helpText("To add primers to your Selected List, mark them on the Wholelist before generating your Selected List."),
                                                 hr(),
                                                 actionButton("selectlist", label = "Generate Selected List"),
                                                 hr(),
@@ -594,8 +594,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               solidHeader = TRUE,
                                               collapsible = TRUE,
                                               collapsed = FALSE,
-                                              width = 12,
-                                              "Further supporting graphs to be implemented"
+                                              width = 12
                                             )
                                           )
                                           

@@ -277,11 +277,11 @@ server <- function(input, output, session) {
   #also generate fasta files for forward and reverse primers 
   
   showSelectlist <- reactive({ if (!input$selectlist) {return(NULL)}
-    s = input$viewtoplist_rows_selected
-    whole_selected_list <- showToplist()[s,]
+    s = input$viewwholelist_rows_selected
+    whole_selected_list <- showWholelist()[s,]
     write.table(whole_selected_list,file=paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers", ".txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
     
-    short_selected_list <- showToplist()[s,c("amplicon.id","primer1.sequence","primer2.sequence")]
+    short_selected_list <- showWholelist()[s,c("amplicon.id","primer1.sequence","primer2.sequence")]
     
     Fprimers_qc <- write.table(sapply(1:nrow(short_selected_list),function(x){
       paste0(paste0(">",short_selected_list[x,"amplicon.id"]),'\n',paste0(short_selected_list[x,"primer1.sequence"]),'\n')
@@ -705,6 +705,10 @@ server <- function(input, output, session) {
       result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
       dir.create(result_folder)
       
+      # initialize graphs directory
+      graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
+      dir.create(graphs_path)
+      
       #write blast results for both primers to seperate tables
       write.table(F_CTblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_C_to_T_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(R_CTblast, paste(result_folder, "\\Blast_Hits_Reverse_Primers_C_to_T_converted_refgen", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F)
@@ -722,14 +726,22 @@ server <- function(input, output, session) {
       # total number of primers
       writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
       
+      vec_matches_fprimers_CT <- vector()
+      vec_matches_rprimers_CT <- vector()
+      vec_matches_fprimers_GA <- vector()
+      vec_matches_rprimers_GA <- vector()
+      vec_seqnames <- vector()
       # loop over all primers and count the blast matches
       for (i in names(Fseq)){
+        vec_seqnames <- c(vec_seqnames, i)
         primer_subsetCT = subset(F_CTblast, F_CTblast$QueryID == i)
         matchesCT = nrow(primer_subsetCT) 
         perfect_matchesCT = nrow(subset(primer_subsetCT, primer_subsetCT$Perc.Ident == 100))
         primer_subsetGA = subset(F_GAblast, F_GAblast$QueryID == i)
         matchesGA = nrow(primer_subsetGA) 
         perfect_matchesGA = nrow(subset(primer_subsetGA, primer_subsetGA$Perc.Ident == 100))
+        vec_matches_fprimers_CT <- c(vec_matches_fprimers_CT, matchesCT)
+        vec_matches_fprimers_GA <- c(vec_matches_fprimers_GA, matchesGA)
         writeLines(paste("Total number matches forward primer ", i, " to CT-reference genome \t", matchesCT,  "\n"), summary_file)
         writeLines(paste("Total number perfect matches forward primer", i, "  to CT-reference genome \t", perfect_matchesCT, "\n"), summary_file)
         writeLines(paste("Total number matches forward primer", i, " to GA-reference genome \t", matchesGA,  "\n"), summary_file)
@@ -743,11 +755,29 @@ server <- function(input, output, session) {
         primer_subsetGA = subset(R_GAblast, R_GAblast$QueryID == i)
         matchesGA = nrow(primer_subsetGA) 
         perfect_matchesGA = nrow(subset(primer_subsetGA, primer_subsetGA$Perc.Ident == 100))
+        vec_matches_rprimers_CT <- c(vec_matches_rprimers_CT, matchesCT)
+        vec_matches_rprimers_GA <- c(vec_matches_rprimers_GA, matchesGA)
         writeLines(paste("Total number matches reverse primer ", i, " to CT-reference genome \t", matchesCT,  "\n"), summary_file)
         writeLines(paste("Total number perfect matches reverse primer ", i, " to CT-reference genome \t", perfect_matchesCT, "\n"), summary_file)
         writeLines(paste("Total number matches reverse primer ", i, " to GA-reference genome \t", matchesGA,  "\n"), summary_file)
         writeLines(paste("Total number perfect matches reverse primer ", i, " to GA-reference genome \t", perfect_matchesGA, "\n"), summary_file)
       }
+      
+      # create plot to visualize number of blast hits for bisulfite primers
+      # TODO: analog to counting normal primer hits.
+      data_plot2 <- matrix(c(as.numeric(vec_matches_fprimers_CT), as.numeric(vec_matches_fprimers_GA), as.numeric(vec_matches_rprimers_CT), as.numeric(vec_matches_rprimers_GA)), nrow=length(Fseq), ncol=4)
+      rownames(data_plot2) <- vec_seqnames
+      png(file.path(graphs_path, "Blasthits_Bisulfite_Blast.png"), height=1000, width=1200, pointsize=24)
+      barplot(t(data_plot2),
+              main = "Blasthits per Primer to CT and GA converted genome",
+              xlab = "Primer",
+              col = c("black", "white", "#3c8dbc", "#f39c12")
+      )
+      legend("topright",
+             c("Blasthits forward primer C-to-T converted reference genome", "Blasthits forward primer G-to-A converted reference genome", "Blasthits reverse primer C-to-T converted reference genome", "Blasthits reverse primer G-to-A converted reference genome"),
+             fill = c("black", "white", "#3c8dbc","#f39c12")
+      )
+      dev.off()
       
       # finding genomic ranges for all hits 
       hits<- c(
@@ -882,6 +912,11 @@ server <- function(input, output, session) {
       result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
       print(result_folder)
       dir.create(result_folder)
+      
+      # initialize graphs directory
+      graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
+      dir.create(graphs_path)
+      
       #write blast results for both primers to table
       write.table(primer1_blast, paste0(result_folder, "\\Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(primer2_blast, paste(result_folder, "\\Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
@@ -910,15 +945,46 @@ server <- function(input, output, session) {
       writeLines(paste("Total number imperfect matches reverse primers \t", num_imperfect_matches_primer2, "\n"), summary_file)
       
       # calculate primer blast matches according to primer pair
+      # make also a nice plot from these numbers
+      # plot 2: shows Blast Hits per Primerpair, divided up to Forward and Reverse Primerhits
+      
+      fw_primer_vec <- vector()
+      rw_primer_vec <- vector()
+      num_fw_blast_hits <- vector()
+      num_rw_blast_hits <- vector()
       for (i in names(Fseq)){
+        # append names to fw_primer_vec
+        fw_primer_vec <- c(fw_primer_vec, i)
         sub_table <- subset(primer1_blast, primer1_blast$QueryID == i)
+        num_fw_blast_hits <- c(num_fw_blast_hits, nrow(sub_table))
         writeLines(paste("Total blast hits forward primer ", i,  "\t", nrow(sub_table), "\n"), summary_file)
       }
       
       for (i in names(Rseq)){
+        #rw_primer_vec <- c(rw_primer_vec, i)
         sub_table <- subset(primer2_blast, primer2_blast$QueryID == i)
+        num_rw_blast_hits <- c(num_rw_blast_hits, nrow(sub_table))
         writeLines(paste("Total blast hits reverse primer ", i,  "\t", nrow(sub_table), "\n"), summary_file)
       }
+      
+      # create plot to visualize number of blast hits
+      print(num_fw_blast_hits)
+      print(typeof(num_fw_blast_hits))
+      print(length(fw_primer_vec))
+      data_plot2 <- matrix(c(as.numeric(num_fw_blast_hits), as.numeric(num_rw_blast_hits)), nrow=length(fw_primer_vec), ncol=2)
+      rownames(data_plot2) <- fw_primer_vec
+      print(data_plot2)
+      png(file.path(graphs_path, "Blasthits_per_Primerpair.png"), height=1000, width=1200, pointsize=24)
+      barplot(t(data_plot2),
+              main = "Blasthits per Primerpair",
+              xlab = "Primerpair",
+              col = c("#3c8dbc","#f39c12")
+      )
+      legend("topleft",
+             c("Forward Primer Blasthits","Reverse Primer Blasthits"),
+             fill = c("#3c8dbc","#f39c12")
+      )
+      dev.off()
       
       #to check for close regions, always choose the same id and the same chromosome
       #to be able to do this, create GRanges Object from the perfect hits
@@ -1149,19 +1215,15 @@ server <- function(input, output, session) {
     # TODO
     # visualize overview results: potential amplicons per primerpair
     # make a folder containing the graphs
-    dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep=""))
-    graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
+    #dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep=""))
+    #graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
     
     require(ggplot2)
-    df <- as.data.frame(table_df1_FprimerOccurances)
+    # plot 1: shows amplicon frequency per primerpair
+    df_plot1 <- as.data.frame(table_df1_FprimerOccurances)
     png(file.path(graphs_path, "PotentialAmpliconFrequencies.png"), height=1000, width=1200, pointsize=24)
-    #print("start plotting")
-    #counts <- table(df$Freq)
-    #print(counts)
-    #print(df$F.PrimerID)
-    barplot(df$Freq, main="Potential Amplicons per Primerpair", names=df$F.PrimerID, col="#3c8dbc")
+    barplot(df_plot1$Freq, main="Potential Amplicons per Primerpair", names=df_plot1$F.PrimerID, col="#3c8dbc", xlab="Primerpair")
     dev.off()
-    #print("plotted.")
     
     showModal(modalDialog(
       title = "Computation of your virtual PCR has finished!",
