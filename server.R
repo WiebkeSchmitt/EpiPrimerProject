@@ -1294,7 +1294,7 @@ server <- function(input, output, session) {
   ############# display the overview of the ePCR ###########
   
   showOverviewePCR <- reactive({ if (!input$overviewePCR) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(), "ePCR", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(file.path(getwd(), "ePCR", input$blast_id, fsep=.Platform$file.sep),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Overview",files[["results"]])])
     print(file_path)
@@ -1328,7 +1328,7 @@ server <- function(input, output, session) {
   ############# display the settings of the ePCR ###########
   
   showSettingsePCR <- reactive({ if (!input$settingsePCR) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(), "ePCR", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(file.path(getwd(), "ePCR", input$blast_id, fsep=.Platform$file.sep), full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Settings",files[["results"]])])
     print(file_path)
@@ -1362,7 +1362,7 @@ server <- function(input, output, session) {
   ############# display the summary of the ePCR ###########
   
   showSummaryePCR <- reactive({ if (!input$summaryePCR) {return(NULL)}
-    files <- data.frame(results=list.files(paste(getwd(), "ePCR", input$blast_id, sep="/"),full.names=TRUE, pattern =".txt"))
+    files <- data.frame(results=list.files(file.path(getwd(), "ePCR", input$blast_id, fsep=.Platform$file.sep), full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Summary",files[["results"]])])
     print(file_path)
