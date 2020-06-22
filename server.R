@@ -894,9 +894,12 @@ server <- function(input, output, session) {
         vR <- readDNAStringSet(input$Rprimers$datapath)
       } )
       
+      print(Fseq)
+      print(Rseq)
+      
       #blasting 
       blast_args <- "-task blastn -evalue %s"
-      costumized_BLAST_args <- sprintf(blast_args, 50)
+      costumized_BLAST_args <- sprintf(blast_args, 10)
       print(costumized_BLAST_args)
       
       primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
@@ -910,7 +913,6 @@ server <- function(input, output, session) {
       
       # write this to table
       result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
-      print(result_folder)
       dir.create(result_folder)
       
       # initialize graphs directory
@@ -968,12 +970,8 @@ server <- function(input, output, session) {
       }
       
       # create plot to visualize number of blast hits
-      print(num_fw_blast_hits)
-      print(typeof(num_fw_blast_hits))
-      print(length(fw_primer_vec))
       data_plot2 <- matrix(c(as.numeric(num_fw_blast_hits), as.numeric(num_rw_blast_hits)), nrow=length(fw_primer_vec), ncol=2)
       rownames(data_plot2) <- fw_primer_vec
-      print(data_plot2)
       png(file.path(graphs_path, "Blasthits_per_Primerpair.png"), height=1000, width=1200, pointsize=24)
       barplot(t(data_plot2),
               main = "Blasthits per Primerpair",
@@ -1231,11 +1229,13 @@ server <- function(input, output, session) {
       easyClose = FALSE,
       footer = modalButton("Close")))
   
+    print("Finished virtual PCR!")
     return ("Finished virtual PCR!")
   })
   
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
+    print("preparePQC")
     wd <- primersDesign_wd
     
     ePCR_table <- read.delim(paste(wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
