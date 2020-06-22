@@ -1235,11 +1235,10 @@ server <- function(input, output, session) {
   
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
-    print("preparePQC")
     wd <- primersDesign_wd
     
-    ePCR_table <- read.delim(paste(wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""))
-    
+    ePCR_table <- read.delim(file.path(wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep ))
+   
     # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
     ePCR_table_sub = subset(ePCR_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
@@ -1248,21 +1247,21 @@ server <- function(input, output, session) {
   
   output$pQC.results <- renderUI({
     if (!input$refreshPQC) {return(data.frame())}
-    #preparePQC()
     # select variables to display by selectInput
+    
     selectedRange <- input$test_select
     if (length(selectedRange) == 0){
       return (data.frame())
     }
     
-    file_name = paste(primersDesign_wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep="")
+    file_name = file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
     # empty = (nrow(file_name) == 0)
     # 
     # if(length(empty) == 0){
     #   return(data.frame())
     # }
     
-    table <- read.delim(paste0(primersDesign_wd, "/ePCR/", as.character(input$blast_id), "/", "primer_qc_results_all.txt"), sep="")
+    table <- read.delim(file.path(primersDesign_wd, "ePCR", as.character(input$blast_id), "primer_qc_results_all.txt", fsep=.Platform$file.sep))
     selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
     selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
     
