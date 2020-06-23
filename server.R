@@ -297,10 +297,13 @@ server <- function(input, output, session) {
   
   showSelectlist <- reactive({ if (!input$selectlist) {return(NULL)}
     s = input$viewwholelist_rows_selected
+    if(is.null(s)){
+      stop("No primers were marked on the Wholelist!")
+    }
     whole_selected_list <- showWholelist()[s,]
     write.table(whole_selected_list,file=paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers", ".txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
     
-    short_selected_list <- showWholelist()[s,c("amplicon.id","primer1.sequence","primer2.sequence")]
+    short_selected_list <- showWholelist()[s,c("amplicon.id", "primer1.sequence", "primer2.sequence")]
     
     Fprimers_qc <- write.table(sapply(1:nrow(short_selected_list),function(x){
       paste0(paste0(">",short_selected_list[x,"amplicon.id"]),'\n',paste0(short_selected_list[x,"primer1.sequence"]),'\n')
@@ -310,9 +313,9 @@ server <- function(input, output, session) {
       paste0(paste0(">",short_selected_list[x,"amplicon.id"]),'\n',paste0(short_selected_list[x,"primer2.sequence"]),'\n')
     }),file=paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
     
-    primers_list_ReadsExtraction <- short_selected_list
-    colnames(primers_list_ReadsExtraction) <- c("names","Fprimer","Rprimer")
-    PrimersTable_ReadsExtraction <- write.table(primers_list_ReadsExtraction,file=paste0(primersDesign_wd,"/",input$name,"/","PrList_ReadsExtraction.txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
+    #primers_list_ReadsExtraction <- short_selected_list
+    #colnames(primers_list_ReadsExtraction) <- c("names","Fprimer","Rprimer")
+    #PrimersTable_ReadsExtraction <- write.table(primers_list_ReadsExtraction,file=paste0(primersDesign_wd,"/",input$name,"/","PrList_ReadsExtraction.txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
     
     return(whole_selected_list)
     
@@ -1316,9 +1319,7 @@ server <- function(input, output, session) {
       file_name = file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
       table <- read.delim(file.path(primersDesign_wd, "ePCR", as.character(input$blast_id), "primer_qc_results_all.txt", fsep=.Platform$file.sep))
       selTable <- subset(table, table$F.AmpliconID == as.character(selectedRange))
-      #selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width)),
-      
-      #table <- read.delim(file.path(primersDesign_wd, "ePCR", as.character(input$blast_id), "primer_qc_results_all.txt", fsep=.Platform$file.sep))
+      selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
       
       output$out <- DT::renderDataTable({selTable}, extensions = 'FixedHeader',
                                         options = list(fixedHeader = FALSE,
