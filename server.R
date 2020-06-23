@@ -599,7 +599,7 @@ server <- function(input, output, session) {
   import_Fprimers <- eventReactive(input$loadprimers, {
     # do this also using BioStrings, to display table nicely
     file_path_previous_run <- file.path(primersDesign_wd, input$name, "Fprimers.fasta", fesp=.Platform$file.sep)
-    read_primer_file <- readDNAStringSet(as.character(file_path_previous_run))
+    read_primer_file <- readDNAStringSet(file_path_previous_run)
     FPrimer.Name = names(read_primer_file)
     Sequence = paste(read_primer_file)
     return(data.frame(FPrimer.Name, Sequence))
@@ -609,7 +609,7 @@ server <- function(input, output, session) {
   import_Rprimers <- eventReactive(input$loadprimers, {
     # do this also using BioStrings, to display table nicely
     file_path_previous_run <- file.path(primersDesign_wd, input$name, "Rprimers.fasta", fsep=.Platform$file.sep)
-    read_primer_file <- readDNAStringSet(as.character(file_path_previous_run))
+    read_primer_file <- readDNAStringSet(file_path_previous_run)
     RPrimer.Name = names(read_primer_file)
     Sequence = paste(read_primer_file)
     return(data.frame(RPrimer.Name, Sequence))
