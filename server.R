@@ -598,7 +598,7 @@ server <- function(input, output, session) {
   
   import_Fprimers <- eventReactive(input$loadprimers, {
     # do this also using BioStrings, to display table nicely
-    file_path_previous_run <- file.path(primersDesign_wd, input$name, "Fprimers.fasta", fesp=.Platform$file.sep)
+    file_path_previous_run <- paste0(primersDesign_wd, "/", input$name, "/Fprimers.fasta")
     read_primer_file <- readDNAStringSet(file_path_previous_run)
     FPrimer.Name = names(read_primer_file)
     Sequence = paste(read_primer_file)
@@ -608,7 +608,7 @@ server <- function(input, output, session) {
   #user can import primers from previous step to display them
   import_Rprimers <- eventReactive(input$loadprimers, {
     # do this also using BioStrings, to display table nicely
-    file_path_previous_run <- file.path(primersDesign_wd, input$name, "Rprimers.fasta", fsep=.Platform$file.sep)
+    file_path_previous_run <- paste0(primersDesign_wd, "/", input$name, "/Rprimers.fasta")
     read_primer_file <- readDNAStringSet(file_path_previous_run)
     RPrimer.Name = names(read_primer_file)
     Sequence = paste(read_primer_file)
