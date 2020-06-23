@@ -188,7 +188,7 @@ server <- function(input, output, session) {
   
   output$downloadPrimer<- downloadHandler(
     filename = function() {
-      paste(input$name,"zip",sep=".")
+      paste(input$name, "zip", sep=".")
     },
     
     content <- function(con) {
@@ -207,10 +207,10 @@ server <- function(input, output, session) {
   
   output$downloadePCRresults<- downloadHandler(
     filename = function() {
-      paste(input$blast_id, "zip", sep=".")
+      paste0(input$blast_id, ".zip")
     },
     content <- function(con) {
-      ss <- file.path(primersDesign_wd, "ePCR", input$blast_id, fsep=.Platform$file.sep)
+      ss <- file.path(primersDesign_wd, "ePCR", paste0(input$blast_id, ".zip"), fsep=.Platform$file.sep)
       tmpdir <- tempdir()
       setwd(tempdir())
       filesToSave <- c(ss) #List to hold paths to your files in shiny
@@ -594,12 +594,8 @@ server <- function(input, output, session) {
   })
   
   import_Fprimers <- eventReactive(input$loadprimers, {
-    # vF <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
-    # print(vF)
-    # return(vF)
-    
     # do this also using BioStrings, to display table nicely
-    file_path_previous_run <- paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta")
+    file_path_previous_run <- file.path(primersDesign_wd, input$name, "Fprimers.fasta", fesp=.Platform$file.sep)
     read_primer_file <- readDNAStringSet(as.character(file_path_previous_run))
     FPrimer.Name = names(read_primer_file)
     Sequence = paste(read_primer_file)
@@ -608,11 +604,8 @@ server <- function(input, output, session) {
   
   #user can import primers from previous step to display them
   import_Rprimers <- eventReactive(input$loadprimers, {
-    # vR <- read.delim(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
-    # print(vR)
-    # return(vR)
     # do this also using BioStrings, to display table nicely
-    file_path_previous_run <- paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta")
+    file_path_previous_run <- file.path(primersDesign_wd, input$name, "Rprimers.fasta", fsep=.Platform$file.sep)
     read_primer_file <- readDNAStringSet(as.character(file_path_previous_run))
     RPrimer.Name = names(read_primer_file)
     Sequence = paste(read_primer_file)
