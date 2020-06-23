@@ -1289,57 +1289,66 @@ server <- function(input, output, session) {
   
   preparePQC <- reactive({
     if (!input$refreshPQC) {return(data.frame())}
-    wd <- primersDesign_wd
+    if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
+      print("results do not exist!")
+      return(data.frame())
+    } else {
+      ePCR_table <- read.delim(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep ))
+      ePCR_table_sub <- subset(ePCR_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
+      return(ePCR_table_sub)
+    }
     
-    ePCR_table <- read.delim(file.path(wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep ))
-   
-    # filter for certain columns of the result, we are not interested in displaying E-value and Bitscore
-    ePCR_table_sub = subset(ePCR_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
-    
-    return(ePCR_table_sub)
   })
   
   output$pQC.results <- renderUI({
     if (!input$refreshPQC) {return(data.frame())}
-    # select variables to display by selectInput
-    
-    selectedRange <- input$test_select
-    if (length(selectedRange) == 0){
-      return (data.frame())
+    if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
+      print("results do not exist!")
+      return(data.frame())
+    } else {
+      # select variables to display by selectInput
+      
+      selectedRange <- input$test_select
+      if (length(selectedRange) == 0){
+        return (data.frame())
+      }
+      
+      file_name = file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
+      table <- read.delim(file.path(primersDesign_wd, "ePCR", as.character(input$blast_id), "primer_qc_results_all.txt", fsep=.Platform$file.sep))
+      selTable <- subset(table, table$F.AmpliconID == as.character(selectedRange))
+      #selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width)),
+      
+      #table <- read.delim(file.path(primersDesign_wd, "ePCR", as.character(input$blast_id), "primer_qc_results_all.txt", fsep=.Platform$file.sep))
+      
+      output$out <- DT::renderDataTable({selTable}, extensions = 'FixedHeader',
+                                        options = list(fixedHeader = FALSE,
+                                                       #scrollY = "200px",
+                                                       scrollX = TRUE),
+                                        #fillContainer = TRUE,
+                                        class = "display")
+      DT::dataTableOutput("out")
+      
     }
-    
-    file_name = file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
-    # empty = (nrow(file_name) == 0)
-    # 
-    # if(length(empty) == 0){
-    #   return(data.frame())
-    # }
-    
-    table <- read.delim(file.path(primersDesign_wd, "ePCR", as.character(input$blast_id), "primer_qc_results_all.txt", fsep=.Platform$file.sep))
-    selTable <- subset(table, F.AmpliconID == as.character(selectedRange))
-    selTable <- subset(selTable, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
-    
-    output$out <- DT::renderDataTable({selTable}, extensions = 'FixedHeader',
-                                                  options = list(fixedHeader = FALSE,
-                                                                #scrollY = "200px",
-                                                                scrollX = TRUE),
-                                                  #fillContainer = TRUE,
-                                                  class = "display")
-    DT::dataTableOutput("out")
   })
   
   # display selectInput / Dropdownmenue to filter Results for one primerpair analyzed
   observeEvent(input$refreshPQC, {
-    removeUI(
-      selector= "div:has(>> #test_select)",
-      
-      immediate = TRUE
-    )
-    insertUI(
-      selector= "#refreshPQC",
-      where = "afterEnd",
-      ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
-    )
+    if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
+      print(!dir.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)))
+      print("results do not exist!")
+      return(data.frame())
+    } else {
+        removeUI(
+          selector= "div:has(>> #test_select)",
+          
+          immediate = TRUE
+        )
+        insertUI(
+          selector= "#refreshPQC",
+          where = "afterEnd",
+          ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
+        )
+    }
   }#, once = TRUE
   )
   
