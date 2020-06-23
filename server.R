@@ -199,7 +199,26 @@ server <- function(input, output, session) {
       #Put all file paths inside filesToSave...
       zz <- zip(zipfile=con, files = filesToSave,flags = "-r9X", extras = "",zip ="zip")
       return(zz)
-    }
+    },
+    contentType = "results/zip"
+  )
+  
+  ################ download the results of ePCR ####################
+  
+  output$downloadePCRresults<- downloadHandler(
+    filename = function() {
+      paste(input$blast_id, "zip", sep=".")
+    },
+    content <- function(con) {
+      ss <- file.path(primersDesign_wd, "ePCR", input$blast_id, fsep=.Platform$file.sep)
+      tmpdir <- tempdir()
+      setwd(tempdir())
+      filesToSave <- c(ss) #List to hold paths to your files in shiny
+      #Put all file paths inside filesToSave...
+      zz <- zip(zipfile=con, files = filesToSave, flags = "-r9X", extras = "", zip ="zip")
+      return(zz)
+    },
+    contentType = "results/zip"
   )
   
   ############# display the top list of primers ########### 
@@ -648,7 +667,7 @@ server <- function(input, output, session) {
     
     writeLines("ePCR has started!", logfile)
     writeLines(paste0("Resultfolder is: ", as.character(result_folder)), logfile)
-    writeLines(paste0("Logfile is: ", as.character(logfile)), logfile)
+    writeLines(paste0("Logfile is: ", logfile_path), logfile)
     writeLines(paste0("Analysis started on ", Sys.Date(), "at ", Sys.time()), logfile)
     
     # initialize graphs directory
@@ -907,7 +926,7 @@ server <- function(input, output, session) {
       blast_args <- "-task blastn -evalue %s"
       costumized_BLAST_args <- sprintf(blast_args, 10)
       print(costumized_BLAST_args)
-      writeLines(paste0("performed blast using the arguments: ", costumized_blast_args), logfile)
+      writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args), logfile)
       
       primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
       primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
@@ -1045,13 +1064,17 @@ server <- function(input, output, session) {
     if(nrow(df1) == 0){
       writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
       close(summary_file)
+      writeLines(paste0("No potential Amplicons were found for your ePCR! Analysis end \t", Sys.time(), "\n"), logfile)
+      close(logfile)
+      
       # make primer_qc_results_all file, but empty, to avoid errors for display.
-      results_path_empty <- paste(getwd(), "/ePCR/", input$blast_id, "/primer_qc_results_all.txt", sep="")
+      results_path_empty <- file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
       file.create(results_path_empty)
       
       # make a settings file of the job executed
-      settings_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Settings.txt", sep="")
+      settings_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Settings.txt", fsep=.Platform$file.sep)
       file.create(settings_file_path)
+      
       settings_file <- file(settings_file_path, open="wt")
       writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
       writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
@@ -1069,13 +1092,17 @@ server <- function(input, output, session) {
       return("No PCR fragments found.")
     }
     
+    writeLines(paste("Start preparing resulttable for output"), logfile)
     # add used ReferenceGenome and PCR Productsize
     df1$assembly <- getAssemblyName(refgen)
+    writeLines(paste("Wrote assembly to resulttable"), logfile)
     df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start+1, df1$F.start-df1$R.end+1)
+    writeLines(paste0("Determined productsize for resulttable"), logfile)
     
     # use sequeces only for fragments longer than 50 bp 
     df1 <- subset(df1,
                   Productsize >= 50)
+    writeLines(paste("Discarded fragments, that are too short to be of importance in the upcoming analyis (Only fragments larger than 50 bp are analyzed)"), logfile)
     
     #url example for UCSC sequence retireval: http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr1:100000,200000
     # initialize result dataframe
@@ -1106,7 +1133,7 @@ server <- function(input, output, session) {
                             Productsequence=character(),
                             CpGs=integer())
     
-    
+    writeLines(paste0("Start fetching sequences for the first 100 results of eacht primerjob"), logfile)
     for (i in names(Fseq)){
       # get subset of df1
       primer_subset = subset(df1, df1$F.AmpliconID == i)
@@ -1125,11 +1152,14 @@ server <- function(input, output, session) {
       
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
+        writeLines(paste0("Start fetching the first sequence for the results of primer ", i), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
           is_err <- tryCatch(
             s <- content(r),
             error = function(e){
+              sequences <- append (sequences, "NotFound")
+              next()
               print("Error occured when fetching DNA sequence!")
             }
           )
@@ -1140,54 +1170,72 @@ server <- function(input, output, session) {
             sequences <- c(as.character(gsub("[\r\n]", "", split2)))
           } else {
             # ERROR HANDLING
+            print("handeled error!")
             sequences <- append (sequences, "NotFound")
             next()
           }
         }
+        writeLines(paste0("First sequence for the results fetched succesfully"), logfile)
       
         # This is reduced to fetching only the first 100 sequences to avoid too much runtime
-        end = length(url.full)
-        if (end > 100){
-          end = 100
+        print(length(url.full))
+        end_vec = length(url.full)
+        if (end_vec > 100){
+          end_vec = 100
+          writeLines(paste0("Over 100 potential amplicons were present, set end for fetching sequences to: ", end_vec), logfile)
         }
       
-        for (i in 2:end){  
-          r <- GET(url.full[i]) 
-          # filter errors from content function
-          is_err <- tryCatch(
-            s <- content(r),
-            error = function(e){
-              print("Error occured when fetching DNA sequence!")
+        writeLines(paste0("Fetching the other sequences for created amplicons"), logfile)
+        if(2 < end_vec){
+            for (i in 2:end_vec){ 
+              #r <- GET(url.full[i]) 
+              # filter errors from content function
+              is_err <- tryCatch(
+                r <- GET(url.full[i]),
+                s <- content(r),
+                error = function(e){
+                  print("Error occured when fetching DNA sequence!")
+                }
+              )
+              # handle occurance of errors from content function
+              if(!inherits(is_err, "error")){
+                #REAL WORK
+                seq <- xml_find_all(s, ".//DNA")
+                split1 <- strsplit(as.character(seq), ">")[[1]][2]
+                split2 <- strsplit(as.character(split1), "<")[[1]][1]
+                sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
+              } else {
+                # ERROR HANDLING
+                sequences <- append (sequences, "NotFound")
+                next()
+              }
             }
-          )
-        
-          # handle occurance of errors from content function
-          if(!inherits(is_err, "error")){
-            #REAL WORK
-            seq <- xml_find_all(s, ".//DNA")
-            split1 <- strsplit(as.character(seq), ">")[[1]][2]
-            split2 <- strsplit(as.character(split1), "<")[[1]][1]
-            sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
-          } else {
-            # ERROR HANDLING
-            sequences <- append (sequences, "NotFound")
-            next()
-          }
         }
+        writeLines(paste0("Fetched sequences for amplicons succesfully"), logfile)
       
         # before adding to the dataframe, make sure, vector and dataframe are of the same length
-        if (end < 100){
+        if (end_vec == 100){
           primer_subset$Productsequence <- sequences
+          writeLines(paste0("Vector length of sequences is of size 100"), logfile)
         } else {
           # append enough NAs to be able to merge vector and dataframe
-          seq_vec <- append(sequences, rep(NA, nrow(primer_subset) - 100), after = 100)
-          primer_subset$Productsequence <- seq_vec
+          #print(nrow(primer_subset))
+          #print(100-as.numeric(nrow(primer_subset)))
+          #seq_vec <- append(sequences, rep(NA, times = (100-as.numeric(nrow(primer_subset)))), after = 100)
+          #print_seq_vec
+          print(sequences)
+          print(nrow(sequences))
+          print(nrow(primer_subset))
+          primer_subset$Productsequence <- sequences
+          writeLines(paste0("Adjusted vector length for sequences to size 100"), logfile)
         }
         # now count CpGs in Sequences by couting them
         primer_subset$CpGs <- str_count(primer_subset$Productsequence, pattern = "cg")
+        writeLines(paste0("Calculated CpG content of sequences"), logfile)
   
         # put these subsequence tables into a single resulttable.
         res_table = rbind(res_table, primer_subset)
+        writeLines(paste0("Bound result for primertype ", i ," to total results"), logfile)
         }
       }
 
@@ -1198,16 +1246,17 @@ server <- function(input, output, session) {
     close(summary_file)
     
     # make an overview file of the job executed
-    overview_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Overview.txt", sep="")
+    overview_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Overview.txt", fsep=.Platform$file.sep)
     file.create(overview_file_path)
     overview_file <- file(overview_file_path, open="wt")
     F.PrimerID <- df1[, "F.AmpliconID"]
     table_df1_FprimerOccurances <- table(F.PrimerID)
     write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
     close(overview_file)
+    writeLines(paste0("Overview file was created succesfully"), logfile)
     
     # make a settings file of the job executed
-    settings_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Settings.txt", sep="")
+    settings_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Settings.txt", fsep=.Platform$file.sep)
     file.create(settings_file_path)
     settings_file <- file(settings_file_path, open="wt")
     writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
@@ -1217,27 +1266,21 @@ server <- function(input, output, session) {
     writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
     writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
     close(settings_file)
+    writeLines(paste0("Settings file created succesfully"), logfile)
     
-    # write a table instead of returning the results
-    if (!dir.exists(paste(primersDesign_wd, "/ePCR/", input$blast_id, sep=""))){
-      dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, sep=""))
-    }
-    write.table(res_table, file = paste(primersDesign_wd, "/ePCR/", input$blast_id, "/", "primer_qc_results_all.txt", sep=""),
+    write.table(res_table, file = file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep),
                 col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
+    writeLines(paste0("Wrote results to results table!"), logfile)
     
     # create barplot for results and put it in the results folder using ggplot2
-    # TODO
     # visualize overview results: potential amplicons per primerpair
-    # make a folder containing the graphs
-    #dir.create(paste(primersDesign_wd, "/ePCR/", input$blast_id, "/graphs/", sep=""))
-    #graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
-    
     require(ggplot2)
     # plot 1: shows amplicon frequency per primerpair
     df_plot1 <- as.data.frame(table_df1_FprimerOccurances)
     png(file.path(graphs_path, "PotentialAmpliconFrequencies.png"), height=1000, width=1200, pointsize=24)
     barplot(df_plot1$Freq, main="Potential Amplicons per Primerpair", names=df_plot1$F.PrimerID, col="#3c8dbc", xlab="Primerpair")
     dev.off()
+    writeLines(paste0("Plot of created amplicons was created!"), logfile)
     
     showModal(modalDialog(
       title = "Computation of your virtual PCR has finished!",
@@ -1245,6 +1288,8 @@ server <- function(input, output, session) {
       easyClose = FALSE,
       footer = modalButton("Close")))
   
+    writeLines(paste0("ePCR function is now finished!"), logfile)
+    close(logfile)
     print("Finished virtual PCR!")
     return ("Finished virtual PCR!")
   })
@@ -1367,6 +1412,40 @@ server <- function(input, output, session) {
   output$ePCR.settings <- DT::renderDataTable({
     if (!input$settingsePCR) {return(data.frame())}
     showSettingsePCR()
+  },
+  extensions = 'FixedHeader',
+  options = list(fixedHeader = FALSE,
+                 scrollY = TRUE),
+  fillContainer = TRUE,
+  class = "display"
+  )
+  
+  ############# display the logfile of the ePCR ###########
+  
+  showLogfileePCR <- reactive({ if (!input$logfileePCR) {return(NULL)}
+    files <- data.frame(results=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, fsep=.Platform$file.sep), full.names=TRUE, pattern =".txt"))
+    print(files)
+    file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
+    print(file_path)
+    if(length(file_path) == 0){
+      ww <-showModal(modalDialog(
+        title = "No Logfile Found For ePCR!",
+        sprintf(paste0("Unfortunateley, we could not find any logfile for your ePCR Job."),input$name),
+        easyClose = FALSE,
+        footer = modalButton("Close")
+      ))
+      stop("No Logfile found!")
+    }
+    print(file_path)
+    read_file <- read.delim(file_path, header=TRUE, sep="\t")
+    
+    print(read_file)
+    return(read_file)
+  })
+  
+  output$ePCR.logfile <- DT::renderDataTable({
+    if (!input$logfileePCR) {return(data.frame())}
+    showLogfileePCR()
   },
   extensions = 'FixedHeader',
   options = list(fixedHeader = FALSE,

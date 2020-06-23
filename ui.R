@@ -580,12 +580,19 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                             hr(),
                                                             DT::dataTableOutput("ePCR.settings")
                                                             ),
+                                                   tabPanel("Logfile",
+                                                            actionButton("logfileePCR", label = "Logfile", icon = icon("sync-alt")),
+                                                            hr(),
+                                                            DT::dataTableOutput("ePCR.logfile")),
                                                    tabPanel("Summary",
                                                             actionButton("summaryePCR", label = "Summary", icon = icon("sync-alt")),
                                                             hr(),
                                                             DT::dataTableOutput("pQC.summary")
-                                                   )
-                                            )),
+                                                   ),
+                                                   downloadButton('downloadePCRresults', 'Results')
+                                            )
+                                            ),
+                                            
                                             fluidRow(box(
                                               actionButton("graphics_ePCR", label = "Graphs", icon = icon("sync-alt")),
                                               uiOutput("ePCR_Graphs"),
