@@ -1171,7 +1171,6 @@ server <- function(input, output, session) {
         writeLines(paste0("First sequence for the results fetched succesfully"), logfile)
       
         # This is reduced to fetching only the first 100 sequences to avoid too much runtime
-        print(length(url.full))
         end_vec = length(url.full)
         if (end_vec > 100){
           end_vec = 100
@@ -1208,7 +1207,11 @@ server <- function(input, output, session) {
       
         # before adding to the dataframe, make sure, vector and dataframe are of the same length
         if (end_vec == 100){
-          primer_subset$Productsequence <- sequences
+          # add as many NAs as there are missing sequences
+          seq_vec <- append(sequences, rep(NA, times = (as.numeric(nrow(primer_subset)-100))), after = 100)
+          print(length(seq_vec))
+          print(nrow(seq_vec))
+          primer_subset$Productsequence <- seq_vec
           writeLines(paste0("Vector length of sequences is of size 100"), logfile)
         } else {
           # append enough NAs to be able to merge vector and dataframe
@@ -1216,9 +1219,6 @@ server <- function(input, output, session) {
           #print(100-as.numeric(nrow(primer_subset)))
           #seq_vec <- append(sequences, rep(NA, times = (100-as.numeric(nrow(primer_subset)))), after = 100)
           #print_seq_vec
-          print(sequences)
-          print(nrow(sequences))
-          print(nrow(primer_subset))
           primer_subset$Productsequence <- sequences
           writeLines(paste0("Adjusted vector length for sequences to size 100"), logfile)
         }
@@ -1338,7 +1338,7 @@ server <- function(input, output, session) {
     insertUI(
       selector= "#refreshPQC",
       where = "afterEnd",
-      ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = preparePQC()[6], selected = preparePQC()[6], multiple = FALSE)
+      ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
     )
   }#, once = TRUE
   )
