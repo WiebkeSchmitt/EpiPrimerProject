@@ -7,14 +7,14 @@ library(rtracklayer)
 library(Biostrings)
 
 
-setClass("ReferenceGenome",
+setClass("referencegenome",
          #contains="BSgenome", #--> use this, if inheritance of BSgenome is indeed needed
          slots = list(genome="BSgenome",
                       name="character",
                       wd="character"))
 
 #setting generic is not needed here, we are overwriting an already existing function
-setMethod("show", signature(object="ReferenceGenome"), function(object){
+setMethod("show", signature(object="referencegenome"), function(object){
   return (object@name)
 })
 
@@ -25,7 +25,7 @@ setGeneric(
   }
 )
 
-setMethod("setReferenceGenome", "ReferenceGenome", function(x){
+setMethod("setReferenceGenome", "referencegenome", function(x){
   cat("set the referencegenome here. This is to be implemented. ")
 })
 
@@ -36,7 +36,7 @@ setGeneric(
   }
 )
 
-setMethod("getReferenceGenome", "ReferenceGenome", function(y){
+setMethod("getReferenceGenome", "referencegenome", function(y){
   return (y@genome)
 })
 
@@ -47,7 +47,7 @@ setGeneric(
   }
 )
 
-setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
+setMethod("getBlastDB", "referencegenome", function(z, is_bisulfite){
 
   # get database for bisulfite primers 
   if (is_bisulfite == TRUE){
@@ -77,7 +77,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     
     # check if a wrong database is used.
     if (!file.exists(bis_path_CT) || !file.exists(bis_path_GA)){
-      stop("Invalid ReferenceGenome - bisulfite reference genome not found!")
+      stop("Invalid referencegenome - bisulfite reference genome not found!")
     }
     
     CTdb <- (
@@ -161,7 +161,7 @@ setGeneric(
   }
 )
 
-setMethod("getAssemblyName", "ReferenceGenome", function(x){
+setMethod("getAssemblyName", "referencegenome", function(x){
   if (x@name == "BSgenome.Hsapiens.UCSC.hg18"){
     return ("hg18")
   }
