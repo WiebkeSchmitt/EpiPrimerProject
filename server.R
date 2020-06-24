@@ -657,38 +657,38 @@ server <- function(input, output, session) {
     result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
     dir.create(result_folder)
     # make a logfile for this run
-    logfile_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "logfile.txt", fsep=.Platform$file.sep)
+    logfile_path <- file.path("ePCR", input$blast_id, "logfile.txt", fsep=.Platform$file.sep)
     file.create(logfile_path)
     logfile <- file(logfile_path, open="wt")
     
-    writeLines("ePCR has started!", logfile)
-    writeLines(paste0("Resultfolder is: ", as.character(result_folder)), logfile)
-    writeLines(paste0("Logfile is: ", logfile_path), logfile)
-    writeLines(paste0("Analysis started on ", Sys.Date(), "at ", Sys.time()), logfile)
+    writeLines("ePCR has started! \n", logfile)
+    writeLines(paste0("Resultfolder is: ", as.character(result_folder), "\n"), logfile)
+    writeLines(paste0("Logfile is: ", logfile_path, "\n"), logfile)
+    writeLines(paste0("Analysis started on ", Sys.Date(), "at ", Sys.time(), "\n"), logfile)
     
     # initialize graphs directory
-    graphs_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs")
+    graphs_path <- file.path("ePCR", input$blast_id, "graphs", fsep = .Platform$file.sep)
     dir.create(graphs_path)
-    writeLines(paste0("Graph directory has been made: ", graphs_path), logfile)
+    writeLines(paste0("Graph directory has been made: ", graphs_path, "\n"), logfile)
     
     #initialize summary file
-    summary_file_path <- paste(getwd(), "/ePCR/", input$blast_id, "/Summary.txt", sep="")
+    summary_file_path <- file.path("ePCR", input$blast_id, "Summary.txt", fsep=.Platform$file.sep)
     file.create(summary_file_path)
     
     summary_file <- file(summary_file_path, open="wt")
-    writeLines(paste0("Summary file was created and opened for writing!"), logfile)
+    writeLines(paste0("Summary file was created and opened for writing! \n"), logfile)
     
     # first check if the user has uploaded primers: check if the upload field is empty
     exists_upload = !is.null(input$Fprimers) && !is.null(input$Rprimers)
     # was there was a previous primer design job from which we can import the generated primers?
-    exists_previous_job = file.exists(file.path(primersDesign_wd, input$name, "Fprimers.fasta", fsep=.Platform$file.sep)) && file.exists(file.path(primersDesign_wd, input$name, "Rprimers.fasta", fsep=.Platform$file.sep))
+    exists_previous_job = file.exists(file.path(input$name, "Fprimers.fasta", fsep=.Platform$file.sep)) && file.exists(file.path(input$name, "Rprimers.fasta", fsep=.Platform$file.sep))
     # inform the user, that no primers are available
     if(!exists_upload && !exists_previous_job){
       # no file was uploaded, inform the user
       print("No file uploaded!")
-      writeLines(paste0("The user did not upload an input file: "), logfile)
-      writeLines(paste0("Previous job existence: ", exists_previous_job), logfile)
-      writeLines(paste0("Upload existence: ", exists_upload), logfile)
+      writeLines(paste0("The user did not upload an input file! \n"), logfile)
+      writeLines(paste0("Previous job existence: ", exists_previous_job, "\n"), logfile)
+      writeLines(paste0("Upload existence: ", exists_upload, "\n"), logfile)
       return (sprintf("No file was uploaded, please provide primers as input!"))
     }
     
@@ -710,9 +710,9 @@ server <- function(input, output, session) {
     
     # output of the used primers
     print(Fseq)
-    writeLines(paste0("Used forward primers: ", Fseq), logfile)
+    writeLines(paste0("Used forward primers: ", Fseq, "\n"), logfile)
     print(Rseq)
-    writeLines(paste0("Used reverse primers: ", Rseq), logfile)
+    writeLines(paste0("Used reverse primers: ", Rseq, "\n"), logfile)
     
     #check if this is a bisulfite blast
     is_bis = input$is_bisulfite
@@ -721,18 +721,18 @@ server <- function(input, output, session) {
       writeLines(paste0("Bisulfite ePCR is conducted!"), logfile)
       
       # get a new reference genome to the organism in question using the ReferenceGenome class
-      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path(primersDesign_wd, "database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
-      writeLines(paste0("Generated new reference genome: ", refgen@name), logfile)
+      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path("database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
+      writeLines(paste0("Generated new reference genome: ", refgen@name, "\n"), logfile)
       # build/get CT and GA databases to the organism in question --> this is handles by the ReferenceGenome.R class, that needs to be available
       dbList <- getBlastDB(refgen, input$is_bisulfite)
-      writeLines(paste0("Database for new reference genome was fetched!"), logfile)
+      writeLines(paste0("Database for new reference genome was fetched! \n"), logfile)
       
       # arguments for conducting the blast
       blast_args <- "-task blastn -evalue %s"
       # the e-value for calculation of bisulfite primers is set lower than the commonly used value of 10, to avoid too many (unnecessary) results
       costumized_BLAST_args <- sprintf(blast_args, 5)
       #print(costumized_BLAST_args)
-      writeLines(paste0("performed blast using the arguments: ", costumized_blast_args), logfile)
+      writeLines(paste0("performed blast using the arguments: ", costumized_blast_args, "\n"), logfile)
       
       #blast forward and reverse primer against CT and GA converted genome
       F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
@@ -751,7 +751,7 @@ server <- function(input, output, session) {
       R_GAblast <- subset(R_GAblast, 
                           Mismatches <= input$primer_mismatches)
       
-      writeLines(paste0("Filtering blast results with too many mismatches done!"), logfile)
+      writeLines(paste0("Filtering blast results with too many mismatches done! \n"), logfile)
       
       #write blast results for both primers to seperate tables
       write.table(F_CTblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_C_to_T_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
@@ -791,7 +791,7 @@ server <- function(input, output, session) {
         writeLines(paste("Total number matches forward primer", i, " to GA-reference genome \t", matchesGA,  "\n"), summary_file)
         writeLines(paste("Total number perfect matches forward primer", i, " to GA-reference genome \t", perfect_matchesGA, "\n"), summary_file)
       }
-      writeLines(paste0("Statistic of forward primers finished!"), logfile)
+      writeLines(paste0("Statistic of forward primers finished! \n"), logfile)
       
       for (i in names(Rseq)){
         primer_subsetCT = subset(R_CTblast, R_CTblast$QueryID == i)
@@ -807,7 +807,7 @@ server <- function(input, output, session) {
         writeLines(paste("Total number matches reverse primer ", i, " to GA-reference genome \t", matchesGA,  "\n"), summary_file)
         writeLines(paste("Total number perfect matches reverse primer ", i, " to GA-reference genome \t", perfect_matchesGA, "\n"), summary_file)
       }
-      writeLines(paste0("Statistic of reverse primers finished!"), logfile)
+      writeLines(paste0("Statistic of reverse primers finished! \n"), logfile)
       
       # create plot to visualize number of blast hits for bisulfite primers
       data_plot2 <- matrix(c(as.numeric(vec_matches_fprimers_CT), as.numeric(vec_matches_fprimers_GA), as.numeric(vec_matches_rprimers_CT), as.numeric(vec_matches_rprimers_GA)), nrow=length(Fseq), ncol=4)
@@ -823,7 +823,7 @@ server <- function(input, output, session) {
              fill = c("black", "white", "#3c8dbc","#f39c12")
       )
       dev.off()
-      writeLines(paste0("Created overview plot of blast hits per primerpair!"), logfile)
+      writeLines(paste0("Created overview plot of blast hits per primerpair! \n"), logfile)
       
       # finding genomic ranges for all hits 
       hits<- c(
@@ -884,7 +884,7 @@ server <- function(input, output, session) {
           e_value=R_GAblast[["E"]]
         )
       )
-      writeLines(paste0("Generated GRanges objects for calculating overlaps of blast hits!"), logfile)
+      writeLines(paste0("Generated GRanges objects for calculating overlaps of blast hits! \n"), logfile)
       
       #overlapping between genomic ranges 
       overlap_hits <- findOverlaps(hits, hits, maxgap=input$gap, ignore.strand=TRUE)
@@ -893,7 +893,7 @@ server <- function(input, output, session) {
       df1 <- cbind(as.data.frame(hits[overlap_hits@from, ]),as.data.frame(hits[overlap_hits@to, ]))
       
       colnames(df1) <- paste(rep(c("F", "R"), each=11), colnames(df1), sep=".")
-      writeLines(paste0("Wrote overlaps to dataframe!!"), logfile)
+      writeLines(paste0("Wrote overlaps to dataframe! \n"), logfile)
       
       df1 <-subset(df1,
                     F.strand == "+" &
@@ -908,37 +908,37 @@ server <- function(input, output, session) {
       
     } else {
       print("Starting non-bisulfite ePCR")
-      writeLines(paste0("Genomic ePCR is conducted!"), logfile)
+      writeLines(paste0("Genomic ePCR is conducted! \n"), logfile)
       
       # get a new reference genome to the organism in question using the ReferenceGenome class
-      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path(primersDesign_wd, "database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
-      writeLines(paste0("Generated new reference genome: ", refgen@name), logfile)
+      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path("database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
+      #writeLines(paste0("Generated new reference genome: ", refgen@name), "\n", logfile)
       
       #building databases
       dbList <- getBlastDB(refgen, input$is_bisulfite)
-      writeLines(paste0("Database for new reference genome was fetched!"), logfile)
+      writeLines(paste0("Database for new reference genome was fetched! \n"), logfile)
       
       #blasting 
       blast_args <- "-task blastn -evalue %s"
       costumized_BLAST_args <- sprintf(blast_args, 10)
       print(costumized_BLAST_args)
-      writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args), logfile)
+      writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args, "\n"), logfile)
       
       primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
       primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
-      writeLines(paste0("Blast has been performed and per primer results were written to results folder!"), logfile)
+      writeLines(paste0("Blast has been performed and per primer results were written to results folder! \n"), logfile)
       
       # filter out hits with too many mismatches
       primer1_blast <- subset(primer1_blast, 
                               Mismatches <= input$primer_mismatches)
       primer2_blast <- subset(primer2_blast, 
                               Mismatches <= input$primer_mismatches)
-      writeLines(paste0("Filtering blast results with too many mismatches done!"), logfile)
+      writeLines(paste0("Filtering blast results with too many mismatches done! \n"), logfile)
       
       #write blast results for both primers to table
       write.table(primer1_blast, paste0(result_folder, "\\Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(primer2_blast, paste(result_folder, "\\Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      writeLines(paste0("Results of primer blasts have been written to the result tables!"), logfile)
+      writeLines(paste0("Results of primer blasts have been written to the result tables! \n"), logfile)
       
       #write to summary file
       writeLines(paste("Parameters \t Settings \n"), summary_file)
@@ -968,7 +968,7 @@ server <- function(input, output, session) {
       num_fw_blast_hits <- vector()
       num_rw_blast_hits <- vector()
       
-      writeLines(paste0("Starting Statistic of Blast Matches per Primerpair!"), logfile)
+      writeLines(paste0("Starting Statistic of Blast Matches per Primerpair! \n"), logfile)
       for (i in names(Fseq)){
         # append names to fw_primer_vec
         fw_primer_vec <- c(fw_primer_vec, i)
@@ -976,7 +976,7 @@ server <- function(input, output, session) {
         num_fw_blast_hits <- c(num_fw_blast_hits, nrow(sub_table))
         writeLines(paste("Total blast hits forward primer ", i,  "\t", nrow(sub_table), "\n"), summary_file)
       }
-      writeLines(paste0("Statistic of forward primers finished!"), logfile)
+      writeLines(paste0("Statistic of forward primers finished! \n"), logfile)
       
       for (i in names(Rseq)){
         #rw_primer_vec <- c(rw_primer_vec, i)
@@ -984,7 +984,7 @@ server <- function(input, output, session) {
         num_rw_blast_hits <- c(num_rw_blast_hits, nrow(sub_table))
         writeLines(paste("Total blast hits reverse primer ", i,  "\t", nrow(sub_table), "\n"), summary_file)
       }
-      writeLines(paste0("Statistic of reverse primers finished!"), logfile)
+      writeLines(paste0("Statistic of reverse primers finished! \n"), logfile)
       
       # create plot to visualize number of blast hits
       data_plot2 <- matrix(c(as.numeric(num_fw_blast_hits), as.numeric(num_rw_blast_hits)), nrow=length(fw_primer_vec), ncol=2)
@@ -1000,7 +1000,7 @@ server <- function(input, output, session) {
              fill = c("#3c8dbc","#f39c12")
       )
       dev.off()
-      writeLines(paste0("Created overview plot of blast hits per primerpair!"), logfile)
+      writeLines(paste0("Created overview plot of blast hits per primerpair! \n"), logfile)
       
       #to check for close regions, always choose the same id and the same chromosome
       #to be able to do this, create GRanges Object from the perfect hits
@@ -1035,14 +1035,14 @@ server <- function(input, output, session) {
           e_value=primer2_blast[["E"]]
         )
       )
-      writeLines(paste0("Generated GRanges objects for calculating overlaps of blast hits!"), logfile)
+      writeLines(paste0("Generated GRanges objects for calculating overlaps of blast hits! \n"), logfile)
 
       #overlapping between genomic ranges and processing results
       overlap_hits <- findOverlaps(hits, hits, maxgap=input$gap, ignore.strand=TRUE)
-      writeLines(paste0("Calculated potential overlaps!"), logfile)
+      writeLines(paste0("Calculated potential overlaps! \n"), logfile)
       df1 <-cbind(as.data.frame(hits[overlap_hits@from,]), as.data.frame(hits[overlap_hits@to,]))
       colnames(df1) <- paste(rep(c("F", "R"), each=11), colnames(df1), sep=".")
-      writeLines(paste0("Wrote overlaps to dataframe!!"), logfile)
+      writeLines(paste0("Wrote overlaps to dataframe! \n"), logfile)
       
       df1 <-subset(df1,
                    F.strand == "+" &
@@ -1051,8 +1051,8 @@ server <- function(input, output, session) {
                      as.character(F.seqnames) == as.character(R.seqnames) & 
                      abs(pmin(F.start, F.end) - pmax(R.start, R.end)) <= input$gap)
       
-      writeLines(paste0("Filtered overlap results according to user input!"), logfile)
-      writeLines(paste0("Finished ePCR part for bisulfite Primerpairs!"), logfile)
+      writeLines(paste0("Filtered overlap results according to user input! \n"), logfile)
+      writeLines(paste0("Finished ePCR part for bisulfite Primerpairs! \n"), logfile)
       
     } # end of non-bisulfite ePCR
     
@@ -1064,11 +1064,11 @@ server <- function(input, output, session) {
       close(logfile)
       
       # make primer_qc_results_all file, but empty, to avoid errors for display.
-      results_path_empty <- file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
+      results_path_empty <- file.path("ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)
       file.create(results_path_empty)
       
       # make a settings file of the job executed
-      settings_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Settings.txt", fsep=.Platform$file.sep)
+      settings_file_path <- file.path("ePCR", input$blast_id, "Settings.txt", fsep=.Platform$file.sep)
       file.create(settings_file_path)
       
       settings_file <- file(settings_file_path, open="wt")
@@ -1088,12 +1088,12 @@ server <- function(input, output, session) {
       return("No PCR fragments found.")
     }
     
-    writeLines(paste("Start preparing resulttable for output"), logfile)
+    writeLines(paste("Start preparing resulttable for output \n"), logfile)
     # add used ReferenceGenome and PCR Productsize
     df1$assembly <- getAssemblyName(refgen)
-    writeLines(paste("Wrote assembly to resulttable"), logfile)
+    writeLines(paste("Wrote assembly to resulttable \n"), logfile)
     df1$Productsize <- ifelse(df1$F.start <= df1$R.end, df1$R.end-df1$F.start+1, df1$F.start-df1$R.end+1)
-    writeLines(paste0("Determined productsize for resulttable"), logfile)
+    writeLines(paste0("Determined productsize for resulttable \n"), logfile)
     
     # use sequeces only for fragments longer than 50 bp 
     df1 <- subset(df1,
@@ -1129,7 +1129,7 @@ server <- function(input, output, session) {
                             Productsequence=character(),
                             CpGs=integer())
     
-    writeLines(paste0("Start fetching sequences for the first 100 results of eacht primerjob"), logfile)
+    writeLines(paste0("Start fetching sequences for the first 100 results of eacht primerjob \n"), logfile)
     for (i in names(Fseq)){
       # get subset of df1
       primer_subset = subset(df1, df1$F.AmpliconID == i)
@@ -1148,7 +1148,7 @@ server <- function(input, output, session) {
       
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
-        writeLines(paste0("Start fetching the first sequence for the results of primer ", i), logfile)
+        writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
           is_err <- tryCatch(
@@ -1171,16 +1171,16 @@ server <- function(input, output, session) {
             next()
           }
         }
-        writeLines(paste0("First sequence for the results fetched succesfully"), logfile)
+        writeLines(paste0("First sequence for the results fetched succesfully \n"), logfile)
       
         # This is reduced to fetching only the first 100 sequences to avoid too much runtime
         end_vec = length(url.full)
         if (end_vec > 100){
           end_vec = 100
-          writeLines(paste0("Over 100 potential amplicons were present, set end for fetching sequences to: ", end_vec), logfile)
+          writeLines(paste0("Over 100 potential amplicons were present, set end for fetching sequences to: ", end_vec, "\n"), logfile)
         }
       
-        writeLines(paste0("Fetching the other sequences for created amplicons"), logfile)
+        writeLines(paste0("Fetching the other sequences for created amplicons \n"), logfile)
         if(2 < end_vec){
             for (i in 2:end_vec){ 
               #r <- GET(url.full[i]) 
@@ -1206,7 +1206,7 @@ server <- function(input, output, session) {
               }
             }
         }
-        writeLines(paste0("Fetched sequences for amplicons succesfully"), logfile)
+        writeLines(paste0("Fetched sequences for amplicons succesfully \n"), logfile)
       
         # before adding to the dataframe, make sure, vector and dataframe are of the same length
         if (end_vec == 100){
@@ -1215,7 +1215,7 @@ server <- function(input, output, session) {
           print(length(seq_vec))
           print(nrow(seq_vec))
           primer_subset$Productsequence <- seq_vec
-          writeLines(paste0("Vector length of sequences is of size 100"), logfile)
+          writeLines(paste0("Vector length of sequences is of size 100 \n"), logfile)
         } else {
           # append enough NAs to be able to merge vector and dataframe
           #print(nrow(primer_subset))
@@ -1223,15 +1223,15 @@ server <- function(input, output, session) {
           #seq_vec <- append(sequences, rep(NA, times = (100-as.numeric(nrow(primer_subset)))), after = 100)
           #print_seq_vec
           primer_subset$Productsequence <- sequences
-          writeLines(paste0("Adjusted vector length for sequences to size 100"), logfile)
+          writeLines(paste0("Adjusted vector length for sequences to size 100 \n"), logfile)
         }
         # now count CpGs in Sequences by couting them
         primer_subset$CpGs <- str_count(primer_subset$Productsequence, pattern = "cg")
-        writeLines(paste0("Calculated CpG content of sequences"), logfile)
+        writeLines(paste0("Calculated CpG content of sequences \n"), logfile)
   
         # put these subsequence tables into a single resulttable.
         res_table = rbind(res_table, primer_subset)
-        writeLines(paste0("Bound result for primertype ", i ," to total results"), logfile)
+        writeLines(paste0("Bound result for primertype ", i ," to total results \n"), logfile)
         }
       }
 
@@ -1242,17 +1242,17 @@ server <- function(input, output, session) {
     close(summary_file)
     
     # make an overview file of the job executed
-    overview_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Overview.txt", fsep=.Platform$file.sep)
+    overview_file_path <- file.path("ePCR", input$blast_id, "Overview.txt", fsep=.Platform$file.sep)
     file.create(overview_file_path)
     overview_file <- file(overview_file_path, open="wt")
     F.PrimerID <- df1[, "F.AmpliconID"]
     table_df1_FprimerOccurances <- table(F.PrimerID)
     write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
     close(overview_file)
-    writeLines(paste0("Overview file was created succesfully"), logfile)
+    writeLines(paste0("Overview file was created succesfully \n"), logfile)
     
     # make a settings file of the job executed
-    settings_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Settings.txt", fsep=.Platform$file.sep)
+    settings_file_path <- file.path("ePCR", input$blast_id, "Settings.txt", fsep=.Platform$file.sep)
     file.create(settings_file_path)
     settings_file <- file(settings_file_path, open="wt")
     writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
@@ -1262,11 +1262,11 @@ server <- function(input, output, session) {
     writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
     writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
     close(settings_file)
-    writeLines(paste0("Settings file created succesfully"), logfile)
+    writeLines(paste0("Settings file created succesfully \n"), logfile)
     
-    write.table(res_table, file = file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep),
+    write.table(res_table, file = file.path("ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep),
                 col.names = TRUE, row.names=FALSE, sep="\t", dec=".") 
-    writeLines(paste0("Wrote results to results table!"), logfile)
+    writeLines(paste0("Wrote results to results table! \n"), logfile)
     
     # create barplot for results and put it in the results folder using ggplot2
     # visualize overview results: potential amplicons per primerpair
@@ -1276,7 +1276,7 @@ server <- function(input, output, session) {
     png(file.path(graphs_path, "PotentialAmpliconFrequencies.png"), height=1000, width=1200, pointsize=24)
     barplot(df_plot1$Freq, main="Potential Amplicons per Primerpair", names=df_plot1$F.PrimerID, col="#3c8dbc", xlab="Primerpair")
     dev.off()
-    writeLines(paste0("Plot of created amplicons was created!"), logfile)
+    writeLines(paste0("Plot of created amplicons was created! \n"), logfile)
     
     showModal(modalDialog(
       title = "Computation of your virtual PCR has finished!",
@@ -1284,7 +1284,7 @@ server <- function(input, output, session) {
       easyClose = FALSE,
       footer = modalButton("Close")))
   
-    writeLines(paste0("ePCR function is now finished!"), logfile)
+    writeLines(paste0("ePCR function is now finished! \n"), logfile)
     close(logfile)
     print("Finished virtual PCR!")
     return ("Finished virtual PCR!")
