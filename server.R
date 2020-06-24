@@ -734,7 +734,7 @@ server <- function(input, output, session) {
       # the e-value for calculation of bisulfite primers is set lower than the commonly used value of 10, to avoid too many (unnecessary) results
       costumized_BLAST_args <- sprintf(blast_args, 5)
       #print(costumized_BLAST_args)
-      writeLines(paste0("performed blast using the arguments: ", costumized_blast_args, "\n"), logfile)
+      writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args, "\n"), logfile)
       
       #blast forward and reverse primer against CT and GA converted genome
       F_CTblast <- predict(dbList$CTdb, Fseq, BLAST_args = costumized_BLAST_args)
