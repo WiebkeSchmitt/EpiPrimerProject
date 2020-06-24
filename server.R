@@ -7,7 +7,7 @@ primersDesign_wd <- getwd()
 
 ## Source for Primer Design  ##
 source("generaldesign.R")
-source("referencegenome.R")
+source("ReferenceGenome.R")
 
 ## libraries for primer design  ##
 library(devtools)
@@ -720,10 +720,10 @@ server <- function(input, output, session) {
       print ("Starting bisulfite ePCR")
       writeLines(paste0("Bisulfite ePCR is conducted!"), logfile)
       
-      # get a new reference genome to the organism in question using the referencegenome class
-      refgen <- new("referencegenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path("database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
+      # get a new reference genome to the organism in question using the ReferenceGenome class
+      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path("database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
       writeLines(paste0("Generated new reference genome: ", refgen@name, "\n"), logfile)
-      # build/get CT and GA databases to the organism in question --> this is handles by the referencegenome class, that needs to be available
+      # build/get CT and GA databases to the organism in question --> this is handles by the ReferenceGenome class, that needs to be available
       dbList <- getBlastDB(refgen, input$is_bisulfite)
       writeLines(paste0("Database for new reference genome was fetched! \n"), logfile)
       
@@ -910,8 +910,8 @@ server <- function(input, output, session) {
       print("Starting non-bisulfite ePCR")
       writeLines(paste0("Genomic ePCR is conducted! \n"), logfile)
       
-      # get a new reference genome to the organism in question using the referencegenome class
-      refgen <- new("referencegenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path("database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
+      # get a new reference genome to the organism in question using the ReferenceGenome class
+      refgen <- new("ReferenceGenome", genome=getBSgenome(paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome))), name=paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), wd=file.path("database", paste0("BSgenome.", gsub("\\.", "\\.UCSC\\.", input$genome)), fsep=.Platform$file.sep))
       #writeLines(paste0("Generated new reference genome: ", refgen@name), "\n", logfile)
       
       #building databases
@@ -1007,7 +1007,7 @@ server <- function(input, output, session) {
       # finding genomic ranges for all hits 
       hits<- c(
         GRanges(
-          Source="ForwardPrimerBlast", #name of used referencegenome
+          Source="ForwardPrimerBlast", #name of used ReferenceGenome
           AmpliconID = primer1_blast[["QueryID"]],
           seqnames = primer1_blast[["SubjectID"]],
           ranges = IRanges(
@@ -1074,7 +1074,7 @@ server <- function(input, output, session) {
       settings_file <- file(settings_file_path, open="wt")
       writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
       writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
-      writeLines(paste("referencegenome \t", input$genome, "\n", sep = ""), settings_file)
+      writeLines(paste("ReferenceGenome \t", input$genome, "\n", sep = ""), settings_file)
       writeLines(paste("Bisulfiteanalysis \t", input$is_bisulfite, "\n", sep = ""), settings_file)
       writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
       writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
@@ -1257,7 +1257,7 @@ server <- function(input, output, session) {
     settings_file <- file(settings_file_path, open="wt")
     writeLines(paste("Parameters \t", "Settings \n", sep= ""), settings_file)
     writeLines(paste("AnalysisID \t", input$blast_id, "\n", sep = ""), settings_file)
-    writeLines(paste("referencegenome \t", input$genome, "\n", sep = ""), settings_file)
+    writeLines(paste("ReferenceGenome \t", input$genome, "\n", sep = ""), settings_file)
     writeLines(paste("Bisulfiteanalysis \t", input$is_bisulfite, "\n", sep = ""), settings_file)
     writeLines(paste("Maximum size of reported products \t", input$gap, "\n", sep = ""), settings_file)
     writeLines(paste("Number of mismatches allowed in Primerblast \t", input$primer_mismatches, "\n", sep = ""), settings_file)
