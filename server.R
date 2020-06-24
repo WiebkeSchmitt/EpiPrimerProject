@@ -6,8 +6,8 @@ library(shinydashboard)
 primersDesign_wd <- getwd() 
 
 ## Source for Primer Design  ##
-source("generalDesign.R")
-source("ReferenceGenome.R")
+source("generaldesign.R")
+source("referencegenome.R")
 
 ## libraries for primer design  ##
 library(devtools)
