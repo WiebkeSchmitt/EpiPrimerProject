@@ -654,6 +654,8 @@ server <- function(input, output, session) {
       footer = modalButton("Close")))
     
     # make result folder to hold results of this run
+    ePCR_folder <- paste(primersDesign_wd, "/ePCR", sep="")
+    dir.create(ePCR_folder)
     result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
     dir.create(result_folder)
     # make a logfile for this run
