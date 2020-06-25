@@ -757,7 +757,7 @@ server <- function(input, output, session) {
       
       #write blast results for both primers to seperate tables
       write.table(F_CTblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_C_to_T_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      write.table(R_CTblast, paste(result_folder, "\\Blast_Hits_Reverse_Primers_C_to_T_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F)
+      write.table(R_CTblast, paste0(result_folder, "\\Blast_Hits_Reverse_Primers_C_to_T_converted_refgen"), col.names=T, row.names=F,sep="\t",dec=".",quote=F)
       write.table(F_GAblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       write.table(R_GAblast, paste0(result_folder, "\\Blast_Hits_Reverse_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       writeLines(paste0("Results of primer blasts have been written to the result tables!"), logfile)
@@ -1150,6 +1150,7 @@ server <- function(input, output, session) {
       
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
+        sequences <- vector()
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
