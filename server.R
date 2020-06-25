@@ -1158,7 +1158,7 @@ server <- function(input, output, session) {
             s <- content(r),
             error = function(e){
               sequences <- append (sequences, "NotFound")
-              next()
+              #next()
               print("Error occured when fetching DNA sequence!")
             }
           )
