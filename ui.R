@@ -419,8 +419,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                             collapsed = TRUE
                                           ),
                                           fluidRow(
-                                            actionButton("action", label="Compute Primers", icon("fas fa-calculator"), 
-                                                         style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px"),
+                                            actionButton("action", label="Compute Primers", icon("fas fa-calculator"), align="center",
+                                                         style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:200px; margin-right:0px"),
                                             bsTooltip("action", "The computation of your primers may take a few minutes, please wait until you receive a notifiication that your primers are finished.", "left")
                                           )
                                           
@@ -521,7 +521,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               #helpText("This feature is available for: "),
                                               hr(),
                                               helpText("Import primers from Primer Design that were added to your Selected List", align = "center"),
-                                              actionButton("loadprimers", "Import Primers", icon = icon("file-import"),
+                                              actionButton("loadprimers", "Import Primers", icon = icon("file-import"), align="center",
                                                            style="margin-left:275px; margin-right:0px"),
                                               bsTooltip("loadprimers", "Import primers you added to the Selected List during Primer Design", "bottom", "hover"),
                                               hr(),
@@ -542,7 +542,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               sliderInput("gap", "Maximum size of reported product", min = 500, max = 10000, value = 2000, step = 500),
                                               #sliderInput("partial_match", "3' primer portion to report partial matches", min=0, max=25, value=16),
                                               sliderInput("primer_mismatches", "Number of Mismatches allowed in Primer Blast", min=0, max=25, value=7),
-                                              helpText(h3("ePCR is currently under active development! Should you encounter any problems during your run, please contact us!")),
                                               hr(),
                                               textOutput("primer_qc_start"),
                                               tags$head(tags$style("#primer_qc_start{color: red;
@@ -553,8 +552,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               ),
                                               hr()
                                           ),
-                                          actionButton("computePQC", label = "Start ePCR", icon("fas fa-flask"), 
-                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1400px; margin-left:75px; margin-right:0px")
+                                          actionButton("computePQC", label = "Start ePCR", icon("fas fa-flask"), align="center",
+                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:150px; margin-right:0px")
                                   
                                   ),
                                   tabItem(tabName = "PrimerQCResults",
@@ -612,7 +611,9 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               solidHeader = TRUE,
                                               width = 12,
                                               helpText("This website was created by the Epigenetics department of Saarland University."),
-                                              tags$a(href="http://epigenetik.uni-saarland.de/en/home/", "Visit our Homepage here.")
+                                              tags$a(href="http://epigenetik.uni-saarland.de/en/home/", "Visit our Homepage here."),
+                                              hr(),
+                                              helpText("In case you encounter any problems during use of this website, please contact us!")
                                           )
                                   )
                                   
