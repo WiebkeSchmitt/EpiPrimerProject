@@ -924,10 +924,19 @@ server <- function(input, output, session) {
       blast_args <- "-task blastn -evalue %s"
       costumized_BLAST_args <- sprintf(blast_args, 10)
       print(costumized_BLAST_args)
+      print(Fseq)
+      print(Rseq)
+      print(dbList$genomeDB)
       writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args, "\n"), logfile)
       
       primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
       primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
+      
+      # both predictions did not return a result
+      if (nrow(primer1_blast) == 0 || nrow(primer2_blast) == 0){
+        return ("No BLAST matches were found for your primers!")
+      }
+      
       writeLines(paste0("Blast has been performed and per primer results were written to results folder! \n"), logfile)
       
       # filter out hits with too many mismatches
@@ -1151,6 +1160,7 @@ server <- function(input, output, session) {
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
         sequences <- vector()
+        s <- vector()
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
