@@ -1160,7 +1160,7 @@ server <- function(input, output, session) {
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
         sequences <- vector()
-        s <- vector()
+        s <- vector(mode = 'character')
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
@@ -1172,6 +1172,7 @@ server <- function(input, output, session) {
               print("Error occured when fetching DNA sequence!")
             }
           )
+          print(s)
           if(!inherits(is_err, "error")){
             seq <- xml_find_all(s, ".//DNA")
             split1 <- strsplit(as.character(seq), ">")[[1]][2]
