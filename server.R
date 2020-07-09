@@ -732,7 +732,7 @@ server <- function(input, output, session) {
       # arguments for conducting the blast
       blast_args <- "-task blastn -evalue %s"
       # the e-value for calculation of bisulfite primers is set lower than the commonly used value of 10, to avoid too many (unnecessary) results
-      costumized_BLAST_args <- sprintf(blast_args, 5)
+      costumized_BLAST_args <- sprintf(blast_args, 10)
       #print(costumized_BLAST_args)
       writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args, "\n"), logfile)
       
@@ -756,10 +756,10 @@ server <- function(input, output, session) {
       writeLines(paste0("Filtering blast results with too many mismatches done! \n"), logfile)
       
       #write blast results for both primers to seperate tables
-      write.table(F_CTblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_C_to_T_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      write.table(R_CTblast, paste0(result_folder, "\\Blast_Hits_Reverse_Primers_C_to_T_converted_refgen"), col.names=T, row.names=F,sep="\t",dec=".",quote=F)
-      write.table(F_GAblast, paste0(result_folder, "\\Blast_Hits_Forward_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      write.table(R_GAblast, paste0(result_folder, "\\Blast_Hits_Reverse_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(F_CTblast, paste0(result_folder, "/Blast_Hits_Forward_Primers_C_to_T_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(R_CTblast, paste0(result_folder, "/Blast_Hits_Reverse_Primers_C_to_T_converted_refgen"), col.names=T, row.names=F,sep="\t",dec=".",quote=F)
+      write.table(F_GAblast, paste0(result_folder, "/Blast_Hits_Forward_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(R_GAblast, paste0(result_folder, "/Blast_Hits_Reverse_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       writeLines(paste0("Results of primer blasts have been written to the result tables!"), logfile)
       
       # write to summary file 
@@ -947,8 +947,8 @@ server <- function(input, output, session) {
       writeLines(paste0("Filtering blast results with too many mismatches done! \n"), logfile)
       
       #write blast results for both primers to table
-      write.table(primer1_blast, paste0(result_folder, "\\Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
-      write.table(primer2_blast, paste(result_folder, "\\Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(primer1_blast, paste0(result_folder, "/Blast_Hits_Forward_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
+      write.table(primer2_blast, paste(result_folder, "/Blast_Hits_Reverse_Primers", sep=""), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       writeLines(paste0("Results of primer blasts have been written to the result tables! \n"), logfile)
       
       #write to summary file
@@ -1172,7 +1172,6 @@ server <- function(input, output, session) {
               print("Error occured when fetching DNA sequence!")
             }
           )
-          print(s)
           if(!inherits(is_err, "error")){
             seq <- xml_find_all(s, ".//DNA")
             split1 <- strsplit(as.character(seq), ">")[[1]][2]
