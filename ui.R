@@ -552,7 +552,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               ),
                                               hr()
                                           ),
-                                          actionButton("computePQC", label = "Start ePCR", icon("fas fa-flask"), align="center",
+                                          actionButton("compute_ePCR", label = "Start ePCR", icon("fas fa-flask"), align="center",
                                                        style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:150px; margin-right:0px")
                                   
                                   ),
