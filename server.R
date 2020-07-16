@@ -1174,7 +1174,7 @@ server <- function(input, output, session) {
               print("Error occured when fetching DNA sequence!")
             }
           )
-          if(!inherits(is_err, "error") && !error_flag){
+          if(!inherits(is_err, "error") && !error_flag && exists("s")){
             seq <- xml_find_all(s, ".//DNA")
             split1 <- strsplit(as.character(seq), ">")[[1]][2]
             split2 <- strsplit(as.character(split1), "<")[[1]][1]
