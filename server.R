@@ -1208,7 +1208,7 @@ server <- function(input, output, session) {
                 }
               )
               # handle occurance of errors from content function
-              if(!inherits(is_err, "error")){
+              if(!inherits(is_err, "error") && exists("s")){
                 #REAL WORK
                 seq <- xml_find_all(s, ".//DNA")
                 split1 <- strsplit(as.character(seq), ">")[[1]][2]
