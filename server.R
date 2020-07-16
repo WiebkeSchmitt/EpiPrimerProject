@@ -1160,6 +1160,7 @@ server <- function(input, output, session) {
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
         sequences <- vector()
+        error_flag <- FALSE
         #s <- vector(mode = 'character')
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
@@ -1168,11 +1169,12 @@ server <- function(input, output, session) {
             s <- content(r),
             error = function(e){
               sequences <- append (sequences, "NotFound")
+              error_flag <- TRUE
               #next()
               print("Error occured when fetching DNA sequence!")
             }
           )
-          if(!inherits(is_err, "error")){
+          if(!inherits(is_err, "error") && !error_flag){
             seq <- xml_find_all(s, ".//DNA")
             split1 <- strsplit(as.character(seq), ">")[[1]][2]
             split2 <- strsplit(as.character(split1), "<")[[1]][1]
@@ -1181,7 +1183,7 @@ server <- function(input, output, session) {
             # ERROR HANDLING
             print("handeled error!")
             sequences <- append (sequences, "NotFound")
-            next()
+            error_flag <- FALSE
           }
         }
         writeLines(paste0("First sequence for the results fetched succesfully \n"), logfile)
@@ -1225,8 +1227,6 @@ server <- function(input, output, session) {
         if (end_vec == 100){
           # add as many NAs as there are missing sequences
           seq_vec <- append(sequences, rep(NA, times = (as.numeric(nrow(primer_subset)-100))), after = 100)
-          print(length(seq_vec))
-          print(nrow(seq_vec))
           primer_subset$Productsequence <- seq_vec
           writeLines(paste0("Vector length of sequences is of size 100 \n"), logfile)
         } else {
