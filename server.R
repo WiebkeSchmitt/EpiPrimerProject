@@ -1186,6 +1186,7 @@ server <- function(input, output, session) {
             error_flag <- FALSE
           }
         }
+        print("First sequence has been fetched!")
         writeLines(paste0("First sequence for the results fetched succesfully \n"), logfile)
       
         # This is reduced to fetching only the first 100 sequences to avoid too much runtime
@@ -1196,6 +1197,7 @@ server <- function(input, output, session) {
         }
       
         writeLines(paste0("Fetching the other sequences for created amplicons \n"), logfile)
+        print("continue fetching sequences!")
         if(2 < end_vec){
             for (i in 2:end_vec){ 
               #r <- GET(url.full[i]) 
@@ -1216,11 +1218,13 @@ server <- function(input, output, session) {
                 sequences <- append(sequences, as.character(gsub("[\r\n]", "", split2)), i-1)
               } else {
                 # ERROR HANDLING
+                print("error handling for sequences 2")
                 sequences <- append (sequences, "NotFound")
                 next()
               }
             }
         }
+        print("Fetched all sequences!")
         writeLines(paste0("Fetched sequences for amplicons succesfully \n"), logfile)
       
         # before adding to the dataframe, make sure, vector and dataframe are of the same length
