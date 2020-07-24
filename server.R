@@ -1200,12 +1200,20 @@ server <- function(input, output, session) {
       
         writeLines(paste0("Fetching the other sequences for created amplicons \n"), logfile)
         print("continue fetching sequences!")
+        print(paste0("total sequences to be fetched: ", end_vec))
         if(2 < end_vec){
             for (i in 2:end_vec){ 
-              #r <- GET(url.full[i]) 
+              is_err_r <- tryCatch(
+                  GET(url.full[i]),
+                  error_1 = function(e){
+                    print("Error occured for GET request.")
+                  }
+              )
+              r <- GET(url.full[i]) 
               # filter errors from content function
               is_err <- tryCatch(
-                r <- GET(url.full[i]),
+                #r <- GET(url.full[i]),
+                #print(r)
                 s <- content(r),
                 error = function(e){
                   print("Error occured when fetching DNA sequence!")
