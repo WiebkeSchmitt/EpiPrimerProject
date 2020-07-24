@@ -1271,7 +1271,9 @@ server <- function(input, output, session) {
     # make an overview file of the job executed
     overview_file_path <- file.path("ePCR", input$blast_id, "Overview.txt", fsep=.Platform$file.sep)
     file.create(overview_file_path)
+    setwd(primersDesign_wd)
     overview_file <- file(overview_file_path, open="wt")
+    
     F.PrimerID <- df1[, "F.AmpliconID"]
     table_df1_FprimerOccurances <- table(F.PrimerID)
     write.table(table_df1_FprimerOccurances, overview_file, row.names = FALSE)
