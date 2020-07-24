@@ -1183,6 +1183,7 @@ server <- function(input, output, session) {
             # ERROR HANDLING
             print("handeled error!")
             sequences <- append (sequences, "NotFound")
+            print("Sequences have been extended!")
             error_flag <- FALSE
           }
         }
@@ -1193,6 +1194,7 @@ server <- function(input, output, session) {
         end_vec = length(url.full)
         if (end_vec > 100){
           end_vec = 100
+          print("too many amplicons detected, sequences will only be fetched for 100 sequences!")
           writeLines(paste0("Over 100 potential amplicons were present, set end for fetching sequences to: ", end_vec, "\n"), logfile)
         }
       
