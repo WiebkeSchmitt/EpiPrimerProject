@@ -1160,32 +1160,26 @@ server <- function(input, output, session) {
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
         sequences <- vector()
+        s <- {}
         error_flag <- FALSE
         #s <- vector(mode = 'character')
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
-          is_err <- tryCatch(
-            s <- content(r),
-            error = function(e){
-              sequences <- append (sequences, "NotFound")
-              error_flag <- TRUE
-              #next()
-              print("Error occured when fetching DNA sequence!")
-            }
-          )
-          if(!inherits(is_err, "error") && !error_flag && exists("s")){
-            seq <- xml_find_all(s, ".//DNA")
-            split1 <- strsplit(as.character(seq), ">")[[1]][2]
-            split2 <- strsplit(as.character(split1), "<")[[1]][1]
-            sequences <- c(as.character(gsub("[\r\n]", "", split2)))
-          } else {
-            # ERROR HANDLING
-            print("handeled error!")
-            sequences <- append (sequences, "NotFound")
-            print("Sequences have been extended!")
-            error_flag <- FALSE
+          print(exists("s"))
+          #print(s)
+          #print(r)
+          #print(typeof(content(r)))
+          s <- read_xml(r)
+          print("assigned s")
+          if(length(r) == 0){
+            #error_flag <- TRUE
+            sequences <- append(sequences, "NotFound")
           }
+          seq <- xml_find_all(s, ".//DNA")
+          split1 <- strsplit(as.character(seq), ">")[[1]][2]
+          split2 <- strsplit(as.character(split1), "<")[[1]][1]
+          sequences <- c(as.character(gsub("[\r\n]", "", split2)))
         }
         print("First sequence has been fetched!")
         writeLines(paste0("First sequence for the results fetched succesfully \n"), logfile)
@@ -1214,7 +1208,7 @@ server <- function(input, output, session) {
               is_err <- tryCatch(
                 #r <- GET(url.full[i]),
                 #print(r)
-                s <- content(r),
+                s <- read_xml(r),
                 error = function(e){
                   print("Error occured when fetching DNA sequence!")
                 }
@@ -1229,6 +1223,7 @@ server <- function(input, output, session) {
               } else {
                 # ERROR HANDLING
                 print("error handling for sequences 2")
+                print(url.full[i])
                 sequences <- append (sequences, "NotFound")
                 next()
               }
