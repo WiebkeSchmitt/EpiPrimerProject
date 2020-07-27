@@ -658,11 +658,21 @@ server <- function(input, output, session) {
     dir.create(ePCR_folder)
     result_folder <- paste(primersDesign_wd, "/ePCR/", input$blast_id, sep="")
     dir.create(result_folder)
+    
+    #initialize summary file
+    summary_file_path <- file.path("ePCR", input$blast_id, "Summary.txt", fsep=.Platform$file.sep)
+    file.create(summary_file_path)
+    summary_file <- file(summary_file_path, open="wt")
+    # write to summary file 
+    writeLines(paste("Parameters \t Settings \n"), summary_file)
+    writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
+    
     # make a logfile for this run
     logfile_path <- file.path("ePCR", input$blast_id, "logfile.txt", fsep=.Platform$file.sep)
     file.create(logfile_path)
     logfile <- file(logfile_path, open="wt")
     
+    writeLines(paste0("Summary file was created and opened for writing! \n"), logfile)
     writeLines("ePCR has started! \n", logfile)
     writeLines(paste0("Resultfolder is: ", as.character(result_folder), "\n"), logfile)
     writeLines(paste0("Logfile is: ", logfile_path, "\n"), logfile)
@@ -672,13 +682,6 @@ server <- function(input, output, session) {
     graphs_path <- file.path("ePCR", input$blast_id, "graphs", fsep = .Platform$file.sep)
     dir.create(graphs_path)
     writeLines(paste0("Graph directory has been made: ", graphs_path, "\n"), logfile)
-    
-    #initialize summary file
-    summary_file_path <- file.path("ePCR", input$blast_id, "Summary.txt", fsep=.Platform$file.sep)
-    file.create(summary_file_path)
-    
-    summary_file <- file(summary_file_path, open="wt")
-    writeLines(paste0("Summary file was created and opened for writing! \n"), logfile)
     
     # first check if the user has uploaded primers: check if the upload field is empty
     exists_upload = !is.null(input$Fprimers) && !is.null(input$Rprimers)
@@ -762,9 +765,6 @@ server <- function(input, output, session) {
       write.table(R_GAblast, paste0(result_folder, "/Blast_Hits_Reverse_Primers_G_to_A_converted_refgen"), col.names=T,row.names=F,sep="\t",dec=".",quote=F) 
       writeLines(paste0("Results of primer blasts have been written to the result tables!"), logfile)
       
-      # write to summary file 
-      writeLines(paste("Parameters \t Settings \n"), summary_file)
-      writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
       writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
 
       # total number of primers
@@ -927,6 +927,7 @@ server <- function(input, output, session) {
       print(Fseq)
       print(Rseq)
       print(dbList$genomeDB)
+      
       writeLines(paste0("performed blast using the arguments: ", costumized_BLAST_args, "\n"), logfile)
       
       primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
@@ -934,7 +935,13 @@ server <- function(input, output, session) {
       
       # both predictions did not return a result
       if (nrow(primer1_blast) == 0 || nrow(primer2_blast) == 0){
-        return ("No BLAST matches were found for your primers!")
+        costumized_BLAST_args <- sprintf(blast_args, 75)
+        primer1_blast <- predict(dbList$genomeDB, Fseq, BLAST_args = costumized_BLAST_args)
+        primer2_blast <- predict(dbList$genomeDB, Rseq, BLAST_args = costumized_BLAST_args)
+        if(nrow(primer1_blast) == 0 || nrow(primer2_blast) == 0){
+          return ("No BLAST matches were found for your primers!")
+        }
+
       }
       
       writeLines(paste0("Blast has been performed and per primer results were written to results folder! \n"), logfile)
@@ -952,8 +959,6 @@ server <- function(input, output, session) {
       writeLines(paste0("Results of primer blasts have been written to the result tables! \n"), logfile)
       
       #write to summary file
-      writeLines(paste("Parameters \t Settings \n"), summary_file)
-      writeLines(paste("Analysis start \t", Sys.time(), "\n"), summary_file)
       writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
       
       
@@ -1260,9 +1265,6 @@ server <- function(input, output, session) {
     # write Number of created amplicons to summary_file
     writeLines(paste ("Total number of potential amplicons \t", nrow(df1)), summary_file)
     
-    writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
-    close(summary_file)
-    
     # make an overview file of the job executed
     overview_file_path <- file.path("ePCR", input$blast_id, "Overview.txt", fsep=.Platform$file.sep)
     file.create(overview_file_path)
@@ -1310,6 +1312,8 @@ server <- function(input, output, session) {
   
     writeLines(paste0("ePCR function is now finished! \n"), logfile)
     close(logfile)
+    writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
+    close(summary_file)
     print("Finished virtual PCR!")
     return ("Finished virtual PCR!")
   })
