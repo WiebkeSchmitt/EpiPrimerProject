@@ -768,7 +768,7 @@ server <- function(input, output, session) {
       writeLines(paste("Result folder \t", result_folder, "\n"), summary_file)
 
       # total number of primers
-      writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
+      writeLines(paste("Total number of primer pairs \t", length(Fseq), "\n"), summary_file)
       
       vec_matches_fprimers_CT <- vector()
       vec_matches_rprimers_CT <- vector()
@@ -776,7 +776,7 @@ server <- function(input, output, session) {
       vec_matches_rprimers_GA <- vector()
       vec_seqnames <- vector()
       
-      writeLines(paste0("Starting Statistic of Blast Matches per Primerpair!"), logfile)
+      writeLines(paste0("Starting Statistic of Blast Matches per primer pair!"), logfile)
       # loop over all primers and count the blast matches
       for (i in names(Fseq)){
         vec_seqnames <- c(vec_seqnames, i)
@@ -816,16 +816,16 @@ server <- function(input, output, session) {
       rownames(data_plot2) <- vec_seqnames
       png(file.path(graphs_path, "Blasthits_Bisulfite_Blast.png"), height=1000, width=1200, pointsize=24)
       barplot(t(data_plot2),
-              main = "Blasthits per Primer to CT and GA converted genome",
+              main = "BLAST hits per Primer to CT and GA converted genome",
               xlab = "Primer",
               col = c("black", "white", "#3c8dbc", "#f39c12")
       )
       legend("topleft",
-             c("Blasthits forward primer C-to-T converted reference genome", "Blasthits forward primer G-to-A converted reference genome", "Blasthits reverse primer C-to-T converted reference genome", "Blasthits reverse primer G-to-A converted reference genome"),
+             c("BLAST hits forward primer C-to-T converted reference genome", "BLAST hits forward primer G-to-A converted reference genome", "BLAST hits reverse primer C-to-T converted reference genome", "BLAST hits reverse primer G-to-A converted reference genome"),
              fill = c("black", "white", "#3c8dbc","#f39c12")
       )
       dev.off()
-      writeLines(paste0("Created overview plot of blast hits per primerpair! \n"), logfile)
+      writeLines(paste0("Created overview plot of blast hits per primer pair! \n"), logfile)
       
       # finding genomic ranges for all hits 
       hits<- c(
@@ -904,9 +904,9 @@ server <- function(input, output, session) {
                       as.character(F.seqnames) == as.character(R.seqnames) & 
                       abs(pmin(F.start, F.end) - pmax(R.start, R.end)) <= input$gap)
       writeLines(paste0("Filtered overlap results according to user input!"), logfile)
-      writeLines(paste0("Finished ePCR part for bisulfite Primerpairs!"), logfile)
+      writeLines(paste0("Finished ePCR part for bisulfite primer pairs!"), logfile)
       
-      print("Finished ePCR part for bisulfite Primerpairs")
+      print("Finished ePCR part for bisulfite primer pairs")
       
     } else {
       print("Starting non-bisulfite ePCR")
@@ -971,20 +971,20 @@ server <- function(input, output, session) {
       num_perfect_matches_primer2 = nrow(perfect_matches_primer2)
       
       # write to summary
-      writeLines(paste("Total number of Primerpairs \t", length(Fseq), "\n"), summary_file)
+      writeLines(paste("Total number of primer pairs \t", length(Fseq), "\n"), summary_file)
       writeLines(paste("Total number perfect matches forward primers \t", num_perfect_matches_primer1, "\n"), summary_file)
       writeLines(paste("Total number perfect matches reverse primers \t", num_perfect_matches_primer2, "\n"), summary_file)
       writeLines(paste("Total number imperfect matches forward primers \t", num_imperfect_matches_primer1, "\n"), summary_file)
       writeLines(paste("Total number imperfect matches reverse primers \t", num_imperfect_matches_primer2, "\n"), summary_file)
       
       # calculate primer blast matches according to primer pair and make also a nice barplot from these numbers
-      # plot 2: shows Blast Hits per Primerpair, divided up to Forward and Reverse Primerhits
+      # plot 2: shows Blast Hits per primer pair, divided up to Forward and Reverse Primerhits
       fw_primer_vec <- vector()
       rw_primer_vec <- vector()
       num_fw_blast_hits <- vector()
       num_rw_blast_hits <- vector()
       
-      writeLines(paste0("Starting Statistic of Blast Matches per Primerpair! \n"), logfile)
+      writeLines(paste0("Starting Statistic of Blast Matches per primer pair! \n"), logfile)
       for (i in names(Fseq)){
         # append names to fw_primer_vec
         fw_primer_vec <- c(fw_primer_vec, i)
@@ -1007,16 +1007,16 @@ server <- function(input, output, session) {
       rownames(data_plot2) <- fw_primer_vec
       png(file.path(graphs_path, "Blasthits_per_Primerpair.png"), height=1000, width=1200, pointsize=24)
       barplot(t(data_plot2),
-              main = "Blasthits per Primerpair",
-              xlab = "Primerpair",
+              main = "BLAST hits per primer pair",
+              xlab = "primer pair",
               col = c("#3c8dbc","#f39c12")
       )
       legend("topleft",
-             c("Forward Primer Blasthits","Reverse Primer Blasthits"),
+             c("Forward Primer BLAST hits","Reverse Primer BLAST hits"),
              fill = c("#3c8dbc","#f39c12")
       )
       dev.off()
-      writeLines(paste0("Created overview plot of blast hits per primerpair! \n"), logfile)
+      writeLines(paste0("Created overview plot of blast hits per primer pair! \n"), logfile)
       
       #to check for close regions, always choose the same id and the same chromosome
       #to be able to do this, create GRanges Object from the perfect hits
@@ -1068,7 +1068,7 @@ server <- function(input, output, session) {
                      abs(pmin(F.start, F.end) - pmax(R.start, R.end)) <= input$gap)
       
       writeLines(paste0("Filtered overlap results according to user input! \n"), logfile)
-      writeLines(paste0("Finished ePCR part for bisulfite Primerpairs! \n"), logfile)
+      writeLines(paste0("Finished ePCR part for bisulfite Primer pairs! \n"), logfile)
       
     } # end of non-bisulfite ePCR
     
@@ -1098,7 +1098,7 @@ server <- function(input, output, session) {
       
       showModal(modalDialog(
         title = "No potential PCR products found!",
-        paste0("The Quality Control for your Primers is finished. We could not find any potential PCR fragments for your Primerpairs. Details of your results are available in the Primer Design Quality Control tab."),
+        paste0("The Quality Control for your Primers is finished. We could not find any potential PCR fragments for your primer pairs. Details of your results are available in the Primer Design Quality Control tab."),
         easyClose = FALSE,
         footer = modalButton("Close")))
       return("No PCR fragments found.")
@@ -1295,12 +1295,12 @@ server <- function(input, output, session) {
     writeLines(paste0("Wrote results to results table! \n"), logfile)
     
     # create barplot for results and put it in the results folder using ggplot2
-    # visualize overview results: potential amplicons per primerpair
+    # visualize overview results: potential amplicons per primer pair
     require(ggplot2)
-    # plot 1: shows amplicon frequency per primerpair
+    # plot 1: shows amplicon frequency per primer pair
     df_plot1 <- as.data.frame(table_df1_FprimerOccurances)
     png(file.path(graphs_path, "PotentialAmpliconFrequencies.png"), height=1000, width=1200, pointsize=24)
-    barplot(df_plot1$Freq, main="Potential Amplicons per Primerpair", names=df_plot1$F.PrimerID, col="#3c8dbc", xlab="Primerpair")
+    barplot(df_plot1$Freq, main="Potential Amplicons per primer pair", names=df_plot1$F.PrimerID, col="#3c8dbc", xlab="primer pair")
     dev.off()
     writeLines(paste0("Plot of created amplicons was created! \n"), logfile)
     
@@ -1360,7 +1360,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # display selectInput / Dropdownmenue to filter Results for one primerpair analyzed
+  # display selectInput / Dropdownmenue to filter Results for one primer pair analyzed
   observeEvent(input$refreshPQC, {
     if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
       print(!dir.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)))
@@ -1375,7 +1375,7 @@ server <- function(input, output, session) {
         insertUI(
           selector= "#refreshPQC",
           where = "afterEnd",
-          ui = selectInput(inputId = "test_select", label = "Filter results by primerpair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
+          ui = selectInput(inputId = "test_select", label = "Filter results by primer pair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
         )
     }
   }#, once = TRUE
