@@ -27,6 +27,7 @@ Additionally, two folders are required:
 
 Overview of the required folder structure: 
 
+'''
 .
 +-- _server.R
 +-- _ui.R
@@ -110,6 +111,7 @@ Overview of the required folder structure:
 +-- _www
 |   +-- custom.css
 +-- _test
+'''
 
 This list does not contain all files contained in the git repository, but all files minimally required to run EpiPrimer.
 The files from the BSGenome package required for ePCR of genomic primer pairs (.nhr, .nin, .nsq) will be created automatically, when the project runs an ePCR for the genome for the first time. 
