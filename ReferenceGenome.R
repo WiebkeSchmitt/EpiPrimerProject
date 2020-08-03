@@ -146,7 +146,7 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
       }
     )
     
-    #return CTdb and GAdb for further calculations in server.R as a list of CTdb and GAdb
+    #return dbList for further calculations in server.R 
     dbList <- list("genomeDB"= genomeDB)
     print("finished computation of non-bisulfite reference genome")
     return (dbList)

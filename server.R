@@ -5,7 +5,7 @@ library(shinydashboard)
 ## working directory  ##
 primersDesign_wd <- getwd() 
 
-## Source for Primer Design  ##
+## Sources for Primer Design  ##
 source("generalDesign.R")
 source("ReferenceGenome.R")
 
@@ -34,7 +34,7 @@ library(ggplot2)
 dbHeader <- dashboardHeader(title = "EpiPrimer")
 
 server <- function(input, output, session) {
-  ### global variable for Primersettings
+  ### global variable for Primersettings: in case the primer type field was not touched by the user, a genomic primer is designed. This variable changes when the user touches primer type or advanced settings
   def_settings <<- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
   
   ### Data import:
@@ -672,8 +672,6 @@ server <- function(input, output, session) {
     file.create(logfile_path)
     logfile <- file(logfile_path, open="wt")
     
-    writeLines(paste0("Analysis started on ", Sys.Date(), "at ", Sys.time(), "\n"), logfile)
-    writeLines(paste0(Sys.time(), " Summary file was created and opened for writing! \n"), logfile)
     writeLines(paste0(Sys.time(), " ePCR has started! \n"), logfile)
     writeLines(paste0(Sys.time(), " Resultfolder is: ", as.character(result_folder), "\n"), logfile)
     writeLines(paste0(Sys.time(), " Logfile is: ", logfile_path, "\n"), logfile)
