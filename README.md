@@ -27,90 +27,90 @@ Additionally, two folders are required:
 
 Overview of the required folder structure: 
 
-'''
-.
-├── _server.R
-├── _ui.R
-├── _generalDesign.R
-├── _HelperFunctions.R 
-├── _primer.design.R 
-├── _Primerpair.R 
-├── _ReferenceGenome.R 
-├── _ePCR
-├── _database
-	├── Bis_Hsapiens.hg18
-		├──	CTgenome.fa
-		├──	CTgenome.fa.nhr
-		├──	CTgenome.fa.nin
-		├──	CTgenome.fa.nsq
-		├──	GAgenome.fa	
-		├──	GAgenome.fa.nhr
-		├──	GAgenome.fa.nin
-		├──	GAgenome.fa.nsq
-	├── Bis_Hsapiens.hg19
-		├──	CTgenome.fa
-		├──	CTgenome.fa.nhr
-		├──	CTgenome.fa.nin
-		├──	CTgenome.fa.nsq
-		├──	GAgenome.fa	
-		├──	GAgenome.fa.nhr
-		├──	GAgenome.fa.nin
-		├──	GAgenome.fa.nsq
-	├── Bis_Hsapiens.hg38
-		├──	CTgenome.fa
-		├──	CTgenome.fa.nhr
-		├──	CTgenome.fa.nin
-		├──	CTgenome.fa.nsq
-		├──	GAgenome.fa	
-		├──	GAgenome.fa.nhr
-		├──	GAgenome.fa.nin
-		├──	GAgenome.fa.nsq
-	├── Bis_Mmusculus.mm9
-		├── CTgenome.fa
-		├──	CTgenome.fa.nhr
-		├──	CTgenome.fa.nin
-		├──CTgenome.fa.nsq
-		├──GAgenome.fa	
-		├──GAgenome.fa.nhr
-		├──GAgenome.fa.nin
-		├──	GAgenome.fa.nsq
-	├── Bis_Mmusculus.mm10
-		├──	CTgenome.fa
-		├──	CTgenome.fa.nhr
-		├──	CTgenome.fa.nin
-		├──	CTgenome.fa.nsq
-		├──GAgenome.fa	
-		├──	GAgenome.fa.nhr
-		├──	GAgenome.fa.nin
-		├──	GAgenome.fa.nsq
-	├── BSgenome.Hsapiens.UCSC.hg18
-		├──	BSgenome.Hsapiens.UCSC.hg18.fasta
-		├──	BSgenome.Hsapiens.UCSC.hg18.fasta.nhr
-		├──BSgenome.Hsapiens.UCSC.hg18.fasta.nin
-		├──	BSgenome.Hsapiens.UCSC.hg18.fasta.nsq	
-	├── BSgenome.Hsapiens.UCSC.hg19
-		├──BSgenome.Hsapiens.UCSC.hg19.fasta
-		├──BSgenome.Hsapiens.UCSC.hg19.fasta.nhr
-		├──BSgenome.Hsapiens.UCSC.hg19.fasta.nin
-		├──BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	
-	├── BSgenome.Hsapiens.UCSC.hg38
-		├──	BSgenome.Hsapiens.UCSC.hg38.fasta
-		├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nhr
-		├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nin
-		├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nsq	
-	├── BSgenome.Mmusculus.UCSC.mm9
-		├──	BSgenome.Hsapiens.UCSC.mm9.fasta
-		├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nhr
-		├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nin
-		├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nsq	
-	├── BSgenome.Mmusculus.UCSC.mm10
-		├──	BSgenome.Hsapiens.UCSC.mm10.fasta
-		├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nhr
-		├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nin
-		├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nsq	
-├── _www
-    ├── custom.css
-├── _test
+'''  
+.  
+├── _server.R  
+├── _ui.R  
+├── _generalDesign.R  
+├── _HelperFunctions.R   
+├── _primer.design.R  
+├── _Primerpair.R  
+├── _ReferenceGenome.R  
+├── _ePCR  
+├── _database  
+│ 	├── Bis_Hsapiens.hg18  
+│ 	│	├──	CTgenome.fa  
+│ 	│	├──	CTgenome.fa.nhr  
+│ 	│	├──	CTgenome.fa.nin  
+│ 	│	├──	CTgenome.fa.nsq  
+│ 	│	├──	GAgenome.fa	  
+│ 	│	├──	GAgenome.fa.nhr  
+│ 	│	├──	GAgenome.fa.nin  
+│ 	│	├──	GAgenome.fa.nsq  
+│ 	├── Bis_Hsapiens.hg19  
+│ 	│	├──	CTgenome.fa  
+│ 	│	├──	CTgenome.fa.nhr  
+│ 	│	├──	CTgenome.fa.nin  
+│ 	│	├──	CTgenome.fa.nsq  
+│ 	│	├──	GAgenome.fa	  
+│ 	│	├──	GAgenome.fa.nhr  
+│ 	│	├──	GAgenome.fa.nin  
+│ 	│	├──	GAgenome.fa.nsq  
+│ 	├── Bis_Hsapiens.hg38  
+│ 	│	├──	CTgenome.fa  
+│ 	│	├──	CTgenome.fa.nhr  
+│ 	│	├──	CTgenome.fa.nin  
+│ 	│	├──	CTgenome.fa.nsq  
+│ 	│	├──	GAgenome.fa	 
+│ 	│	├──	GAgenome.fa.nhr  
+│ 	│	├──	GAgenome.fa.nin  
+│	│	├──	GAgenome.fa.nsq  
+│	├── Bis_Mmusculus.mm9  
+│	│	├── CTgenome.fa  
+│	│	├──	CTgenome.fa.nhr  
+│	│	├──	CTgenome.fa.nin  
+│	│	├──CTgenome.fa.nsq  
+│	│	├──GAgenome.fa	 
+│	│	├──GAgenome.fa.nhr  
+│	│	├──GAgenome.fa.nin  
+│	│	├──	GAgenome.fa.nsq  
+│	├── Bis_Mmusculus.mm10  
+│	│	├──	CTgenome.fa  
+│	│	├──	CTgenome.fa.nhr  
+│	│	├──	CTgenome.fa.nin  
+│	│	├──	CTgenome.fa.nsq  
+│	│	├──GAgenome.fa	 
+│	│	├──	GAgenome.fa.nhr  
+│	│	├──	GAgenome.fa.nin  
+│	│	├──	GAgenome.fa.nsq  
+│	├── BSgenome.Hsapiens.UCSC.hg18  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg18.fasta  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg18.fasta.nhr  
+│	│	├──BSgenome.Hsapiens.UCSC.hg18.fasta.nin  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg18.fasta.nsq	
+│	├── BSgenome.Hsapiens.UCSC.hg19  
+│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta  
+│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta.nhr  
+│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta.nin  
+│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	
+│	├── BSgenome.Hsapiens.UCSC.hg38  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nhr  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nin  
+│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nsq	 
+│	├── BSgenome.Mmusculus.UCSC.mm9  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nhr  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nin  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nsq	 
+│	├── BSgenome.Mmusculus.UCSC.mm10  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nhr  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nin  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nsq	  
+├── _www  
+│    ├── custom.css  
+├── _test  
 '''
 
 This list does not contain all files contained in the git repository, but all files minimally required to run EpiPrimer.
