@@ -29,15 +29,15 @@ Overview of the required folder structure:
 
 '''  
 .  
-├── _server.R  
-├── _ui.R  
-├── _generalDesign.R  
-├── _HelperFunctions.R   
-├── _primer.design.R  
-├── _Primerpair.R  
-├── _ReferenceGenome.R  
-├── _ePCR  
-├── _database  
+├── server.R  
+├── ui.R  
+├── generalDesign.R  
+├── HelperFunctions.R   
+├── primer.design.R  
+├── Primerpair.R  
+├── ReferenceGenome.R  
+├── ePCR  
+├── database  
 │ 	├── Bis_Hsapiens.hg18  
 │ 	│	├──	CTgenome.fa  
 │ 	│	├──	CTgenome.fa.nhr  
@@ -61,7 +61,7 @@ Overview of the required folder structure:
 │ 	│	├──	CTgenome.fa.nhr  
 │ 	│	├──	CTgenome.fa.nin  
 │ 	│	├──	CTgenome.fa.nsq  
-│ 	│	├──	GAgenome.fa	 
+│ 	│	├──	GAgenome.fa  
 │ 	│	├──	GAgenome.fa.nhr  
 │ 	│	├──	GAgenome.fa.nin  
 │	│	├──	GAgenome.fa.nsq  
@@ -69,30 +69,30 @@ Overview of the required folder structure:
 │	│	├── CTgenome.fa  
 │	│	├──	CTgenome.fa.nhr  
 │	│	├──	CTgenome.fa.nin  
-│	│	├──CTgenome.fa.nsq  
-│	│	├──GAgenome.fa	 
-│	│	├──GAgenome.fa.nhr  
-│	│	├──GAgenome.fa.nin  
+│	│	├── CTgenome.fa.nsq  
+│	│	├── GAgenome.fa  
+│	│	├── GAgenome.fa.nhr  
+│	│	├── GAgenome.fa.nin  
 │	│	├──	GAgenome.fa.nsq  
 │	├── Bis_Mmusculus.mm10  
 │	│	├──	CTgenome.fa  
 │	│	├──	CTgenome.fa.nhr  
 │	│	├──	CTgenome.fa.nin  
 │	│	├──	CTgenome.fa.nsq  
-│	│	├──GAgenome.fa	 
+│	│	├── GAgenome.fa	 
 │	│	├──	GAgenome.fa.nhr  
 │	│	├──	GAgenome.fa.nin  
 │	│	├──	GAgenome.fa.nsq  
 │	├── BSgenome.Hsapiens.UCSC.hg18  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg18.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg18.fasta.nhr  
-│	│	├──BSgenome.Hsapiens.UCSC.hg18.fasta.nin  
+│	│	├── BSgenome.Hsapiens.UCSC.hg18.fasta.nin  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg18.fasta.nsq	
 │	├── BSgenome.Hsapiens.UCSC.hg19  
-│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta  
-│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta.nhr  
-│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta.nin  
-│	│	├──BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	
+│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta  
+│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nhr  
+│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nin  
+│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	
 │	├── BSgenome.Hsapiens.UCSC.hg38  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nhr  
@@ -110,7 +110,7 @@ Overview of the required folder structure:
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nsq	  
 ├── _www  
 │    ├── custom.css  
-├── _test  
+├── test  
 '''
 
 This list does not contain all files contained in the git repository, but all files minimally required to run EpiPrimer.
