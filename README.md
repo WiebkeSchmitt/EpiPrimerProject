@@ -91,12 +91,12 @@ Overview of the required folder structure:
 │	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta  
 │	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nhr  
 │	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nin  
-│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	 
+│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nsq   
 │	├── BSgenome.Hsapiens.UCSC.hg38  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nhr  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nin  
-│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nsq   
+│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nsq  
 │	├── BSgenome.Mmusculus.UCSC.mm9  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nhr  
