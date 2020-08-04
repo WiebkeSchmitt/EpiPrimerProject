@@ -26,8 +26,7 @@ Additionally, two folders are required:
 2. A folder called "ePCR" to hold results from the ePCR tool
 
 Overview of the required folder structure: 
-
-'''  
+ 
 .  
 ├── server.R  
 ├── ui.R  
@@ -79,7 +78,7 @@ Overview of the required folder structure:
 │	│	├──	CTgenome.fa.nhr  
 │	│	├──	CTgenome.fa.nin  
 │	│	├──	CTgenome.fa.nsq  
-│	│	├── GAgenome.fa	 
+│	│	├── GAgenome.fa  
 │	│	├──	GAgenome.fa.nhr  
 │	│	├──	GAgenome.fa.nin  
 │	│	├──	GAgenome.fa.nsq  
@@ -92,26 +91,25 @@ Overview of the required folder structure:
 │	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta  
 │	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nhr  
 │	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nin  
-│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	
+│	│	├── BSgenome.Hsapiens.UCSC.hg19.fasta.nsq	 
 │	├── BSgenome.Hsapiens.UCSC.hg38  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nhr  
 │	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nin  
-│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nsq	 
+│	│	├──	BSgenome.Hsapiens.UCSC.hg38.fasta.nsq   
 │	├── BSgenome.Mmusculus.UCSC.mm9  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nhr  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nin  
-│	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nsq	 
+│	│	├──	BSgenome.Hsapiens.UCSC.mm9.fasta.nsq   
 │	├── BSgenome.Mmusculus.UCSC.mm10  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nhr  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nin  
-│	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nsq	  
+│	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nsq  
 ├── _www  
 │    ├── custom.css  
 ├── test  
-'''
 
 This list does not contain all files contained in the git repository, but all files minimally required to run EpiPrimer.
 The files from the BSGenome package required for ePCR of genomic primer pairs (.nhr, .nin, .nsq) will be created automatically, when the project runs an ePCR for the genome for the first time. 
