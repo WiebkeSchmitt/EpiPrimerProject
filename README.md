@@ -8,11 +8,11 @@ greatly simplifies the process of designing primers.
 
 The following types of primers can be designed using EpiPrimer:
 
-–  genomic primers for non-treated DNA
-–  primers for bisulfite treated DNA
-–  primers for DNA treated according to nucleosome occupancy and methylome sequencing protocol
-–  primers for DNA treated according chemical-labeling-enabled C-to-T conversion sequencing assay protocol
-–  primers for DNA restricted by restriction enzymes to enable analysis of methylation on both DNA strands
+–  genomic primers for non-treated DNA  
+–  primers for bisulfite treated DNA  
+–  primers for DNA treated according to nucleosome occupancy and methylome sequencing protocol  
+–  primers for DNA treated according chemical-labeling-enabled C-to-T conversion sequencing assay protocol    
+–  primers for DNA restricted by restriction enzymes to enable analysis of methylation on both DNA strands  
 
 EpiPrimer is a web application and therefore easily accessible.  It is a user-friendly
 tool ready to assist in the process of primer design. 
@@ -124,7 +124,20 @@ Overview of the required folder structure:
 │    ├── custom.css  
 ├── test  
 
-This list does not contain all files contained in the git repository, but all files minimally required to run EpiPrimer.
+This list does not contain all files contained in the git repository, but all files minimally required to run EpiPrimer. Example input files for the tool are the .txt files contained in the repository. 
+Custom style sheets are placed inside the www folder. A folder for unit tests is present but only few sample unit tests are present here.
+
+The graphical user interface is implemented in the files ui.R handling frontend computations and server.R handling backend computations.
+
+Primer Design Files: 
+Primer design is handled in the files generalDesign.R, HelperFunctions.R, primer.design.R and Primerpair.R.
+Helper functions are found in the HelperFunctions.R script, while Primerpair.R represents a data structure for primer pairs designed by the tool. generalDesign.R and primer.design.R handle primer type specific and general computations required for primer design.
+Further information on primer design can be found in chapter 2.1.
+
+ePCR Files: 
+ePCR is handled in the server.R file in the function compute_ePCR(). It requires a ReferenceGenome object defined in the file ReferenceGenome.R.
+Further information on ePCR can be found in chapter 2.2.
+
 The files from the BSGenome package required for ePCR of genomic primer pairs (.nhr, .nin, .nsq) will be created automatically, when the project runs an ePCR for the genome for the first time. 
 The BSGenome for the required organism and assembly has to first be installed manually via the RStudio command line in order to be used: 
 if (!requireNamespace("BiocManager", quietly = TRUE))
