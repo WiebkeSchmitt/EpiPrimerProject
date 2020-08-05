@@ -159,14 +159,16 @@ To publish a new version of EpiPrimer on the t-7600 server contact Michael Scher
 
 The original pipeline for primerdesign is contained in the file primer.design.pipeline_jil_v3.0_standalone.
 This pipeline can be run seperately via the commandline if desired, e. g.: 
-primer.design.pipeline("./input_single.txt", "regions", "./folder_name", "job_name", "bisulfite", "fast", "top", 23, 34, 48, 60, 2, TRUE, 7, TRUE, 150, 500, 0, 5, FALSE, 12, 3, 3, TRUE, 0.01, 0, 20, 0, 0, 0, 0, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, NA, 50, 300, 30, "", "", TRUE)
+
+primer.design.pipeline("./input_single.txt", "regions", "./folder_name", "job_name", "bisulfite", "fast", "top", 23, 34, 48, 60, 2, TRUE, 7, TRUE, 150, 500, 0, 5, FALSE, 12, 3, 3, TRUE, 0.01, 0, 20, 0, 0, 0, 0, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, NA, 50, 300, 30, "", "", TRUE)  
+
 Primers can be designed for mouse genome assemblies 8 and 9 as well as for human genome assemblies 18, 19 and 38. 
 
 This primer design pipeline was refactored and is now contained in several files: 
-_generalDesign.R
-_HelperFunctions.R 
-_primer.design.R 
-_Primerpair.R 
+- generalDesign.R
+- HelperFunctions.R 
+- primer.design.R 
+- Primerpair.R 
 
 During the primer design process, the generalDesign.R script designs primer pairs
 according to the user input passed on by the user interface of EpiPrimer. The script
@@ -182,6 +184,16 @@ The ePCR module allows the blast of user designed primers and primers created du
 EpiPrimer expect primers to be given in 5' to 3' direction. 
 
 We support ePCR for: hg18, hg19, hg38, mm9, mm10
+
+ePCR is available for genomic primer pairs and bisulfite primer pairs. 
+
+The implementation of ePCR works as follows: 
+
+First, for all primers provided by the user, a BLAST search is conducted via the r package rBLAST. After the BLAST, the intermediate results are filtered by the maximum number of mismatches provided via the GUI by the user. 
+In the next step, potential PCR products are calculated using the "findOverlaps()" function. The potential products larger than the value provided by the user via the GUI are removed from the results list. 
+Afterwards, sequences for the potential PCR products are fetched. Since this retrieval is time intensive, at most 100 sequences will be fetched by the ePCR tool. 
+
+For the ePCR of bisulfite primer pairs, bisulfite converted reference genomes are required, which were created on the t-7600 server using the commands explained in the next chapter.
 
 ###	2.2.1	Creation of Bisulfite Converted Reference Genomes
 
