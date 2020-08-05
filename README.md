@@ -1,8 +1,21 @@
 # EpiPrimerProject
 
-Description of the project: 
+EpiPrimer is a tool, assisting the user in the process of primer design and primer quality control. 
 
-Table of Contents:
+EpiPrimer is able to automatically design primers for multiple genomic
+regions at once.  This is a still new feature in the primer design tool universe, which
+greatly simplifies the process of designing primers.
+
+The following types of primers can be designed using EpiPrimer:
+
+–  genomic primers for non-treated DNA
+–  primers for bisulfite treated DNA
+–  primers for DNA treated according to nucleosome occupancy and methylome sequencing protocol
+–  primers for DNA treated according chemical-labeling-enabled C-to-T conversion sequencing assay protocol
+–  primers for DNA restricted by restriction enzymes to enable analysis of methylation on both DNA strands
+
+EpiPrimer is a web application and therefore easily accessible.  It is a user-friendly
+tool ready to assist in the process of primer design. 
 
 # 1. 	Using the Webapplication
 
@@ -107,7 +120,7 @@ Overview of the required folder structure:
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nhr  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nin  
 │	│	├──	BSgenome.Hsapiens.UCSC.mm10.fasta.nsq  
-├── _www  
+├── www  
 │    ├── custom.css  
 ├── test  
 
