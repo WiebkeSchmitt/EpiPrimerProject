@@ -88,10 +88,11 @@ server <- function(input, output, session) {
       if (!is.null(input$adapterForward) && !is.null(input$adapterReverse)){
         adaF <- input$adapterForward
         adaR <- input$adapterReverse
-        # now set adapters, only if checkboxes were activated
+        # now set adapters: in case the fields are not empty, the string given by the user will be saved in the settings
         settings_for_pipeline[20] = adaF
         settings_for_pipeline[21] = adaR
       } else {
+        # no adapters should be used, set defaultvalues for adapters to NA
         settings_for_pipeline[20] = NA
         settings_for_pipeline[21] = NA
       }
@@ -107,6 +108,7 @@ server <- function(input, output, session) {
       
       # now set checks for snps and repeats
       settings_for_pipeline[3] = check_snps
+      # check for repeats is always set to false
       settings_for_pipeline[4] = FALSE
       
       #call the primer design pipeline
@@ -259,8 +261,6 @@ server <- function(input, output, session) {
   ############# display the whole list of primers ###########
   
   showWholelist <- reactive({ if (!input$wholelist) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("wholelist",files[["results"]])])
@@ -313,10 +313,6 @@ server <- function(input, output, session) {
       paste0(paste0(">",short_selected_list[x,"amplicon.id"]),'\n',paste0(short_selected_list[x,"primer2.sequence"]),'\n')
     }),file=paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"),quote = FALSE,col.names = FALSE,row.names=FALSE, sep = "\t")
     
-    #primers_list_ReadsExtraction <- short_selected_list
-    #colnames(primers_list_ReadsExtraction) <- c("names","Fprimer","Rprimer")
-    #PrimersTable_ReadsExtraction <- write.table(primers_list_ReadsExtraction,file=paste0(primersDesign_wd,"/",input$name,"/","PrList_ReadsExtraction.txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
-    
     return(whole_selected_list)
     
   })
@@ -334,8 +330,6 @@ server <- function(input, output, session) {
   ############# display the black list of primers ###########
   
   showBlacklist <- reactive({ if (!input$blacklist) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("blacklist",files[["results"]])])
@@ -368,8 +362,6 @@ server <- function(input, output, session) {
   
   ############# display the white list of primers ###########
   showWhitelist <- reactive({ if (!input$whitelist) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("white",files[["results"]])])
@@ -403,8 +395,6 @@ server <- function(input, output, session) {
   ############# display the log file of the primer design ###########
   
   showLogfile <- reactive({ if (!input$logfile) {return(NULL)}
-    #wd <- setwd(primersDesign_wd)
-    #print(wd)
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
@@ -548,8 +538,6 @@ server <- function(input, output, session) {
     }
   })
   
-  
-  
   ################ download the selected primers list ####################
   
   output$downloadSelectedPrimers<- downloadHandler(
@@ -588,7 +576,6 @@ server <- function(input, output, session) {
       # User has not uploaded a file yet
       return(data.frame())
     }
-    #read_Rprimers_file <- read.table(input$Rprimers$datapath)
     # use BioStrings package to display .fasta file properly
     read_Rprimers_file <- readDNAStringSet(as.character(input$Rprimers$datapath))
     Primer.Name = names(read_Rprimers_file)
@@ -734,7 +721,6 @@ server <- function(input, output, session) {
       blast_args <- "-task blastn -evalue %s"
       # the e-value for calculation of bisulfite primers is set lower than the commonly used value of 10, to avoid too many (unnecessary) results
       costumized_BLAST_args <- sprintf(blast_args, 10)
-      #print(costumized_BLAST_args)
       writeLines(paste0(Sys.time(), " performed blast using the arguments: ", costumized_BLAST_args, "\n"), logfile)
       
       #blast forward and reverse primer against CT and GA converted genome
@@ -1147,9 +1133,6 @@ server <- function(input, output, session) {
     for (i in names(Fseq)){
       # get subset of df1
       primer_subset = subset(df1, df1$F.AmpliconID == i)
-      # write Number of created potential amplicons for this primer to summary_file
-      #writeLines(paste ("Total number of potential amplicons for primer ", i, "\t", nrow(primer_subset)), summary_file)
-      
       # now get sequences for the first 100 entries
       # keep in mind: not every entry of Fseq must be contained in df1!
       if(nrow(primer_subset) != 0){
@@ -1159,20 +1142,15 @@ server <- function(input, output, session) {
         assembly <- getAssemblyName(refgen)
       
         # fetch sequences only for first 100 results for each primer pair
-      
         url.full<-paste("http://genome.ucsc.edu/cgi-bin/das/",assembly,"/dna?segment=",chr,":",formatC(start,format="f",digits=0),",",formatC(end,format="f",digits=0),sep="")
       
         sequences <- vector()
         s <- {}
         error_flag <- FALSE
-        #s <- vector(mode = 'character')
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
           print(exists("s"))
-          #print(s)
-          #print(r)
-          #print(typeof(content(r)))
           s <- read_xml(r)
           print("assigned s")
           if(length(r) == 0){
@@ -1209,8 +1187,6 @@ server <- function(input, output, session) {
               r <- GET(url.full[i]) 
               # filter errors from content function
               is_err <- tryCatch(
-                #r <- GET(url.full[i]),
-                #print(r)
                 s <- read_xml(r),
                 error = function(e){
                   print("Error occured when fetching DNA sequence!")
@@ -1243,10 +1219,6 @@ server <- function(input, output, session) {
           writeLines(paste0(Sys.time(), " Vector length of sequences is of size 100 \n"), logfile)
         } else {
           # append enough NAs to be able to merge vector and dataframe
-          #print(nrow(primer_subset))
-          #print(100-as.numeric(nrow(primer_subset)))
-          #seq_vec <- append(sequences, rep(NA, times = (100-as.numeric(nrow(primer_subset)))), after = 100)
-          #print_seq_vec
           primer_subset$Productsequence <- sequences
           writeLines(paste0(Sys.time(), " Adjusted vector length for sequences to size 100 \n"), logfile)
         }
@@ -1336,7 +1308,6 @@ server <- function(input, output, session) {
       return(data.frame())
     } else {
       # select variables to display by selectInput
-      
       selectedRange <- input$test_select
       if (length(selectedRange) == 0){
         return (data.frame())
@@ -1376,7 +1347,7 @@ server <- function(input, output, session) {
           ui = selectInput(inputId = "test_select", label = "Filter results by primer pair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
         )
     }
-  }#, once = TRUE
+  }
   )
   
   
@@ -1894,28 +1865,6 @@ server <- function(input, output, session) {
     if (is.null(input$i_chop.size)) {return(NULL)}
     def_settings[34] <<- input$i_chop.size
   })
-  
-  # observeEvent(input$adapterF,{
-  #   #print("observed FAda")
-  #   insertUI(
-  #     selector= "#adapterF",
-  #     where = "afterEnd",
-  #     ui = textInput("adapterForward", "Add Forward adapter: ", "CTTTCCCTACACGACGCTCTTCCGATCT")
-  #   )
-  # })
-  # 
-  # output$ReverseAdapter <- renderUI({
-  #   if (!input$adapterR) {return(NULL)}
-  #   textInput("adapterReverse", "Add Reverse adapter: ", "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT")
-  # })
-  
-  ######### switch tab when button is pressed ############
-  # observeEvent(input$switch_to_graphs_ePCR, {
-  #   textOutput("This is to be implemented")
-  # 
-  # })
-  
-  
   
   ######### display graphics for ePCR ############
   showGraphicsePCR <-eventReactive(input$graphics_ePCR, {
