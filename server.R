@@ -194,7 +194,7 @@ server <- function(input, output, session) {
     },
     
     content <- function(con) {
-      ss <- paste(getwd(),input$name,sep="/")
+      ss <- paste(getwd(), input$name,sep="/")
       tmpdir <- tempdir()
       setwd(tempdir())
       filesToSave <- c(ss) #List to hold paths to your files in shiny
@@ -202,7 +202,8 @@ server <- function(input, output, session) {
       zz <- zip(zipfile=con, files = filesToSave,flags = "-r9X", extras = "",zip ="zip")
       return(zz)
     },
-    contentType = "results/zip"
+    contentType = "results/zip",
+    setwd(primersDesign_wd)
   )
   
   ################ download the results of ePCR ####################
@@ -647,7 +648,7 @@ server <- function(input, output, session) {
     dir.create(result_folder)
     
     #initialize summary file
-    summary_file_path <- file.path("ePCR", input$blast_id, "Summary.txt", fsep=.Platform$file.sep)
+    summary_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Summary.txt", fsep=.Platform$file.sep)
     file.create(summary_file_path)
     summary_file <- file(summary_file_path, open="wt")
     # write to summary file 
