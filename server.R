@@ -208,21 +208,21 @@ server <- function(input, output, session) {
   
   ################ download the results of ePCR ####################
   
-  output$downloadePCRresults<- downloadHandler(
-    filename = function() {
-      paste0(input$blast_id, ".zip")
-    },
-    content <- function(con) {
-      ss <- file.path("ePCR", paste0(input$blast_id, ".zip"), fsep=.Platform$file.sep)
-      tmpdir <- tempdir()
-      setwd(tempdir())
-      filesToSave <- c(ss) #List to hold paths to your files in shiny
-      #Put all file paths inside filesToSave...
-      zz <- zip(zipfile=con, files = filesToSave, flags = "-r9X", extras = "", zip ="zip")
-      return(zz)
-    },
-    contentType = "results/zip"
-  )
+  # output$downloadePCRresults<- downloadHandler(
+  #   filename = function() {
+  #     paste0(input$blast_id, ".zip")
+  #   },
+  #   content <- function(con) {
+  #     ss <- file.path("ePCR", paste0(input$blast_id, ".zip"), fsep=.Platform$file.sep)
+  #     tmpdir <- tempdir()
+  #     setwd(tempdir())
+  #     filesToSave <- c(ss) #List to hold paths to your files in shiny
+  #     #Put all file paths inside filesToSave...
+  #     zz <- zip(zipfile=con, files = filesToSave, flags = "-r9X", extras = "", zip ="zip")
+  #     return(zz)
+  #   },
+  #   contentType = "results/zip"
+  # )
   
   ############# display the top list of primers ########### 
   
