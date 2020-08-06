@@ -72,8 +72,6 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     bis_path_GA_nin <- file.path(getwd(), "database", bis_name, "GAgenome.nin", fsep = .Platform$file.sep)
     bis_path_CT_nsq <- file.path(getwd(), "database", bis_name, "CTgenome.nsq", fsep = .Platform$file.sep)
     bis_path_GA_nsq <- file.path(getwd(), "database", bis_name, "GAgenome.nsqr", fsep = .Platform$file.sep)
-    print(bis_path_CT)
-    print(bis_path_GA)
     
     # check if a wrong database is used.
     if (!file.exists(bis_path_CT) || !file.exists(bis_path_GA)){
@@ -130,7 +128,6 @@ setMethod("getBlastDB", "ReferenceGenome", function(z, is_bisulfite){
     }
     
     #now check if makeblastdb is needed for this genome
-    #print(file.exists(paste(z@wd, "/", z@name, ".fasta", sep="")))
     genomeDB <- (
       if(!file.exists(paste(z@wd, "/", z@name, ".fasta", sep=""))
          || !file.exists(paste(z@wd, "/", z@name, ".fasta.nin", sep=""))

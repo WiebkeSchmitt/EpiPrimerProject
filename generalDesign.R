@@ -454,12 +454,8 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     
     #iregs <- filetable.in #iregs<-read.table(filename.in,header=T,sep="\t",dec=".")
     iregs<- table.in
-    print(iregs)
-    
     def.cols<-c("chr","start","end","assembly","sequenceID","sequence.length","sequence.adress","sequence")
-    print(def.cols)
     nregs<-nrow(iregs)#number of input regions
-    print(nregs)
     
     if("sequenceID" %in% colnames(iregs)){
       
@@ -489,23 +485,16 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
     }
     
     iregchr<-as.character(iregs$chr)
-    print(iregchr)
     bed<-data.frame(chr=rep(NA,nregs),start=rep(NA,nregs),end=rep(NA,nregs),
                     assembly=rep(NA,nregs),
                     sequenceID=rep(NA,nregs),sequence.length=rep(NA,nregs),
                     sequence.adress=rep(NA,nregs),sequence=rep(NA,nregs))
-    print(bed)
     bed$chr<-as.character(bed$chr)
     bed$chr<-iregchr
-    print(bed$chr)
     bed$start<-as.numeric(bed$start)
-    print(bed$start)
     bed$end<-as.numeric(bed$end)
-    print(bed$end)
     undef.cols<-colnames(iregs)[!colnames(iregs) %in% def.cols]
-    print(undef.cols)
     bed[,undef.cols]<-NA
-    print(bed[,undef.cols])
     #for each entry in input.file retrieve dna seq
     for (ir in 1:nregs){
       dna<-getDNA(iregs[ir,"chr"],iregs[ir,"start"],iregs[ir,"end"],iregs[ir,"assembly"])
@@ -526,7 +515,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
                                dna)   
       bed[ir,undef.cols]<-iregs[ir,undef.cols]
     }
-    print(bed)
+    
     if(any(nchar(bed$sequence)) > maximum.input.region.length.bp){
       stop(paste(" one or more input regions are too large [max: ",maximum.input.region.length.bp,"]",sep=""))
     }
@@ -1354,7 +1343,6 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
       }
       
       if(primer.type=="hp_CLEVER"){
-        print("call from hp_CLEVER")
         
         np<-CLEVER.primer.design(sequence=sequence,
                                  sequence.id=sequence.id,
@@ -1740,8 +1728,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
                                       (all_my_genes$txStart>=iseq.amp.start & all_my_genes$txStart<=iseq.amp.end) |
                                       (all_my_genes$txStart<=iseq.amp.start & all_my_genes$txEnd>=iseq.amp.start) |
                                       (all_my_genes$txStart>=iseq.amp.start & all_my_genes$txStart<=iseq.amp.end),]
-            print("amp.genes")
-            print(amp.genes)
+            
             results2[iamplicons,"amplicon.n.genes"] <- nrow(amp.genes)
             results2[iamplicons,"amplicon.gene.ids"] <- paste(amp.genes[,"gene_name"],collapse=",")
             
@@ -2077,10 +2064,6 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
         
         write.text(apply(X = results2[,c("amplicon.chr","amplicon.start","amplicon.end","primer.pair.id","ucsc.color","nl")],1,paste,sep="\t"),
                    file=ffn,add=TRUE)
-        
-        print("WBS")
-        print(create.toplist)
-        print(as.logical(create.toplist))
         
         if (as.logical(create.toplist) && !(is.data.frame(toplist) && nrow(toplist)==0)){ 
           
