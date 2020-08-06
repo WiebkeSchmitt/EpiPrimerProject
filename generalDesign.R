@@ -61,7 +61,7 @@ primer.design.pipeline.refactored<-function(table.in,#filename.in = NULL, # dire
   start.wd<-getwd()
   start.run<-mydate
   
-  maximum.input.regions<-100              # tool will not run if job has more regions
+  maximum.input.regions<-150              # tool will not run if job has more regions
   maximum.input.region.length.bp<-4000    # tool will not run if some regions are larger.
   
   #snp.species<-c("Hsapiens","Mmusculus")
