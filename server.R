@@ -648,6 +648,7 @@ server <- function(input, output, session) {
     dir.create(result_folder)
     
     #initialize summary file
+    print(getwd())
     summary_file_path <- file.path(primersDesign_wd, "ePCR", input$blast_id, "Summary.txt", fsep=.Platform$file.sep)
     file.create(summary_file_path)
     summary_file <- file(summary_file_path, open="wt")
