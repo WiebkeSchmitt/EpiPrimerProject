@@ -2,24 +2,15 @@
 library(shiny)
 library(shinydashboard)
 
-## working directory  ##
-primersDesign_wd <- getwd() 
-
-## Source for Primer Design  ##
-source("generalDesign.R")
-
-## libraries for primer design  ##
-library(devtools)
-library(rBLAST)
-library(rtracklayer)
-library(BSgenome)
-library(Biostrings)
-
 ## tooltips ##
 library(shinyBS)
 library(tippy)
 
 dbHeader <- dashboardHeader(title = "EpiPrimer")
+
+## to add CrispRCas9 as a primer type for primer design, simply extend the radio buttons i_primer_type with 'CrispRCas9PCR'! 
+## Default settings for this primer type are already contained in the ui.R and server.R file!
+## Computations of this type of primer are also possible (recomment the function contained in primer.design.r) BUT are NOT refactored.
 
 ## UI using shiny dashboard ##
 ui <- fluidPage(dashboardPage(skin = "yellow",
@@ -27,9 +18,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                               dashboardSidebar(
                                 sidebarMenu(id = "tabs",
                                   menuItem("Primer Design Start", tabName = "PrimerDesign", icon = icon("dna")),
-                                  #menuItem("Advanced Primer Settings", tabName = "AdvancedPrimerSettings", icon = icon("dashboard")),
                                   menuItem("Results of Primer Design", tabName = "PDresults", icon = icon("list-ol")),
-                                  #menuItem("Graphs of Primer Design", tabName = "PDgraphs", icon = icon("chart-bar")), 
                                   menuItem("ePCR Start", tabName = "PrimerQC", icon = icon("dna")), #check-circle
                                   menuItem("Results of ePCR", tabName = "PrimerQCResults", icon = icon("list-ol")),
                                   menuItem("Imprint", tabName = "Imprint", icon = icon("university"))
@@ -89,8 +78,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                              selected = "top"),
                                                 bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "left", "hover")
                                               )
-                                              #actionButton("switch_to_advanced", label="Advanced Primer Settings", icon("cogs"),
-                                              #             style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:400px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px")
                                           ),
                                           hr(),
                                           box(
@@ -433,8 +420,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                             tabBox(title = "",
                                                    id = "PDresultsTabbox",
                                                    width = 12,
-                                                   #height = "25x",
-                                                   #width="1x",
                                                    tabPanel("Overview",
                                                             actionButton("primerdesigns.by.sequence", label = "Overview", icon = icon("sync-alt")),
                                                             hr(),
@@ -491,9 +476,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                 downloadButton('downloadSelectedPrimers', 'Selected Primers')
                                             )
                                           ),
-                                          #actionButton("switch_to_graphs", label = "View Graphs", icon("chart-bar"),
-                                          #             style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:150%; width:1225px; height:75px; margin-left:150px; margin-right:75px; margin-right:0px"),
-                                          #hr(),
                                           box(actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
                                               uiOutput("plot3"),
                                               title = h2("Graphs"),
@@ -504,14 +486,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           )
                                           
                                   ),
-                                  # tabItem(tabName = "PDgraphs",
-                                  #         box(title = h2("Graphs"),
-                                  #             status = "primary",
-                                  #             solidHeader = TRUE,
-                                  #             width = 12,
-                                  #             actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
-                                  #             uiOutput("plot3"))
-                                  #),
                                   tabItem(tabName = "PrimerQC",
                                           box(title = h2("Upload files for ePCR"),
                                               status = "primary", 
@@ -540,7 +514,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
                                               checkboxInput("is_bisulfite", h5("These are bisulfite primers!"), FALSE),
                                               sliderInput("gap", "Maximum size of reported product", min = 500, max = 10000, value = 2000, step = 500),
-                                              #sliderInput("partial_match", "3' primer portion to report partial matches", min=0, max=25, value=16),
                                               sliderInput("primer_mismatches", "Number of Mismatches allowed in Primer Blast", min=0, max=25, value=7),
                                               hr(),
                                               textOutput("primer_qc_start"),
@@ -561,8 +534,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                             tabBox(title = "",
                                                    id = "PQCTabbox",
                                                    width = 12,
-                                                   #height = "auto",
-                                                   #width="1x",
                                                    tabPanel("Results",
                                                             actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
                                                             selectInput("test_select", label = "Filter results by primerpair: ", choices ="", multiple = FALSE),
