@@ -154,9 +154,6 @@ primer.design.pipeline<-function(table.in,
                                  create.graphics=TRUE, #will generate a graphical overview for each job with succesfull primerdesign(s) (TRUE/FALSE)
                                  ...){      
   
-  print("wbs start")
-  wbs_start <- Sys.time()
-  print(wbs_start)
   if(is.null(table.in) | is.null(path.out)){
   
     stop("input filename and export directory are missing.")  
@@ -3352,11 +3349,6 @@ log("done.")
 
 log("end.")
 
-print("wbs end")
-#print(Sys.time())
-wbs_end <- Sys.time()
-print(wbs_end)
-print(wbs_end - wbs_start)
 return(black)#output for primerwheel
 
 }#if(exists("results))
