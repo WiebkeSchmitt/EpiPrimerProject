@@ -558,7 +558,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                             actionButton("summaryePCR", label = "Summary", icon = icon("sync-alt")),
                                                             hr(),
                                                             DT::dataTableOutput("pQC.summary")
-                                                   ),
+                                                   )#,
                                                    #downloadButton('downloadePCRresults', 'Results')
                                             )
                                             ),
