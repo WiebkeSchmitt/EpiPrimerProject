@@ -226,7 +226,7 @@ server <- function(input, output, session) {
   
   ############# display the top list of primers ########### 
   
-  showToplist <- reactive({ if (!input$toplist) {return(NULL)}
+  showToplist <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("toplist",files[["results"]])])
@@ -248,7 +248,7 @@ server <- function(input, output, session) {
   })
   
   output$viewtoplist <- DT::renderDataTable({
-    if (!input$toplist) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showToplist()
   },
   extensions = 'FixedHeader',
@@ -261,7 +261,7 @@ server <- function(input, output, session) {
   
   ############# display the whole list of primers ###########
   
-  showWholelist <- reactive({ if (!input$wholelist) {return(NULL)}
+  showWholelist <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("wholelist",files[["results"]])])
@@ -283,7 +283,7 @@ server <- function(input, output, session) {
   })
   
   output$viewwholelist <- DT::renderDataTable({
-    if (!input$wholelist) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showWholelist()
   },
   extensions = 'FixedHeader',
@@ -296,10 +296,11 @@ server <- function(input, output, session) {
   ######### displaying selected primers table #######
   #also generate fasta files for forward and reverse primers 
   
-  showSelectlist <- reactive({ if (!input$selectlist) {return(NULL)}
+  showSelectlist <- reactive({ if (!input$action) {return(NULL)}
     s = input$viewwholelist_rows_selected
     if(is.null(s)){
-      stop("No primers were marked on the Wholelist!")
+      return (data.frame())
+      #stop("No primers were marked on the Wholelist!")
     }
     whole_selected_list <- showWholelist()[s,]
     write.table(whole_selected_list,file=paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers", ".txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
@@ -330,7 +331,7 @@ server <- function(input, output, session) {
   
   ############# display the black list of primers ###########
   
-  showBlacklist <- reactive({ if (!input$blacklist) {return(NULL)}
+  showBlacklist <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("blacklist",files[["results"]])])
@@ -351,7 +352,7 @@ server <- function(input, output, session) {
   })
   
   output$viewblacklist <- DT::renderDataTable({
-    if (!input$blacklist) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showBlacklist()
   },
   extensions = 'FixedHeader',
@@ -362,7 +363,7 @@ server <- function(input, output, session) {
   )
   
   ############# display the white list of primers ###########
-  showWhitelist <- reactive({ if (!input$whitelist) {return(NULL)}
+  showWhitelist <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("white",files[["results"]])])
@@ -383,7 +384,7 @@ server <- function(input, output, session) {
   })
   
   output$viewwhitelist <- DT::renderDataTable({
-    if (!input$whitelist) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showWhitelist()
   },
   extensions = 'FixedHeader',
@@ -395,7 +396,7 @@ server <- function(input, output, session) {
   
   ############# display the log file of the primer design ###########
   
-  showLogfile <- reactive({ if (!input$logfile) {return(NULL)}
+  showLogfile <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
@@ -416,13 +417,13 @@ server <- function(input, output, session) {
   })
   
   output$viewlogfile <- DT::renderDataTable({
-    if (!input$logfile) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showLogfile()
   })
   
   ############# display the primer design by sequence  ###########
   
-  showPrimerdesigns.by.sequence <- reactive({ if (!input$primerdesigns.by.sequence) {return(NULL)}
+  showPrimerdesigns.by.sequence <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("primerdesigns.by.sequence",files[["results"]])])
@@ -443,13 +444,13 @@ server <- function(input, output, session) {
   })
   
   output$viewprimerdesigns <- DT::renderDataTable({
-    if (!input$primerdesigns.by.sequence) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showPrimerdesigns.by.sequence()
   })
   
   ############# display the summary of the primer design ###########
   
-  showSummary <- reactive({ if (!input$Summary) {return(NULL)}
+  showSummary <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("summary",files[["results"]])])
@@ -470,13 +471,13 @@ server <- function(input, output, session) {
   })
   
   output$viewSummary <- DT::renderDataTable({
-    if (!input$Summary) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showSummary()
   })
   
   ############# display the settings of the primer design ###########
   
-  showSettings <- reactive({ if (!input$settings) {return(NULL)}
+  showSettings <- reactive({ if (!input$action) {return(NULL)}
     files <- data.frame(results=list.files(paste(primersDesign_wd,input$name,"PrimerAnalysis",sep="/"),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("settings",files[["results"]])])
@@ -497,13 +498,13 @@ server <- function(input, output, session) {
   })
   
   output$viewsettings <- DT::renderDataTable({
-    if (!input$settings) {return(data.frame())}
+    if (!input$action) {return(data.frame())}
     showSettings()
   })
   
   #################### display graphics of primer design#############
   
-  showGraphics <-eventReactive(input$graphics, {
+  showGraphics <-eventReactive(input$action, {
     files <- data.frame(graphs=list.files(paste(getwd(),input$name,"PrimerAnalysis","graphics",sep="/"),full.names=TRUE, pattern =".png"))
   })
   
@@ -1356,7 +1357,7 @@ server <- function(input, output, session) {
   
   ############# display the overview of the ePCR ###########
   
-  showOverviewePCR <- reactive({ if (!input$overviewePCR) {return(NULL)}
+  showOverviewePCR <- reactive({ if (!input$compute_ePCR) {return(NULL)}
     files <- data.frame(results=list.files(file.path(getwd(), "ePCR", input$blast_id, fsep=.Platform$file.sep),full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Overview",files[["results"]])])
@@ -1378,7 +1379,7 @@ server <- function(input, output, session) {
   })
   
   output$ePCR.overview <- DT::renderDataTable({
-    if (!input$overviewePCR) {return(data.frame())}
+    if (!input$compute_ePCR) {return(data.frame())}
     showOverviewePCR()
   },
     extensions = 'FixedHeader',
@@ -1390,7 +1391,7 @@ server <- function(input, output, session) {
   
   ############# display the settings of the ePCR ###########
   
-  showSettingsePCR <- reactive({ if (!input$settingsePCR) {return(NULL)}
+  showSettingsePCR <- reactive({ if (!input$compute_ePCR) {return(NULL)}
     files <- data.frame(results=list.files(file.path(getwd(), "ePCR", input$blast_id, fsep=.Platform$file.sep), full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Settings",files[["results"]])])
@@ -1412,7 +1413,7 @@ server <- function(input, output, session) {
   })
   
   output$ePCR.settings <- DT::renderDataTable({
-    if (!input$settingsePCR) {return(data.frame())}
+    if (!input$compute_ePCR) {return(data.frame())}
     showSettingsePCR()
   },
   extensions = 'FixedHeader',
@@ -1424,7 +1425,7 @@ server <- function(input, output, session) {
   
   ############# display the logfile of the ePCR ###########
   
-  showLogfileePCR <- reactive({ if (!input$logfileePCR) {return(NULL)}
+  showLogfileePCR <- reactive({ if (!input$compute_ePCR) {return(NULL)}
     files <- data.frame(results=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, fsep=.Platform$file.sep), full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("logfile",files[["results"]])])
@@ -1446,7 +1447,7 @@ server <- function(input, output, session) {
   })
   
   output$ePCR.logfile <- DT::renderDataTable({
-    if (!input$logfileePCR) {return(data.frame())}
+    if (!input$compute_ePCR) {return(data.frame())}
     showLogfileePCR()
   },
   extensions = 'FixedHeader',
@@ -1458,7 +1459,7 @@ server <- function(input, output, session) {
   
   ############# display the summary of the ePCR ###########
   
-  showSummaryePCR <- reactive({ if (!input$summaryePCR) {return(NULL)}
+  showSummaryePCR <- reactive({ if (!input$compute_ePCR) {return(NULL)}
     files <- data.frame(results=list.files(file.path(getwd(), "ePCR", input$blast_id, fsep=.Platform$file.sep), full.names=TRUE, pattern =".txt"))
     print(files)
     file_path <- as.character(files[["results"]][grep("Summary",files[["results"]])])
@@ -1480,7 +1481,7 @@ server <- function(input, output, session) {
   })
   
   output$pQC.summary <- DT::renderDataTable({
-    if (!input$summaryePCR) {return(data.frame())}
+    if (!input$compute_ePCR) {return(data.frame())}
     showSummaryePCR()
   })
   
