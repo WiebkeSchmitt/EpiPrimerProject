@@ -1870,7 +1870,7 @@ server <- function(input, output, session) {
   })
   
   ######### display graphics for ePCR ############
-  showGraphicsePCR <- eventReactive(input$graphics_ePCR, {
+  showGraphicsePCR <- eventReactive(input$refreshPQC, {
     files_2 <- data.frame(graphs2=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs"),full.names=TRUE, pattern =".png"))
     })
   

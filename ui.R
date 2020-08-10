@@ -535,7 +535,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    tabPanel("Results",
                                                             actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
                                                             selectInput("test_select", label = "Filter results by primerpair: ", choices ="", multiple = FALSE),
-                                                            hr(),
+                                                            #hr(),
                                                             tags$div(id="txt_for_selector", helpText("")),
                                                             uiOutput("pQC.results")
                                                    ),
@@ -563,7 +563,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                             )
                                             ),
                                             
-                                            fluidRow(box(actionButton("graphics_ePCR", label = "Graphs", icon = icon("sync-alt")),
+                                            fluidRow(box(#actionButton("graphics_ePCR", label = "Graphs", icon = icon("sync-alt")),
                                               uiOutput("ePCR_Graphs"),
                                               title = h2("Graphs for ePCR"),
                                               status = "primary",
