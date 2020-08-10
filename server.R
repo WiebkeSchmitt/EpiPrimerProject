@@ -505,7 +505,7 @@ server <- function(input, output, session) {
   #################### display graphics of primer design#############
   
   showGraphics <-eventReactive(input$action, {
-    files <- data.frame(graphs=list.files(paste(getwd(),input$name,"PrimerAnalysis","graphics",sep="/"),full.names=TRUE, pattern =".png"))
+    files_1 <- data.frame(graphs=list.files(paste(getwd(),input$name,"PrimerAnalysis","graphics",sep="/"),full.names=TRUE, pattern =".png"))
   })
   
   output$plot3 <-renderUI({
@@ -522,7 +522,7 @@ server <- function(input, output, session) {
         out_ui <- paste0("image", x)
         imageOutput(out_ui, height = "800px")
       })
-      do.call(tagList,ss)
+      do.call(tagList, ss)
     }
   })
   
@@ -1345,7 +1345,7 @@ server <- function(input, output, session) {
           immediate = TRUE
         )
         insertUI(
-          selector= "#refreshPQC",
+          selector= "#txt_for_selector",
           where = "afterEnd",
           ui = selectInput(inputId = "test_select", label = "Filter results by primer pair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
         )
@@ -1870,32 +1870,32 @@ server <- function(input, output, session) {
   })
   
   ######### display graphics for ePCR ############
-  showGraphicsePCR <-eventReactive(input$graphics_ePCR, {
-    files <- data.frame(graphs=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs"),full.names=TRUE, pattern =".png"))
-    print(files)
+  showGraphicsePCR <- eventReactive(input$graphics_ePCR, {
+    files_2 <- data.frame(graphs2=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs"),full.names=TRUE, pattern =".png"))
     })
   
   output$ePCR_Graphs <-renderUI({
-    #check, if there are graphics that can be displayed, if not inform the user 
+    #check, if there are graphics that can be displayed, if not inform the user
+    # check, if there are no graphics to be displayed
     if(is.data.frame(showGraphicsePCR()) && nrow(showGraphicsePCR())== 0){
       return(data.frame())
     } else {
-      ss <- lapply(1:nrow(showGraphicsePCR()),function(x){
-        out_ui <- paste0("image", x)
-        imageOutput(out_ui, height = "800px")
+      bb <- lapply(1:nrow(showGraphicsePCR()), function(i){
+        out_ui2 <- paste0("image_b", i)
+        imageOutput(out_ui2, height = "800px")
       })
-      do.call(tagList,ss)
+      do.call(tagList, bb)
     }
   })
-  
+
   observe({
-    for(x in 1:nrow(showGraphicsePCR()))
+    for(i in 1:nrow(showGraphicsePCR()))
     {
       local({
-        my_x <- x
-        out_ui <- paste0("image",my_x)
-        output[[out_ui]] <- renderImage({
-          list(src = paste(showGraphicsePCR()$graphs[my_x]),
+        my_i <- i
+        out_ui2 <- paste0("image_b", my_i)
+        output[[out_ui2]] <- renderImage({
+          list(src = paste(showGraphicsePCR()$graphs2[my_i]),
                alt = "Image failed to render", style="width: 800px; height: 700px")
         }, deleteFile = FALSE)
       })
