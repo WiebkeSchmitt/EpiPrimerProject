@@ -6,15 +6,13 @@ library(shinydashboard)
 library(shinyBS)
 library(tippy)
 
-dbHeader <- dashboardHeader(title = "EpiPrimer")
-
 ## to add CrispRCas9 as a primer type for primer design, simply extend the radio buttons i_primer_type with 'CrispRCas9PCR'! 
 ## Default settings for this primer type are already contained in the ui.R and server.R file!
 ## Computations of this type of primer are also possible (recomment the function contained in primer.design.r) BUT are NOT refactored.
 
 ## UI using shiny dashboard ##
 ui <- fluidPage(dashboardPage(skin = "yellow",
-                              dashboardHeader(title = "EpiPrimer"),#dbHeader,
+                              dashboardHeader(title = "EpiPrimer"),
                               dashboardSidebar(
                                 sidebarMenu(id = "tabs",
                                   menuItem("Primer Design Start", tabName = "PrimerDesign", icon = icon("dna")),
@@ -38,14 +36,13 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                 # Upload data:
                                                 helpText("Provided genomes are:"),
                                                 helpText("Human genome assemblies: hg18, hg19, hg38"),
-                                                helpText("Mouse genome assemblies: mm9, mm10"), 
-                                                helpText("If your primer design job was unsuccesful, you are recommended to check your advanced settings and to compute again."),
+                                                helpText("Mouse genome assemblies: mm9, mm10"),
                                                 fileInput("file", "Upload regions or sequence file:", accept=c("txt", "text/plain")),
                                                 hr(),
                                                 DT::dataTableOutput("table"),
                                                 hr(),
                                                 textInput("name","Dataset name:", paste0("MyPrimerSet")),
-                                                bsTooltip("name", "Choose a name for your primer design folder", "top", "hover"),
+                                                bsTooltip("name", "Choose a name for your primer design job", "top", "hover"),
                                                 hr(),
                                                 textOutput("state"),
                                                 tags$head(tags$style("#state{color: red;
@@ -55,7 +52,6 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           )
                                                 ),
                                           hr(),
-                                          helpText("You can view the results of your primer design job using the 'Results' tab."),
                                           helpText( h4("Download Example Files here: ")),
                                           downloadButton("downloadSequenceFile", "Sequence File",
                                                          style="margin-left:150px; margin-right:0px"),
@@ -77,7 +73,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                              choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
                                                              selected = "top"),
                                                 bsTooltip("i_strand", "Choose the strand for which you want to create your primers!", "left", "hover")
-                                              )
+                                              ),
+                                              helpText("If your primer design job was unsuccesful, you are recommended to check the advanced settings and to compute again.")
                                           ),
                                           hr(),
                                           box(
@@ -465,7 +462,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           fluidRow(
                                             box(title = "Selected List",
                                                 width = 12,
-                                                helpText("You can download primer pairs or hand them over for ePCR by adding them to your list of selected primers below. To add primers to your Selected List, mark them on the Wholelist!"),
+                                                helpText("You can download your primer pairs or hand them over for ePCR by adding them to your list of selected primers below. To add primers to your Selected List, mark them on the Wholelist above!"),
                                                 hr(),
                                                 #actionButton("selectlist", label = "Generate Selected List"),
                                                 #hr(),
@@ -494,7 +491,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               h4("Import primer pairs from Primer Design that were added to your Selected List:", align = "center"),
                                               actionButton("loadprimers", "Import Primers", icon = icon("file-import"), align="center",
                                                            style="margin-left:275px; margin-right:0px"),
-                                              bsTooltip("loadprimers", "Import primers you added to the Selected List during Primer Design", "bottom", "hover"),
+                                              bsTooltip("loadprimers", "Import primers you added to the Selected List", "bottom", "hover"),
                                               hr(),
                                               h4("Upload your own Primers for ePCR below:", align = "left"),
                                               helpText("(.fasta file format is required, we expect your primers to be in 5'-3' orientation)", align = "left"),
@@ -508,9 +505,10 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               solidHeader = TRUE,
                                               width = 6,
                                               textInput("blast_id","Name your Primerblast:", paste0("MyBlast")),
-                                              selectInput("genome", "Genome for Quality Control",choices = gsub("UCSC.", "", gsub("BSgenome.", "", c("BSgenome.Hsapiens.UCSC.hg18", "BSgenome.Hsapiens.UCSC.hg19", "BSgenome.Hsapiens.UCSC.hg38", "BSgenome.Mmusculus.UCSC.mm9", "BSgenome.Mmusculus.UCSC.mm10")))), #gsub("UCSC.", "", gsub("BSgenome.", "", installed.genomes()))), #(names(a) = strsplit(installed.genomes(), ".", fixed=TRUE)[1][4])),
-                                              bsTooltip("genome", "Select the genome against which you want to blast your primers!", "top", "hover"),
+                                              selectInput("genome", "Reference Genome for ePCR: ",choices = gsub("UCSC.", "", gsub("BSgenome.", "", c("BSgenome.Hsapiens.UCSC.hg18", "BSgenome.Hsapiens.UCSC.hg19", "BSgenome.Hsapiens.UCSC.hg38", "BSgenome.Mmusculus.UCSC.mm9", "BSgenome.Mmusculus.UCSC.mm10")))), #gsub("UCSC.", "", gsub("BSgenome.", "", installed.genomes()))), #(names(a) = strsplit(installed.genomes(), ".", fixed=TRUE)[1][4])),
+                                              bsTooltip("genome", "Select the genome against which you want to BLAST your primer pairs!", "top", "hover"),
                                               checkboxInput("is_bisulfite", h5("These are bisulfite primers!"), FALSE),
+                                              bsTooltip("is_bisulfite", "Check this box if your primer pairs were designed for a bisulfite converted reference genome", "top", "hover"),
                                               sliderInput("gap", "Maximum size of reported product", min = 500, max = 10000, value = 2000, step = 500),
                                               sliderInput("primer_mismatches", "Number of Mismatches allowed in Primer Blast", min=0, max=25, value=7),
                                               hr(),
@@ -524,7 +522,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               hr()
                                           ),
                                           actionButton("compute_ePCR", label = "Start ePCR", icon("fas fa-flask"), align="center",
-                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:150px; margin-right:0px")
+                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:150px; margin-right:0px"),
+                                          bsTooltip("compute_ePCR", "The computation of your ePCR may take a few minutes, please wait until you receive a notifiication that computation has finished.", "left", "hover")
                                   
                                   ),
                                   tabItem(tabName = "PrimerQCResults",
@@ -534,6 +533,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    width = 12,
                                                    tabPanel("Results",
                                                             actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
+                                                            bsTooltip("refreshPQC", "Please press this button to view the results of your ePCR!", "right", "hover"),
                                                             selectInput("test_select", label = "Filter results by primerpair: ", choices ="", multiple = FALSE),
                                                             #hr(),
                                                             tags$div(id="txt_for_selector", helpText("")),

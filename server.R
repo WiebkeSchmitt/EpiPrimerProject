@@ -152,9 +152,13 @@ server <- function(input, output, session) {
       )
       
       sprintf("Finished Computation!!")
+      
+      # try to alternatively swith the menuItem
+      updateTabItems(session, "tabs", selected = "PDresults")
+      
       ww <-showModal(modalDialog(
         title = "Primers are READY!",
-        sprintf(paste0("You can find details concerning your run in the Menueitem 'Results of Primer Design' and further analyze them using the created files in the folder %s"),input$name),
+        sprintf("You can find details concerning your run in here."),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
@@ -1277,17 +1281,22 @@ server <- function(input, output, session) {
     dev.off()
     writeLines(paste0(Sys.time(), " Plot of created amplicons was created! \n"), logfile)
     
-    showModal(modalDialog(
-      title = "Computation of your virtual PCR has finished!",
-      paste0("The Quality Control for your Primers is finished. Your results are available in the Primer Design Quality Control tab."),
-      easyClose = FALSE,
-      footer = modalButton("Close")))
+    
   
     writeLines(paste0(Sys.time(), " ePCR function is now finished! \n"), logfile)
     close(logfile)
     writeLines(paste("Analysis end \t", Sys.time(), "\n"), summary_file)
     close(summary_file)
     print("Finished virtual PCR!")
+    
+    updateTabItems(session, "tabs", selected = "PrimerQCResults")
+    
+    showModal(modalDialog(
+      title = "Computation of ePCR has finished!",
+      paste0("The virtual PCR for your primer pairs is finished. Your results are available here."),
+      easyClose = FALSE,
+      footer = modalButton("Close")))
+    
     return ("Finished virtual PCR!")
   })
   
