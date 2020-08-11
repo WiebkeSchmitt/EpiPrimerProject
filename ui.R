@@ -421,43 +421,27 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    id = "PDresultsTabbox",
                                                    width = 12,
                                                    tabPanel("Overview",
-                                                            #actionButton("primerdesigns.by.sequence", label = "Overview", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewprimerdesigns"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Toplist",
-                                                            #actionButton("toplist", label = "Toplist", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewtoplist"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Wholelist",
-                                                            #actionButton("wholelist", label = "Wholelist", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewwholelist"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Whitelist",
-                                                            #actionButton("whitelist", label = "Whitelist", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewwhitelist"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Blacklist",
-                                                            #actionButton("blacklist", label = "Blacklist", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewblacklist"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Logfile",
-                                                            #actionButton("logfile", label = "Logfile", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewlogfile"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Settings",
-                                                            #actionButton("settings", label = "Settings", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewsettings"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Summary",
-                                                            #actionButton("Summary", label = "Summary", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("viewSummary"), type = 1, color = "#3c8dbc", size = 2)
                                                    )
                                             )
@@ -467,15 +451,12 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                 width = 12,
                                                 helpText("You Can Download Your Primer Pairs or Hand Them Over for ePCR by Adding Them to Your List of Selected Primers Below. To Add Primers to Your Selected List, Mark Them on the Wholelist Above!"),
                                                 hr(),
-                                                #actionButton("selectlist", label = "Generate Selected List"),
-                                                #hr(),
                                                 DT::dataTableOutput("viewSelectlist"),
                                                 hr(),
                                                 downloadButton('downloadSelectedPrimers', 'Selected Primers')
                                             )
                                           ),
-                                          box(#actionButton("graphics", label = "Graphs", icon = icon("sync-alt")),
-                                              withSpinner(uiOutput("plot3"), type = 1, color = "#3c8dbc", size = 2),
+                                          box(withSpinner(uiOutput("plot3"), type = 1, color = "#3c8dbc", size = 2),
                                               title = h2("Graphs"),
                                               status = "primary",
                                               solidHeader = TRUE,
@@ -540,28 +521,19 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                             actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
                                                             bsTooltip("refreshPQC", "Please Press This Button to View the Results of Your ePCR!", "right", "hover"),
                                                             selectInput("test_select", label = "Filter Results by Primerpair: ", choices ="", multiple = FALSE),
-                                                            #hr(),
                                                             tags$div(id="txt_for_selector", helpText("")),
                                                             withSpinner(uiOutput("pQC.results"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Overview",
-                                                            #actionButton("overviewePCR", label = "Overview", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("ePCR.overview"), type = 1, color = "#3c8dbc", size = 2)
                                                             ),
                                                    tabPanel("Settings",
-                                                            #actionButton("settingsePCR", label = "Settings", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("ePCR.settings"), type = 1, color = "#3c8dbc", size = 2)
                                                             ),
                                                    tabPanel("Logfile",
-                                                            #actionButton("logfileePCR", label = "Logfile", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("ePCR.logfile"), type = 1, color = "#3c8dbc", size = 2)
                                                             ),
                                                    tabPanel("Summary",
-                                                            #actionButton("summaryePCR", label = "Summary", icon = icon("sync-alt")),
-                                                            #hr(),
                                                             withSpinner(DT::dataTableOutput("pQC.summary"), type = 1, color = "#3c8dbc", size = 2)
                                                    )#,
                                                    #hr()
