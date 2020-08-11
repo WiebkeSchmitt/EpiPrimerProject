@@ -163,6 +163,7 @@ R packages, that need to be installed to run EpiPrimer locally: (This may not be
 - httr
 - stringr
 - ggplot2
+- shinycssloaders
 
 You can now open RStudio and herein open the project folder. Pushing the button "Run app" when opening the file ui.R or server.R will run EpiPrimer locally.
 
