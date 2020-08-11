@@ -1,6 +1,7 @@
-## app.R ##
+## app ##
 library(shiny)
 library(shinydashboard)
+library(shinycssloaders)
 
 ## working directory  ##
 primersDesign_wd <- getwd() 
@@ -62,6 +63,10 @@ server <- function(input, output, session) {
   )
   
   output$state <- eventReactive(input$action, {
+    
+    # swith the menuItem
+    updateTabItems(session, "tabs", selected = "PDresults")
+    
     primerDesign_wd <- setwd(primersDesign_wd)
     
     if (is.null(input$file)){
@@ -73,10 +78,9 @@ server <- function(input, output, session) {
       sprintf("Dataset %s already exists, please choose other ID!", input$name)
     } else {
       
-      
-      ww <-showModal(modalDialog(
-        title = "We are currently computing your primers!",
-        sprintf(paste0("You will be notified when the computation of your primers is finished. Please be patient, this might take a few minutes."),input$name),
+      ww <- showModal(modalDialog(
+        title = "We Are Currently Computing Your Primers!",
+        "You Will Be Notified When the Computation of Your Primers Is Finished. Please Be Patient, This Might Take a Few Minutes.",
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
@@ -153,12 +157,9 @@ server <- function(input, output, session) {
       
       sprintf("Finished Computation!!")
       
-      # try to alternatively swith the menuItem
-      updateTabItems(session, "tabs", selected = "PDresults")
-      
       ww <-showModal(modalDialog(
-        title = "Primers are READY!",
-        sprintf("You can find details concerning your run in here."),
+        title = "Primers Are READY!",
+        sprintf("You Can Find Details Concerning Your Run Here."),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
@@ -237,11 +238,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Primers in the Top List!",
-        sprintf(paste0("Unfortunateley, we could not find any primers in the Top List."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers in the Top List For "),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No primers contained in the Top List!")
+      stop("No Primers Contained in the Top List!")
     }
     
     print(file_path)
@@ -272,11 +273,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Primers in the Whole List!",
-        sprintf(paste0("Unfortunateley, we could not find any primers in the Whole List."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers in the Whole List For "),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No primers contained in the Whole List!")
+      stop("No Primers Contained in the Whole List!")
     }
     
     print(file_path)
@@ -342,11 +343,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Primers in the Black List!",
-        sprintf(paste0("Unfortunateley, we could not find any primers in the Black List."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers in the Black List For "),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No primers contained in the Black List!")
+      stop("No Primers Contained in the Black List!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
@@ -373,12 +374,12 @@ server <- function(input, output, session) {
     file_path <- as.character(files[["results"]][grep("white",files[["results"]])])
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
-        title = "No Primers Found on the White List!",
-        sprintf(paste0("Unfortunateley, we could not find any primers in the White List."),input$name),
+        title = "No Primers Found in the White List!",
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers in the White List for "),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No primers were found on the White List!")
+      stop("No Primers Were Found in the White List!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
@@ -407,11 +408,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Logfile Found!",
-        sprintf(paste0("Unfortunateley, we could not find any Logfile."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Logfile For "),input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Logfile found!")
+      stop("No Logfile Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
@@ -434,11 +435,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Primers Found!",
-        sprintf(paste0("Unfortunateley, we could not find any primers for your current job. Feel free to check your settings and try again."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers For Your Current Job ", input$name, ". Feel Free to Check Your Settings and Try Again.")),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No primers were found!")
+      stop("No Primers Were Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
@@ -461,11 +462,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Summary Found!",
-        sprintf(paste0("Unfortunateley, we could not find any Summary for your Primer Design Job."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Summary For Your Primer Design Job "), input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Summary found!")
+      stop("No Summary Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
@@ -488,11 +489,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Settings Found!",
-        sprintf(paste0("Unfortunateley, we could not find any settings for your current job. "),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Settings For Your Current Job "), input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Settings were found!")
+      stop("No Settings Were Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
@@ -517,7 +518,7 @@ server <- function(input, output, session) {
     if(is.data.frame(showGraphics()) && nrow(showGraphics())== 0){
       ww <-showModal(modalDialog(
         title = "No Primers Found!",
-        sprintf(paste0("Unfortunateley, we could not find any primers for your current job. Feel free to check your settings and try again."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers For Your Current Job", input$name, ". Feel Free to Check Your Settings and Try Again.")),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
@@ -641,8 +642,8 @@ server <- function(input, output, session) {
   output$primer_qc_start <- eventReactive(input$compute_ePCR, {
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
-      title = "ePCR has started!",
-      paste0("The ePCR for your primers is being computed. Your results will be available in a few moments. You can find them in the 'Results of ePCR' tab when they are ready."),
+      title = "ePCR Has Started!",
+      paste0("The ePCR For Your Primers Is Being Computed. Your Results Will Be Available in a Few Moments. You Will Be Notified, Once They Are Ready."),
       easyClose = FALSE,
       footer = modalButton("Close")))
     
@@ -1088,11 +1089,11 @@ server <- function(input, output, session) {
       close(settings_file)
       
       showModal(modalDialog(
-        title = "No potential PCR products found!",
-        paste0("The Quality Control for your Primers is finished. We could not find any potential PCR fragments for your primer pairs. Details of your results are available in the Primer Design Quality Control tab."),
+        title = "No Potential PCR Products Found!",
+        paste0("The ePCR For Your Primers Is Finished. We Could Not Find Any Potential PCR Fragments For Your Primer Pairs."),
         easyClose = FALSE,
         footer = modalButton("Close")))
-      return("No PCR fragments found.")
+      return("No PCR Fragments Found.")
     }
     
     writeLines(paste0(Sys.time(), " Start preparing resulttable for output \n"), logfile)
@@ -1292,8 +1293,8 @@ server <- function(input, output, session) {
     updateTabItems(session, "tabs", selected = "PrimerQCResults")
     
     showModal(modalDialog(
-      title = "Computation of ePCR has finished!",
-      paste0("The virtual PCR for your primer pairs is finished. Your results are available here."),
+      title = "Computation of ePCR Has Finished!",
+      paste0("Your Results Are Available Here."),
       easyClose = FALSE,
       footer = modalButton("Close")))
     
@@ -1374,11 +1375,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Overview Found For ePCR!",
-        sprintf(paste0("Unfortunateley, we could not find any Overview for your ePCR Job."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Overview For Your ePCR Job "), input$blast_id),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Overview found!")
+      stop("No Overview Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path, header=TRUE, sep=" ")
@@ -1408,11 +1409,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Settings Found For ePCR!",
-        sprintf(paste0("Unfortunateley, we could not find any Settings for your ePCR Job."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Settings For Your ePCR Job "), input$blast_id),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Settings found!")
+      stop("No Settings Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path, header=TRUE, sep="\t")
@@ -1442,11 +1443,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Logfile Found For ePCR!",
-        sprintf(paste0("Unfortunateley, we could not find any logfile for your ePCR Job."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Logfile For Your ePCR Job "),input$blast_id),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Logfile found!")
+      stop("No Logfile Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path, header=TRUE, sep="\t")
@@ -1476,11 +1477,11 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Summary Found For ePCR!",
-        sprintf(paste0("Unfortunateley, we could not find any Summary for your ePCR Job."),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Summary For Your ePCR Job "), input$blast_id),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
-      stop("No Summary found!")
+      stop("No Summary Found!")
     }
     print(file_path)
     read_file <- read.delim(file_path)
