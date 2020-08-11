@@ -117,7 +117,7 @@ server <- function(input, output, session) {
       
       #call the primer design pipeline
       primer.design.pipeline.refactored(Dataset(),
-                             path.out = paste(getwd(),input$name,sep="/"),
+                             path.out = paste(getwd(), input$name, sep="/"),
                              primer.type = input$i_primer_type,
                              low.complexity.primer.removal = as.logical(settings_for_pipeline[1]),
                              remove.primers.with.n = as.logical(settings_for_pipeline[2]),
@@ -238,7 +238,7 @@ server <- function(input, output, session) {
     if(length(file_path) == 0){
       ww <-showModal(modalDialog(
         title = "No Primers in the Top List!",
-        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers in the Top List For "),input$name),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers in the Top List For "), input$name),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
