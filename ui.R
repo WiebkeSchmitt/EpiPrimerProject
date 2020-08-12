@@ -56,9 +56,9 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           hr(),
                                           helpText( h4("Download Example Files Here: ")),
                                           downloadButton("downloadSequenceFile", "Sequence File",
-                                                         style="margin-left:150px; margin-right:0px"),
+                                                         style="margin-left:100px; margin-right:0px"),
                                           downloadButton("downloadRegionsFile", "Regions File",
-                                                         style="margin-left:150px; margin-right:0px")
+                                                         style="margin-left:100px; margin-right:0px")
                                                 ),
                                           box(title = h2("Basic Primer Settings"), 
                                               status = "primary",
@@ -69,13 +69,10 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                            selected = "genomic"),
                                               bsTooltip("i_primer_type", "What Kind of Primer Do You Want to Create?", "left", "hover"),
                                               hr(),
-                                              conditionalPanel(
-                                                condition = "input.i_primer_type != 'genomic' && input.i_primer_type != 'CrispRCas9PCR'",
-                                                radioButtons("i_strand", label = h3("DNA Strand"),
-                                                             choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
-                                                             selected = "top"),
-                                                bsTooltip("i_strand", "Choose the Strand for Which You Want to Create your Primers!", "left", "hover")
-                                              ),
+                                              radioButtons("i_strand", label = h3("DNA Strand"),
+                                                           choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
+                                                           selected = "top"),
+                                              bsTooltip("i_strand", "Choose the Strand for Which You Want to Create your Primers!", "left", "hover"),
                                               hr(),
                                               helpText("In Case Your Primer Design Job Was Unsatisfactory, You Are Recommended to Check the Advanced Primer Settings Below and to Compute Again.")
                                           ),
@@ -407,7 +404,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           ),
                                           fluidRow(
                                             actionButton("action", label="Compute Primers", icon("fas fa-calculator"), align="center",
-                                                         style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:200px; margin-right:0px"),
+                                                         style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:100px; margin-right:0px"),
                                             bsTooltip("action", "The Computation of Your Primers May Take a Few Minutes, Please Wait Until You Receive a Notification That Your Primers Are Finished.", "left")
                                           )
                                           
@@ -483,7 +480,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               hr(),
                                               h5("Import Primer Pairs From Primer Design That Were Added to Your Selected List:", align = "center"),
                                               actionButton("loadprimers", "Import Primers", icon = icon("file-import"), align="center",
-                                                           style="margin-left:275px; margin-right:0px"),
+                                                           style="margin-left:225px; margin-right:0px"),
                                               bsTooltip("loadprimers", "Import Primers You Added to the Selected List", "bottom", "hover")
                                           ),
                                           box(title = h2("Settings for ePCR"),
@@ -508,7 +505,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               hr()
                                           ),
                                           actionButton("compute_ePCR", label = "Start ePCR", icon("fas fa-flask"), align="center",
-                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:150px; margin-right:0px"),
+                                                       style="color: #fff; background-color: #3c8dbc; border-color: #337ab7; padding:25px; font-size:200%; width:1000px; margin-left:100px; margin-right:0px"),
                                           bsTooltip("compute_ePCR", "The Computation of Your ePCR May Take a Few Minutes, Please Wait Until You Receive a Notification That Computation Has Finished.", "left", "hover")
                                   
                                   ),
