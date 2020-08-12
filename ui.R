@@ -423,7 +423,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    tabPanel("Toplist",
                                                             withSpinner(DT::dataTableOutput("viewtoplist"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
-                                                   tabPanel("Wholelist",
+                                                   tabPanel("Complete Primer List",
                                                             withSpinner(DT::dataTableOutput("viewwholelist"), type = 1, color = "#3c8dbc", size = 2)
                                                    ),
                                                    tabPanel("Whitelist",
@@ -446,7 +446,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           fluidRow(
                                             box(title = "Selected List",
                                                 width = 12,
-                                                helpText("You Can Download Your Primer Pairs or Hand Them Over for ePCR by Adding Them to Your List of Selected Primers Below. To Add Primers to Your Selected List, Mark Them on the Wholelist Above!"),
+                                                helpText("You Can Download Your Primer Pairs or Hand Them Over for ePCR by Adding Them to Your List of Selected Primers Below. To Add Primers to Your Selected List, Mark Them on the Complete Primer List Above!"),
                                                 hr(),
                                                 DT::dataTableOutput("viewSelectlist"),
                                                 hr(),

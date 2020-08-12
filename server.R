@@ -305,7 +305,7 @@ server <- function(input, output, session) {
     s = input$viewwholelist_rows_selected
     if(is.null(s)){
       return (data.frame())
-      #stop("No primers were marked on the Wholelist!")
+      #stop("No primers were marked on the Complete Primer List!")
     }
     whole_selected_list <- showWholelist()[s,]
     write.table(whole_selected_list,file=paste0(primersDesign_wd,"/",input$name,"/","SelectedPrimers", ".txt"),quote = FALSE,col.names = TRUE,row.names=FALSE, sep = "\t")
