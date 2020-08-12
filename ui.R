@@ -72,7 +72,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                               radioButtons("i_strand", label = h3("DNA Strand"),
                                                            choices = list("Top" = "top", "Bottom" = "bottom", "Both" = "both"),
                                                            selected = "top"),
-                                              bsTooltip("i_strand", "Choose the Strand for Which You Want to Create your Primers!", "left", "hover"),
+                                              bsTooltip("i_strand", "Choose the Strand for Which You Want to Create Your Primers!", "left", "hover"),
                                               hr(),
                                               helpText("In Case Your Primer Design Job Was Unsatisfactory, You Are Recommended to Check the Advanced Primer Settings Below and to Compute Again.")
                                           ),
