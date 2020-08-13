@@ -647,6 +647,11 @@ server <- function(input, output, session) {
       easyClose = FALSE,
       footer = modalButton("Close")))
     
+    # check if the folder already exists, if so, do not compute anything.
+    if(file.exists(paste(primersDesign_wd,"ePCR" , input$blast_id,sep="/"))){ 
+      return (sprintf("Dataset %s Already Exists, Please Choose Another ID!", input$blast_id))
+    }
+    
     # make result folder to hold results of this run
     ePCR_folder <- paste(primersDesign_wd, "/ePCR", sep="")
     dir.create(ePCR_folder)
