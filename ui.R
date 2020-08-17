@@ -2,7 +2,6 @@
 library(shiny)
 library(shinydashboard)
 library(shinycssloaders)
-library(shinyjs)
 
 ## tooltips ##
 library(shinyBS)
