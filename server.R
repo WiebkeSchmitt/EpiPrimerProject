@@ -1180,9 +1180,7 @@ server <- function(input, output, session) {
         writeLines(paste0("Start fetching the first sequence for the results of primer ", i, "\n"), logfile)
         if(length(url.full) != 0){
           r <- GET(url.full[1])
-          print(exists("s"))
           s <- read_xml(r)
-          print("assigned s")
           if(length(r) == 0){
             #error_flag <- TRUE
             sequences <- append(sequences, "NotFound")
@@ -1204,7 +1202,6 @@ server <- function(input, output, session) {
         }
       
         writeLines(paste0(Sys.time(), " Fetching the other sequences for created amplicons \n"), logfile)
-        print("continue fetching sequences!")
         print(paste0("total sequences to be fetched: ", end_vec))
         if(2 < end_vec){
             for (i in 2:end_vec){ 
