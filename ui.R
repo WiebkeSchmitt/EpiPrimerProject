@@ -12,8 +12,7 @@ library(tippy)
 ## Computations of this type of primer are also possible (recomment the function contained in primer.design.r) BUT are NOT refactored.
 
 ## UI using shiny dashboard ##
-ui <- fluidPage(useShinyjs(),
-                dashboardPage(skin = "yellow",
+ui <- fluidPage(dashboardPage(skin = "yellow",
                               dashboardHeader(title = "EpiPrimer"),
                               dashboardSidebar(
                                 sidebarMenu(id = "tabs",
