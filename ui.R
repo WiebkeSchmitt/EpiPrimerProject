@@ -2,6 +2,7 @@
 library(shiny)
 library(shinydashboard)
 library(shinycssloaders)
+library(shinyjs)
 
 ## tooltips ##
 library(shinyBS)
@@ -12,7 +13,8 @@ library(tippy)
 ## Computations of this type of primer are also possible (recomment the function contained in primer.design.r) BUT are NOT refactored.
 
 ## UI using shiny dashboard ##
-ui <- fluidPage(dashboardPage(skin = "yellow",
+ui <- fluidPage(useShinyjs(),
+                dashboardPage(skin = "yellow",
                               dashboardHeader(title = "EpiPrimer"),
                               dashboardSidebar(
                                 sidebarMenu(id = "tabs",
@@ -515,8 +517,8 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                                    id = "PQCTabbox",
                                                    width = 12,
                                                    tabPanel("Results",
-                                                            actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
-                                                            bsTooltip("refreshPQC", "Please Press This Button to View the Results of Your ePCR!", "right", "hover"),
+                                                            #actionButton("refreshPQC", label = "Results", icon = icon("sync-alt")),
+                                                            #bsTooltip("refreshPQC", "Please Press This Button to View the Results of Your ePCR!", "right", "hover"),
                                                             selectInput("test_select", label = "Filter Results by Primerpair: ", choices ="", multiple = FALSE),
                                                             tags$div(id="txt_for_selector", helpText("")),
                                                             withSpinner(uiOutput("pQC.results"), type = 1, color = "#3c8dbc", size = 2)

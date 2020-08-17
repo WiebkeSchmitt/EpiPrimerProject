@@ -37,6 +37,9 @@ dbHeader <- dashboardHeader(title = "EpiPrimer")
 server <- function(input, output, session) {
   ### global variable for Primersettings: in case the primer type field was not touched by the user, a genomic primer is designed. This variable changes when the user touches primer type or advanced settings
   def_settings <<- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, 5, 12, 0, 10, 0, 0, 0, 0, NA, NA,  NA, NA,    NA, 18, 25, 50, 60, 3,  200, 500, 0, 0, NA, NA,  30, "genomic")
+  files_2 <<- reactiveValues()
+  
+  load_files <- function(){files_2 <<- data.frame(graphs2=list.files(file.path(getwd(), "ePCR", input$blast_id, "graphs"),full.names=TRUE, pattern =".png"))}
   
   ### Data import:
   Dataset <- reactive({
@@ -640,6 +643,7 @@ server <- function(input, output, session) {
   )
   
   output$primer_qc_start <- eventReactive(input$compute_ePCR, {
+    
     # inform the user that the virtual PCR has started
     showModal(modalDialog(
       title = "ePCR Has Started!",
@@ -698,10 +702,12 @@ server <- function(input, output, session) {
     #get the sequences for the forward and reverse primers to be used == Fseq/Rseq  
     Fseq <- (if(is.null(input$Fprimers)) {
       vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
+      forwardPrimer_ePCR <- vF
     }
     else{
       #validate(need(readDNAStringSet(input$Fprimers$datapath)), "no upload")
       vF <- readDNAStringSet(input$Fprimers$datapath)
+      forwardPrimer_ePCR <- vF
     } )
     Rseq <- (if(is.null(input$Rprimers)) {
       vR <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Rprimers.fasta"))
@@ -710,6 +716,14 @@ server <- function(input, output, session) {
     else{
       vR <- readDNAStringSet(input$Rprimers$datapath)
     } )
+    
+    if (length(vR) > 150 || length(vF) > 150){
+      return("ePCR is possible for at most 150 primer pairs. Please check your input!")
+    }
+    
+    if (length(vR) != length(vF)){
+      return("Number of given forward primers is not equal to number of given reverse primers. Please check your input!")
+    }
     
     # output of the used primers
     print(Fseq)
@@ -1306,29 +1320,29 @@ server <- function(input, output, session) {
       paste0("Your Results Are Available Here."),
       easyClose = FALSE,
       footer = modalButton("Close")))
-    
+    load_files()
     return ("Finished virtual PCR!")
   })
   
   preparePQC <- reactive({
-    if (!input$refreshPQC) {return(data.frame())}
-    if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
-      print("results do not exist!")
-      return(data.frame())
-    } else {
+    if (!input$compute_ePCR) {return(data.frame())}
+    #if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
+      #print("results do not exist!")
+    #  return(data.frame())
+    #} else {
       ePCR_table <- read.delim(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep ))
       ePCR_table_sub <- subset(ePCR_table, select = -c(F.bit_score, R.bit_score, F.e_value, R.e_value, F.width, R.width))
       return(ePCR_table_sub)
-    }
+    #}
     
   })
   
   output$pQC.results <- renderUI({
-    if (!input$refreshPQC) {return(data.frame())}
-    if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
-      print("results do not exist!")
-      return(data.frame())
-    } else {
+    #if (!input$refreshPQC) {return(data.frame())}
+    #if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
+      #print("results do not exist!")
+    #  return(data.frame())
+    #} else {
       # select variables to display by selectInput
       selectedRange <- input$test_select
       if (length(selectedRange) == 0){
@@ -1348,27 +1362,35 @@ server <- function(input, output, session) {
                                         class = "display")
       DT::dataTableOutput("out")
       
-    }
+    #}
   })
   
   # display selectInput / Dropdownmenue to filter Results for one primer pair analyzed
-  observeEvent(input$refreshPQC, {
-    if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
-      print(!dir.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)))
-      print("results do not exist!")
-      return(data.frame())
-    } else {
+  observeEvent(input$compute_ePCR, {
+    #if (!file.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep))){
+    #  print(!dir.exists(file.path(primersDesign_wd, "ePCR", input$blast_id, "primer_qc_results_all.txt", fsep=.Platform$file.sep)))
+      #print("results do not exist!")
+     # return(data.frame())
+    #} else {
+    Fseq <- (if(is.null(input$Fprimers)) {
+      vF <- readDNAStringSet(paste0(primersDesign_wd,"/",input$name,"/","Fprimers.fasta"))
+      forwardPrimer_ePCR <- vF
+    }
+    else{
+      #validate(need(readDNAStringSet(input$Fprimers$datapath)), "no upload")
+      vF <- readDNAStringSet(input$Fprimers$datapath)
+      forwardPrimer_ePCR <- vF
+    } )
         removeUI(
           selector= "div:has(>> #test_select)",
-          
           immediate = TRUE
         )
         insertUI(
           selector= "#txt_for_selector",
           where = "afterEnd",
-          ui = selectInput(inputId = "test_select", label = "Filter results by primer pair: ", choices = unique(preparePQC()[6]), multiple = FALSE)
+          ui = selectInput(inputId = "test_select", label = "Filter results by primer pair: ", choices = unique(names(vF)), multiple = FALSE)
         )
-    }
+    #}
   }
   )
   
@@ -1888,37 +1910,33 @@ server <- function(input, output, session) {
     def_settings[34] <<- input$i_chop.size
   })
   
-  ######### display graphics for ePCR ############
-  showGraphicsePCR <- eventReactive(input$refreshPQC, {
-    files_2 <- data.frame(graphs2=list.files(file.path(primersDesign_wd, "ePCR", input$blast_id, "graphs"),full.names=TRUE, pattern =".png"))
-    })
+ 
   
-  output$ePCR_Graphs <-renderUI({
-    #check, if there are graphics that can be displayed, if not inform the user
-    # check, if there are no graphics to be displayed
-    if(is.data.frame(showGraphicsePCR()) && nrow(showGraphicsePCR())== 0){
+  ######### display graphics for ePCR ############
+  
+  output$ePCR_Graphs <- renderUI({
+    if (is.null(files_2)){
       return(data.frame())
     } else {
-      bb <- lapply(1:nrow(showGraphicsePCR()), function(i){
+      for(i in 1:nrow(files_2)){
+        local({
+          my_i <- i
+          out_ui2 <- paste0("image_b", my_i)
+          output[[out_ui2]] <- renderImage({
+            list(src = paste(files_2$graphs2[my_i]),
+                 alt = "Image failed to render", style="width: 800px; height: 700px")
+          }, deleteFile = FALSE)
+        })
+      }
+      
+      bb <- lapply(1:nrow(files_2), function(i){
         out_ui2 <- paste0("image_b", i)
         imageOutput(out_ui2, height = "800px")
       })
       do.call(tagList, bb)
     }
+    
   })
 
-  observe({
-    for(i in 1:nrow(showGraphicsePCR()))
-    {
-      local({
-        my_i <- i
-        out_ui2 <- paste0("image_b", my_i)
-        output[[out_ui2]] <- renderImage({
-          list(src = paste(showGraphicsePCR()$graphs2[my_i]),
-               alt = "Image failed to render", style="width: 800px; height: 700px")
-        }, deleteFile = FALSE)
-      })
-    }
-  })
   
 }
