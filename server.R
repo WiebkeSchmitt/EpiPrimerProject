@@ -826,15 +826,18 @@ server <- function(input, output, session) {
       data_plot2 <- matrix(c(as.numeric(vec_matches_fprimers_CT), as.numeric(vec_matches_fprimers_GA), as.numeric(vec_matches_rprimers_CT), as.numeric(vec_matches_rprimers_GA)), nrow=length(Fseq), ncol=4)
       rownames(data_plot2) <- vec_seqnames
       png(file.path(graphs_path, "Blasthits_Bisulfite_Blast.png"), height=1000, width=1200, pointsize=24)
-      par(mar=c(11.1, 4.1, 4.1, 2.1))
+      par(xpd = TRUE, mar=c(11.1, 4.1, 14.1, 12.1))
       barplot(t(data_plot2),
               main = "BLAST Hits per Primer to CT and GA Converted Genome",
               las = 2,
               col = c("black", "white", "#3c8dbc", "#f39c12")
       ) 
-      legend("topleft",
-             c("BLAST Hits Forward Primer C-to-T Converted Reference Genome", "BLAST Hits ForwardPprimer G-to-A Converted Reference Genome", "BLAST Hits Reverse Primer C-to-T Converted Reference Genome", "BLAST Hits Reverse Primer G-to-A Converted Reference Genome"),
-             fill = c("black", "white", "#3c8dbc","#f39c12")
+      legend("topright",
+             inset=c(0, -0.6),
+             c("BLAST Hits Forward Primer C-to-T Converted Reference Genome", "BLAST Hits Forward Primer G-to-A Converted Reference Genome", "BLAST Hits Reverse Primer C-to-T Converted Reference Genome", "BLAST Hits Reverse Primer G-to-A Converted Reference Genome"),
+             fill = c("black", "white", "#3c8dbc","#f39c12")#,
+             #col=1:2,
+             #pch=1:2
       )
       dev.off()
       writeLines(paste0(Sys.time(), " Created overview plot of blast hits per primer pair! \n"), logfile)
@@ -1018,14 +1021,16 @@ server <- function(input, output, session) {
       data_plot2 <- matrix(c(as.numeric(num_fw_blast_hits), as.numeric(num_rw_blast_hits)), nrow=length(fw_primer_vec), ncol=2)
       rownames(data_plot2) <- fw_primer_vec
       png(file.path(graphs_path, "Blasthits_per_Primerpair.png"), height=1000, width=1200, pointsize=24)
-      par(mar=c(11.1, 4.1, 4.1, 2.1))
+      par(xpd = TRUE, mar=c(11.1, 4.1, 14.1, 12.1))
+      #par(mar=c(11.1, 4.1, 4.1, 2.1))
       barplot(t(data_plot2),
               main = "BLAST Hits per Primer Pair",
               #xlab = "primer pair",
               las = 2,
               col = c("#3c8dbc", "#f39c12")
       )
-      legend("topleft",
+      legend("topright",
+             inset=c(0, -0.6),
              c("Forward Primer BLAST Hits","Reverse Primer BLAST Hits"),
              fill = c("#3c8dbc", "#f39c12")
       )
@@ -1298,11 +1303,9 @@ server <- function(input, output, session) {
     df_plot1 <- as.data.frame(table_df1_FprimerOccurances)
     png(file.path(graphs_path, "PotentialAmpliconFrequencies.png"), height=1000, width=1200, pointsize=24)
     par(mar=c(11.1, 4.1, 4.1, 2.1))
-    barplot(df_plot1$Freq, main="Potential Amplicons per primer pair", names=df_plot1$F.PrimerID, col="#3c8dbc", las = 2)
+    barplot(df_plot1$Freq, main="Potential Amplicons per Primer Pair", names=df_plot1$F.PrimerID, col="#3c8dbc", las = 2)
     dev.off()
     writeLines(paste0(Sys.time(), " Plot of created amplicons was created! \n"), logfile)
-    
-    
   
     writeLines(paste0(Sys.time(), " ePCR function is now finished! \n"), logfile)
     close(logfile)
