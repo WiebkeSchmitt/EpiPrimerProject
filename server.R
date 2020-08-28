@@ -521,7 +521,7 @@ server <- function(input, output, session) {
     if(is.data.frame(showGraphics()) && nrow(showGraphics())== 0){
       ww <-showModal(modalDialog(
         title = "No Primers Found!",
-        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers For Your Current Job", input$name, ". Feel Free to Check Your Settings and Try Again.")),
+        sprintf(paste0("Unfortunateley, We Could Not Find Any Primers For Your Current Job ", input$name, ". Feel Free to Check Your Settings and Try Again.")),
         easyClose = FALSE,
         footer = modalButton("Close")
       ))
