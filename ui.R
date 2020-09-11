@@ -463,7 +463,7 @@ ui <- fluidPage(dashboardPage(skin = "yellow",
                                           
                                   ),
                                   tabItem(tabName = "PrimerQC",
-                                          box(title = h2("Upload files for ePCR"),
+                                          box(title = h2("Upload Files for ePCR"),
                                               status = "primary", 
                                               solidHeader = TRUE,
                                               width = 6,
